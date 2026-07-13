@@ -127,10 +127,20 @@ async function parseArgs(comando, args, message, client) {
       idx = args.length;
     } else if (s.user) {
       const tok = args[idx];
-      idx++;
-      const u = tok ? await resolveUser(tok, message, client) : null;
-      if (s.required && !u) return null;
-      v[s.name] = u;
+      if (tok === undefined) {
+        v[s.name] = null;
+      } else {
+        const u = await resolveUser(tok, message, client);
+        if (u) {
+          v[s.name] = u;
+          idx++;
+        } else if (s.required) {
+          return null;
+        } else {
+          // opcional e não é usuário: não consome o token (deixa para o rest pegar)
+          v[s.name] = null;
+        }
+      }
     } else if (s.int) {
       const tok = args[idx];
       idx++;
