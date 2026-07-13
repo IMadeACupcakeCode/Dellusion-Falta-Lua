@@ -4,21 +4,14 @@ const path = require('path');
 const CAMINHO_ARQUIVO = path.join(__dirname, '..', 'data', 'servidores.json');
 const CAMINHO_BACKUP = path.join(__dirname, '..', 'data', 'servidores.backup.json');
 
-// Tipos de anúncio que o bot consegue classificar em canais diferentes
 const TIPOS_ANUNCIO = ['geral', 'evento', 'regra', 'atualizacao', 'aviso'];
 
-// Estrutura padrão de configuração de um servidor
 function configPadrao() {
   return {
-    canaisPermitidos: [], // se vazio, fala em qualquer canal
-    canaisBloqueados: [], // nunca fala nestes, mesmo que permitidos
-    anuncios: {
-      geral: null,
-      evento: null,
-      regra: null,
-      atualizacao: null,
-      aviso: null,
-    },
+    canaisPermitidos: [],
+    canaisBloqueados: [],
+    anuncios: { geral: null, evento: null, regra: null, atualizacao: null, aviso: null },
+    cargosStaff: [],
   };
 }
 
@@ -30,11 +23,9 @@ function garantirArquivo() {
 
 function fazerBackup() {
   try {
-    if (fs.existsSync(CAMINHO_ARQUIVO)) {
-      fs.copyFileSync(CAMINHO_ARQUIVO, CAMINHO_BACKUP);
-    }
+    if (fs.existsSync(CAMINHO_ARQUIVO)) fs.copyFileSync(CAMINHO_ARQUIVO, CAMINHO_BACKUP);
   } catch {
-    // Silêncio — backup não crítico
+    // silêncio
   }
 }
 
@@ -44,7 +35,6 @@ function carregarTodos() {
   try {
     return JSON.parse(conteudo);
   } catch {
-    // Tenta recuperar do backup
     try {
       const backup = fs.readFileSync(CAMINHO_BACKUP, 'utf-8');
       const dados = JSON.parse(backup);
@@ -68,12 +58,12 @@ function obterConfig(guildId) {
     registro[guildId] = configPadrao();
     salvarTodos(registro);
   }
-  // Garante que campos novos existam mesmo em configs antigas
   const cfg = registro[guildId];
   const padrao = configPadrao();
   cfg.canaisPermitidos = cfg.canaisPermitidos || padrao.canaisPermitidos;
   cfg.canaisBloqueados = cfg.canaisBloqueados || padrao.canaisBloqueados;
   cfg.anuncios = { ...padrao.anuncios, ...(cfg.anuncios || {}) };
+  cfg.cargosStaff = cfg.cargosStaff || padrao.cargosStaff;
   return cfg;
 }
 
@@ -83,23 +73,15 @@ function salvarConfig(guildId, config) {
   salvarTodos(registro);
 }
 
-/**
- * Exporta a configuração de um servidor como JSON.
- */
 function exportarConfig(guildId) {
-  const cfg = obterConfig(guildId);
-  return JSON.stringify(cfg, null, 2);
+  return JSON.stringify(obterConfig(guildId), null, 2);
 }
 
-/**
- * Importa uma configuração para um servidor.
- */
 function importarConfig(guildId, jsonString) {
   try {
     const dados = JSON.parse(jsonString);
-    // Valida estrutura mínima
     if (!Array.isArray(dados.canaisPermitidos) || !Array.isArray(dados.canaisBloqueados) || !dados.anuncios) {
-      return { ok: false, erro: 'Estrutura inválida. Esperado: canaisPermitidos[], canaisBloqueados[], anuncios{}' };
+      return { ok: false, erro: 'Estrutura inválida.' };
     }
     salvarConfig(guildId, dados);
     return { ok: true };
@@ -108,21 +90,10 @@ function importarConfig(guildId, jsonString) {
   }
 }
 
-/**
- * Verifica se o bot deve responder num determinado canal.
- * @returns {{ ok: boolean, motivo?: string }}
- */
 function verificarCanal(guildId, channelId) {
   const cfg = obterConfig(guildId);
-
-  if (cfg.canaisBloqueados.includes(channelId)) {
-    return { ok: false, motivo: 'bloqueado' };
-  }
-
-  if (cfg.canaisPermitidos.length > 0 && !cfg.canaisPermitidos.includes(channelId)) {
-    return { ok: false, motivo: 'foraDaLista' };
-  }
-
+  if (cfg.canaisBloqueados.includes(channelId)) return { ok: false, motivo: 'bloqueado' };
+  if (cfg.canaisPermitidos.length > 0 && !cfg.canaisPermitidos.includes(channelId)) return { ok: false, motivo: 'foraDaLista' };
   return { ok: true };
 }
 

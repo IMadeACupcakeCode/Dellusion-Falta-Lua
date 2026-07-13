@@ -1,11 +1,15 @@
 const { EmbedBuilder } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
+const { isStaff } = require('../utils/perms');
 
 module.exports = {
   data: { name: 'membros', description: '👥 Painel completo: totais, bots, staff, entradas/saídas do dia' },
   async execute(interaction) {
     const guild = interaction.guild;
     if (!guild) return interaction.reply({ embeds: [criarEmbed({ titulo: 'Só em servidores', descricao: 'Use em um servidor.', cor: 0xE67E80 })], ephemeral: true });
+    if (!isStaff(interaction.member)) {
+      return interaction.reply({ embeds: [criarEmbed({ titulo: 'Acesso negado', descricao: 'Somente staff pode usar este comando.', cor: 0xE67E80 })], ephemeral: true });
+    }
 
     await guild.members.fetch();
 

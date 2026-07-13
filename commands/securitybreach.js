@@ -1,11 +1,11 @@
-const { ActionRowBuilder, ButtonStyle, StringSelectMenuBuilder, PermissionFlagsBits } = require('discord.js');
+const { ActionRowBuilder, ButtonStyle, StringSelectMenuBuilder } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
-const { botao } = require('../utils/ui');
+const { isStaff } = require('../utils/perms');
 
 module.exports = {
   data: { name: 'securitybreach', description: '🛡️ Painel de segurança staff: histórico, varredura e alertas' },
   async execute(interaction, client) {
-    if (!interaction.memberPermissions || !interaction.memberPermissions.has('ManageGuild')) {
+    if (!isStaff(interaction.member)) {
       return interaction.reply({ embeds: [criarEmbed({ titulo: 'Acesso negado', descricao: 'Somente staff pode usar este comando.', cor: 0xE67E80 })], ephemeral: true });
     }
 
