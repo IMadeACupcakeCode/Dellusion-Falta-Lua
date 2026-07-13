@@ -103,17 +103,39 @@ module.exports = {
     await msg.react('✅');
     await msg.react('❌');
 
-    const filter = (reaction, user) => ['✅', '❌'].includes(reaction.emoji.name) && user.id === opponent.id;
+    // Check if opponent already reacted (fast reaction before collector started)
+    let accepted = false;
     try {
-      const collected = await msg.awaitReactions({ filter, max: 1, time: 60000, errors: ['time'] });
-      const choice = collected.first().emoji.name;
-      if (choice === '❌') {
-        await msg.edit({ embeds: [criarEmbed({ titulo: 'Desafio recusado', descricao: `${opponent} recusou o desafio.`, cor: 0xE67E80 })], components: [] });
-        return;
+      const acceptReaction = msg.reactions.cache.get('✅');
+      if (acceptReaction) {
+        const users = await acceptReaction.users.fetch();
+        if (users.has(opponent.id)) accepted = true;
+      }
+      const declineReaction = msg.reactions.cache.get('❌');
+      if (declineReaction && !accepted) {
+        const users2 = await declineReaction.users.fetch();
+        if (users2.has(opponent.id)) {
+          await msg.edit({ embeds: [criarEmbed({ titulo: 'Desafio recusado', descricao: `${opponent} recusou o desafio.`, cor: 0xE67E80 })], components: [] });
+          return;
+        }
       }
     } catch (e) {
-      await msg.edit({ embeds: [criarEmbed({ titulo: 'Desafio expirado', descricao: 'Ninguém respondeu ao desafio.', cor: 0xE67E80 })] });
-      return;
+      // ignore fetch errors and fall back to collector
+    }
+
+    if (!accepted) {
+      const filter = (reaction, user) => ['✅', '❌'].includes(reaction.emoji.name) && user.id === opponent.id;
+      try {
+        const collected = await msg.awaitReactions({ filter, max: 1, time: 60000, errors: ['time'] });
+        const choice = collected.first().emoji.name;
+        if (choice === '❌') {
+          await msg.edit({ embeds: [criarEmbed({ titulo: 'Desafio recusado', descricao: `${opponent} recusou o desafio.`, cor: 0xE67E80 })], components: [] });
+          return;
+        }
+      } catch (e) {
+        await msg.edit({ embeds: [criarEmbed({ titulo: 'Desafio expirado', descricao: 'Ninguém respondeu ao desafio.', cor: 0xE67E80 })] });
+        return;
+      }
     }
 
     // Initialize combatants
