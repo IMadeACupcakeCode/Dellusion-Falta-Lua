@@ -91,6 +91,29 @@ Se tudo estiver certo, o terminal vai mostrar:
 
 > ⚠️ `/configurar` e `/anuncio` exigem permissão de **Gerir Servidor**.
 
+## 💬 Comandos por prefixo `$`
+
+Além dos slash commands, a bot também responde a mensagens que começam com **`$`** (o antigo prefixo `!` foi trocado por `$`):
+
+| Prefixo | Equivalente | Descrição |
+|---|---|---|
+| `$ping` | `/ping` | Responde Pong! |
+| `$dado 1d20` | `/dado` | Rola dados |
+| `$roleta pizza, sushi` | `/roleta` | Sorteia uma opção |
+| `$lembrete 10m beber água` | `/lembrete criar` | Cria lembrete |
+| `$lembrete listar` | `/lembrete listar` | Lista seus lembretes |
+| `$lembrete cancelar abc123` | `/lembrete cancelar` | Cancela um lembrete |
+| `$anuncio evento Sexta tem evento!` | `/anuncio` | Anúncio classificado |
+| `$configurar ver` | `/configurar ver` | Mostra a configuração |
+| `$configurar anuncio evento #canal` | `/configurar anuncio` | Define canal de anúncio |
+| `$configurar permitir #canal` | `/configurar permitir` | Libera um canal |
+| `$configurar proibir #canal` | `/configurar proibir` | Bloqueia um canal |
+| `$organizar` | `/organizar` | Painel de organização |
+| `$ajuda` | — | Lista os comandos por prefixo |
+
+> Os comandos por prefixo respeitam as mesmas regras de canais permitidos/proibidos do `/configurar`.
+> Para usar prefixo, o bot precisa da intent **Message Content** (já ativada em `index.js`) e da permissão de ler o histórico/canal.
+
 ## 🗣️ Decidindo onde a bot fala
 
 Use `/configurar` para controlar os canais:

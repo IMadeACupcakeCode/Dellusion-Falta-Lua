@@ -5,6 +5,7 @@ const { Client, GatewayIntentBits, Collection, ActivityType } = require('discord
 const { THEME, criarEmbed } = require('./utils/theme');
 const { reagendarTodosLembretes } = require('./utils/agendador');
 const { verificarCanal } = require('./utils/servidorStore');
+const { handlePrefix } = require('./utils/prefix');
 
 const { DISCORD_TOKEN } = process.env;
 
@@ -14,7 +15,7 @@ if (!DISCORD_TOKEN) {
 }
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds],
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
 });
 
 client.commands = new Collection();
@@ -39,6 +40,10 @@ client.once('ready', () => {
   });
 
   reagendarTodosLembretes(client);
+});
+
+client.on('messageCreate', (message) => {
+  handlePrefix(message, client);
 });
 
 client.on('interactionCreate', async (interaction) => {
