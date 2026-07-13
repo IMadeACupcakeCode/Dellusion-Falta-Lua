@@ -7,23 +7,23 @@ Bot de Discord com lembretes, rolagem de dados, roleta de escolhas **e um sistem
 ```
 falta-lua-bot/
 ├── commands/
-│   ├── ping.js          → /ping
-│   ├── dado.js          → /dado
-│   ├── roleta.js         → /roleta
-│   ├── lembrete.js       → /lembrete criar | listar | cancelar
-│   ├── configurar.js     → /configurar (gerencia canais e anúncios)
-│   ├── anuncio.js        → /anuncio (envia avisos classificados)
-│   └── organizar.js      → /organizar (painel de organização do servidor)
+│   ├── ping.js · dado.js · roleta.js · lembrete.js
+│   ├── moeda.js · eightball.js · ship.js · guerra.js · roleta_russa.js
+│   ├── abraco.js · cartasecreta.js · social.js
+│   ├── avatar.js · membros.js · status.js · votar.js · mila.js
+│   ├── configurar.js · anuncio.js · organizar.js · aviso.js · seguranca.js
+│   ├── limpar.js · lentidao.js
+│   └── codex.js          → /codex (o Livro da Lua, paginado e com busca)
 ├── utils/
 │   ├── theme.js           → cores e embeds padronizados
 │   ├── tempo.js           → interpretação de "10m", "1h30m" etc
 │   ├── lembretesStore.js  → salva lembretes em data/lembretes.json
 │   ├── agendador.js       → dispara e reagenda lembretes (sobrevive a restarts)
-│   └── servidorStore.js   → salva config de canais/anúncios em data/servidores.json
-├── data/
-│   ├── lembretes.json   (criado automaticamente)
-│   └── servidores.json  (criado automaticamente)
-├── index.js              → arquivo principal, liga o bot
+│   ├── servidorStore.js   → salva config de canais/anúncios em data/servidores.json
+│   ├── ui.js              → botões, menus de seleção e busca aproximada (Levenshtein)
+│   └── codexData.js       → dados de todas as páginas do Livro da Lua
+├── data/                  → lembretes.json e servidores.json (criados automaticamente)
+├── index.js              → arquivo principal, liga o bot (slash + prefixo $)
 ├── deploy-commands.js    → registra os comandos slash no Discord
 ├── .env.example
 └── package.json
@@ -72,13 +72,42 @@ Se tudo estiver certo, o terminal vai mostrar:
 
 ## 🎲 Comandos disponíveis
 
+> ⚠️ `/configurar`, `/anuncio` e `/aviso` exigem permissão de **Gerir Servidor**. `/limpar` exige **Gerenciar Mensagens** e `/lentidao` exige **Gerenciar Canais**.
+
+### 🎲 Diversão
 | Comando | Descrição |
 |---|---|
 | `/dado notacao:1d20` | Rola dados no formato NdM (`2d6+3`, `4d8-1`...) |
-| `/roleta opcoes:pizza, sushi, hambúrguer` | Sorteia uma opção entre as listadas |
-| `/lembrete criar tempo:10m mensagem:"beber água"` | Cria um lembrete |
+| `/moeda` | Cara ou coroa, com botão para jogar de novo |
+| `/roleta opcoes:pizza, sushi` | Sorteia uma opção entre as listadas |
+| `/8ball pergunta:...` | A bola mágica responde com mistério (botão para repetir) |
+| `/ship usuario1:@a usuario2:@b` | Compatibilidade amorosa entre dois membros (barra) |
+| `/guerra` | Mini guerra de cartas: você vs bot, melhor de 3 (botões) |
+| `/roleta_russa` | Roleta russa de 6 câmaras |
+
+### 💞 Social
+| Comando | Descrição |
+|---|---|
+| `/abraco usuario:@alguem` | Envia um abraço carinhoso |
+| `/cartasecreta usuario:@a mensagem:...` | Entrega uma carta misteriosa no privado |
+| `/social usuario:@alguem` | Cartão de perfil com botões (avatar/abraçar) |
+
+### 🛠️ Utilidades
+| Comando | Descrição |
+|---|---|
+| `/ping` | Responde Pong! |
+| `/avatar usuario:@alguem` | Mostra o avatar em tamanho grande (link) |
+| `/membros` | Conta membros, bots e humanos |
+| `/status` | Latência da API, servidores e usuários |
+| `/votar pergunta:... opcoes:a, b, c` | Enquete com botões de voto |
+| `/mila` | Quem é a Falta Lua |
+| `/lembrete criar tempo:10m mensagem:"..."` | Cria um lembrete |
 | `/lembrete listar` | Lista seus lembretes ativos |
 | `/lembrete cancelar id:abc123` | Cancela um lembrete pelo ID |
+
+### 📚 Organização
+| Comando | Descrição |
+|---|---|
 | `/configurar ver` | Mostra a configuração atual de canais e anúncios |
 | `/configurar permitir canal:#xxx` | Define um canal onde a bot pode falar |
 | `/configurar proibir canal:#xxx` | Bloqueia a bot de falar num canal |
@@ -87,9 +116,28 @@ Se tudo estiver certo, o terminal vai mostrar:
 | `/configurar anuncio tipo:evento canal:#xxx` | Define o canal de um tipo de anúncio |
 | `/configurar limparanuncio tipo:evento` | Remove o canal de um tipo de anúncio |
 | `/anuncio tipo:evento mensagem:"..." titulo:"..." mencionar:true` | Envia anúncio classificado no canal do tipo |
-| `/organizar` | Mostra o painel de organização do servidor |
+| `/organizar` | Painel de organização do servidor |
+| `/codex comando:dado` | 📖 O Livro da Lua: todos os comandos, página a página |
 
-> ⚠️ `/configurar` e `/anuncio` exigem permissão de **Gerir Servidor**.
+### 🛡️ Administração
+| Comando | Descrição |
+|---|---|
+| `/limpar quantidade:10` | Apaga mensagens recentes (confirmação com botões) |
+| `/lentidao segundos:5` | Define o modo lento (slowmode) do canal |
+| `/aviso mensagem:...` | Atalho de aviso em destaque no canal atual |
+| `/seguranca` | Dicas de segurança para servidor e bot |
+
+## 📖 O Livro da Lua (`/codex`)
+
+O comando `/codex` é um **grimório interativo** de todos os comandos da bot, com estética e funcionalidade de livro:
+
+- 📄 Cada comando é uma página (capa + 25 páginas).
+- ⏮️ ◀️ ▶️ ⏭️ **Botões** para folhear (primeira, anterior, próxima, última).
+- ⤵️ **Menu de seleção** para "pular" direto a um comando (escolha pelo nome).
+- 🔎 **Busca aproximada**: `/codex comando:roleta` ou `$codex roleta` — o bot acha o nome mais parecido (Levenshtein) mesmo com erro de digitação.
+- O livro some os botões após 5 minutos de inatividade.
+
+Também existe `$codex`, `$livro` e `$comandos` por prefixo, com a mesma navegação.
 
 ## 💬 Comandos por prefixo `$`
 

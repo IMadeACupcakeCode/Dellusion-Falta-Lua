@@ -4,6 +4,7 @@ const { adicionarLembrete, carregarLembretes, removerLembrete } = require('./lem
 const { agendarLembrete } = require('./agendador');
 const { parseTempo, formatarDuracao } = require('./tempo');
 const crypto = require('crypto');
+const codex = require('../commands/codex');
 
 const PREFIXO = '$';
 
@@ -94,6 +95,45 @@ async function handlePrefix(message, client) {
   // ── $ping ──
   if (comando === 'ping') {
     return responder(message, criarEmbed({ titulo: 'Pong!', descricao: 'Pong! ✧', cor: THEME.corPrincipal }));
+  }
+
+  // ── $codex / $livro ── (livro de comandos com busca aproximada)
+  if (comando === 'codex' || comando === 'livro' || comando === 'comandos') {
+    const termo = args.join(' ').trim();
+    let pagina = 0;
+    if (termo) {
+      const achado = codex.buscar(termo);
+      if (achado) {
+        pagina = codex.TOTAL - (codex.TOTAL - (require('../utils/codexData').COMANDOS.indexOf(achado) + 1));
+      } else {
+        return responder(
+          message,
+          criarEmbed({ titulo: 'Comando não encontrado', descricao: `Nada parecido com \`${termo}\`. Tente \`$codex\` e use o menu.`, cor: 0xE67E80 }),
+          true
+        );
+      }
+    }
+    const resposta = await message.reply({
+      embeds: [codex.renderizarPagina(pagina)],
+      components: codex.componentes(pagina),
+      fetchReply: true,
+    });
+    const coletor = resposta.createMessageComponentCollector({ time: 5 * 60 * 1000, filter: () => true });
+    coletor.on('collect', async (i) => {
+      const id = i.customId;
+      if (id === 'codex_first') pagina = 0;
+      else if (id === 'codex_prev') pagina = Math.max(0, pagina - 1);
+      else if (id === 'codex_next') pagina = Math.min(codex.TOTAL, pagina + 1);
+      else if (id === 'codex_last') pagina = codex.TOTAL;
+      else if (id === 'codex_jump') pagina = parseInt(i.values[0], 10);
+      await i.update({ embeds: [codex.renderizarPagina(pagina)], components: codex.componentes(pagina) });
+    });
+    coletor.on('end', async () => {
+      try {
+        await resposta.edit({ components: [] });
+      } catch {}
+    });
+    return;
   }
 
   // ── $dado NdM ──

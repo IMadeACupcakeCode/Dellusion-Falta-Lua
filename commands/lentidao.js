@@ -1,0 +1,26 @@
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { criarEmbed, THEME } = require('../utils/theme');
+
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName('lentidao')
+    .setDescription('🐌 Define o modo lento (slowmode) do canal')
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels)
+    .addIntegerOption((op) =>
+      op.setName('segundos').setDescription('Intervalo em segundos (0 para desativar, máx 21600)').setRequired(true).setMinValue(0).setMaxValue(21600)
+    ),
+  async execute(interaction) {
+    const seg = interaction.options.getInteger('segundos');
+    try {
+      await interaction.channel.setRateLimitPerUser(seg);
+      const embed = criarEmbed({
+        titulo: '🐌 Modo lento ajustado',
+        descricao: seg === 0 ? 'Modo lento desativado.' : `Agora as mensagens precisam de **${seg}s** de intervalo.`,
+        cor: THEME.corSucesso,
+      });
+      await interaction.reply({ embeds: [embed] });
+    } catch (erro) {
+      await interaction.reply({ embeds: [criarEmbed({ titulo: 'Erro', descricao: erro.message, cor: 0xE67E80 })], ephemeral: true });
+    }
+  },
+};
