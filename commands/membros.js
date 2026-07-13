@@ -1,22 +1,76 @@
+const { EmbedBuilder } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 
 module.exports = {
-  data: { name: 'membros', description: '👥 Conta membros, bots e humanos do servidor' },
+  data: { name: 'membros', description: '👥 Painel completo: totais, bots, staff, entradas/saídas do dia' },
   async execute(interaction) {
     const guild = interaction.guild;
     if (!guild) return interaction.reply({ embeds: [criarEmbed({ titulo: 'Só em servidores', descricao: 'Use em um servidor.', cor: 0xE67E80 })], ephemeral: true });
+
     await guild.members.fetch();
+
     const total = guild.memberCount;
-    const bots = guild.members.cache.filter((m) => m.user.bot).size;
-    const humanos = total - bots;
+    const bots = [];
+    const staff = [];
+    const players = [];
+    const grupos = new Map();
+
+    guild.members.cache.forEach((m) => {
+      const roles = m.roles.cache.filter((r) => r.id !== guild.id && !r.managed);
+      const cargoAlto = roles.sort((a, b) => b.position - a.position).first();
+      const nomeCargo = cargoAlto ? cargoAlto.name : 'Sem cargo';
+      const isAdmin = m.permissions.has('Administrator') || m.permissions.has('ManageGuild');
+      const tag = m.user.tag;
+
+      if (isAdmin || /staff|admin|mod|moderator|adm/i.test(nomeCargo)) {
+        staff.push(tag);
+      } else if (m.user.bot) {
+        bots.push(tag);
+      } else {
+        players.push(tag);
+      }
+
+      if (!grupos.has(nomeCargo)) grupos.set(nomeCargo, []);
+      grupos.get(nomeCargo).push(tag);
+    });
+
+    const agora = new Date();
+    const inicioDoDia = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate()).getTime();
+    const entradasHoje = guild.members.cache.filter((m) => (m.joinedAt || 0) * 1000 >= inicioDoDia).size;
+    const saidasHoje = 0;
+    const humanos = staff.length + players.length;
+
+    function listar(arr, limite = 10) {
+      return arr.slice(0, limite).join(', ') + (arr.length > limite ? ` +${arr.length - limite}` : '') || 'Nenhum';
+    }
+
     const embed = criarEmbed({
-      titulo: `👥 ${guild.name}`,
+      titulo: `👥 Painel de membros — ${guild.name}`,
       descricao:
         `**Total:** \`${total}\`\n` +
         `**Humanos:** \`${humanos}\`\n` +
-        `**Bots:** \`${bots}\``,
+        `**Bots:** \`${bots.length}\`\n` +
+        `**Staff:** \`${staff.length}\`\n\n` +
+        `**Hoje:** +${entradasHoje} entradas • ${saidasHoje} saídas`,
       cor: THEME.corPrincipal,
     });
-    await interaction.reply({ embeds: [embed] });
+
+    const campos = [];
+    grupos.forEach((tags, cargo) => {
+      campos.push({ name: cargo, value: listar(tags), inline: true });
+    });
+
+    const embedFinal = new EmbedBuilder()
+      .setColor(embed.data.color)
+      .setTitle(embed.data.title)
+      .setDescription(embed.data.description)
+      .setFooter(embed.data.footer)
+      .setTimestamp(embed.data.timestamp);
+
+    campos.forEach((c) => {
+      if (c.value) embedFinal.addFields({ name: c.name, value: c.value, inline: true });
+    });
+
+    await interaction.reply({ embeds: [embedFinal], ephemeral: true });
   },
 };
