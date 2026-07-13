@@ -3,6 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const { criarEmbed, THEME } = require('../utils/theme');
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 // Guerra: comando de batalha um-contra-outro por reação (turnos).
 // Implementação com pool de ataques (100 ataques + ~20 especiais), pickups
 // de "armas" (Mudae-like), aceitação de desafio e animações por edição de embed.
@@ -100,10 +102,13 @@ module.exports = {
     const chal = criarEmbed({ titulo: '⚔️ Desafio de Guerra', descricao: `${interaction.user} desafiou ${opponent} para uma batalha!\n${opponent}, reaja com ✅ para aceitar ou ❌ para recusar.`, cor: THEME.corPrincipal });
     const msg = await interaction.reply({ embeds: [chal], fetchReply: true });
 
+    const filter = (reaction, user) => ['✅', '❌'].includes(reaction.emoji.name) && user.id === opponent.id;
+    const reactionPromise = msg.awaitReactions({ filter, max: 1, time: 60000, errors: ['time'] });
+
     await msg.react('✅');
     await msg.react('❌');
 
-    // Check if opponent already reacted (fast reaction before collector started)
+    // Check if opponent already reacted before or during reaction addition
     let accepted = false;
     try {
       const acceptReaction = msg.reactions.cache.get('✅');
@@ -124,9 +129,8 @@ module.exports = {
     }
 
     if (!accepted) {
-      const filter = (reaction, user) => ['✅', '❌'].includes(reaction.emoji.name) && user.id === opponent.id;
       try {
-        const collected = await msg.awaitReactions({ filter, max: 1, time: 60000, errors: ['time'] });
+        const collected = await reactionPromise;
         const choice = collected.first().emoji.name;
         if (choice === '❌') {
           await msg.edit({ embeds: [criarEmbed({ titulo: 'Desafio recusado', descricao: `${opponent} recusou o desafio.`, cor: 0xE67E80 })], components: [] });
