@@ -19,16 +19,46 @@ module.exports = {
     const coletor = resposta.createMessageComponentCollector({ time: 30000, filter: (i) => i.user.id === interaction.user.id });
     coletor.on('collect', async (i) => {
       if (i.customId === 'limpar_nao') {
-        return i.update({ embeds: [criarEmbed({ titulo: 'Cancelado', descricao: 'Nada foi apagado.', cor: THEME.corSucesso })], components: [] });
+        try {
+          await i.update({ embeds: [criarEmbed({ titulo: 'Cancelado', descricao: 'Nada foi apagado.', cor: THEME.corSucesso })], components: [] });
+        } catch {
+          // Ignora se a mensagem já foi deletada
+        }
+        return;
       }
       try {
         const apagadas = await interaction.channel.bulkDelete(qtd, true);
+        const motivos = [];
+        if (apagadas.size < qtd) {
+          motivos.push('Algumas mensagens não puderam ser apagadas (muito antigas, do sistema ou já removidas).');
+        }
+        const descricao = [
+          `Apaguei **${apagadas.size}** de **${qtd}** mensagens.`,
+          ...(motivos.length ? [`\n⚠️ ${motivos.join(' ')}`] : []),
+        ].join('\n');
         await i.update({
-          embeds: [criarEmbed({ titulo: '🧹 Limpeza feita', descricao: `Apaguei ${apagadas.size} mensagens.`, cor: THEME.corSucesso })],
+          embeds: [criarEmbed({ titulo: '🧹 Limpeza feita', descricao, cor: THEME.corSucesso })],
           components: [],
         });
       } catch (erro) {
-        await i.update({ embeds: [criarEmbed({ titulo: 'Erro', descricao: erro.message, cor: 0xE67E80 })], components: [] });
+        try {
+          const texto = erro && erro.code === 10008
+            ? 'A mensagem de confirmação sumiu. Tente novamente.'
+            : erro.message;
+          await i.update({ embeds: [criarEmbed({ titulo: 'Erro', descricao: texto, cor: 0xE67E80 })], components: [] });
+        } catch {
+          // Silêncio — não conseguimos nem responder o erro
+        }
+      }
+    });
+    coletor.on('end', async () => {
+      try {
+        await resposta.edit({ components: [] });
+      } catch (erro) {
+        // Ignora "Unknown Message" — geralmente já foi apagada
+        if (!(erro && erro.code === 10008)) {
+          console.error('Erro ao limpar componentes do limpar:', erro);
+        }
       }
     });
   },
