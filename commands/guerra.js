@@ -83,87 +83,89 @@ function applyStartOfTurnEffects(player) {
   return { text: text.trim(), skip };
 }
 
+// Carrega as imagens reais da pasta static/guerra e amarra cada uma a um
+// "personagem" temático, para que cada ataque/especial apareça com a figura certa.
+const IMAGENS_DIR = path.resolve(__dirname, '..', 'static', 'guerra');
+const IMAGENS_DISPONIVEIS = fs.existsSync(IMAGENS_DIR)
+  ? fs.readdirSync(IMAGENS_DIR).filter((f) => /\.(png|jpe?g)$/i.test(f))
+  : [];
+const IMG_MANUAL = IMAGENS_DISPONIVEIS.length ? path.join(IMAGENS_DIR, IMAGENS_DISPONIVEIS[0]) : null;
+
+function acharImagem(token) {
+  const found = IMAGENS_DISPONIVEIS.find((f) => f.toLowerCase().includes(token.toLowerCase()));
+  return found ? path.join(IMAGENS_DIR, found) : null;
+}
+
+// Cada tema liga um nome de ataque coerente à imagem correspondente da pasta.
+const TEMAS = [
+  { token: 'spongebob', nome: '🧽 SpongeBob: Breath In Boi', tipo: 'ragememe', effect: 'burn', cost: 2, dmgMin: 10, dmgMax: 22, fraco: 'brmeme' },
+  { token: 'chernobyl', nome: '☢️ Chernobyl: Reator Solto', tipo: 'ragememe', effect: 'burn', cost: 3, dmgMin: 14, dmgMax: 28, fraco: 'brmeme' },
+  { token: 'dio', nome: '👑 Dio Brando: WRYYYYY', tipo: 'brmeme', effect: 'drain', cost: 3, dmgMin: 16, dmgMax: 30, fraco: 'normiememe' },
+  { token: 'frodo', nome: '💍 Frodo: Caminho de Mordor', tipo: 'normiememe', effect: 'stun', cost: 2, dmgMin: 8, dmgMax: 20, fraco: 'dankmeme' },
+  { token: 'squash', nome: '👟 Squash: Pisada Esmagadora', tipo: 'brmeme', effect: 'drain', cost: 1, dmgMin: 6, dmgMax: 16, fraco: 'normiememe' },
+  { token: 'mickey', nome: '🐭 Mickey: Clubhouse Caótico', tipo: 'normiememe', effect: 'stun', cost: 2, dmgMin: 9, dmgMax: 19, fraco: 'dankmeme' },
+  { token: 'perry', nome: '🦫 Perry: Platypus Surpresa', tipo: 'dankmeme', effect: 'armor', cost: 2, dmgMin: 7, dmgMax: 17, fraco: 'ragememe' },
+  { token: 'shrek', nome: '🟢 Shrek: Swamp Smash', tipo: 'brmeme', effect: 'drain', cost: 2, dmgMin: 10, dmgMax: 21, fraco: 'normiememe' },
+  { token: 'anakin', nome: '⚔️ Anakin: Alto Ground', tipo: 'ragememe', effect: 'burn', cost: 3, dmgMin: 15, dmgMax: 29, fraco: 'brmeme' },
+  { token: 'tai lung', nome: '🐼 Tai Lung: Golpe do Dragão', tipo: 'brmeme', effect: 'drain', cost: 3, dmgMin: 14, dmgMax: 27, fraco: 'normiememe' },
+  { token: 'titanic', nome: '🚢 Rose: Não Solta a Mão', tipo: 'normiememe', effect: 'stun', cost: 1, dmgMin: 6, dmgMax: 15, fraco: 'dankmeme' },
+  { token: 'grievous', nome: '🤖 Grievous: O Negociador', tipo: 'dankmeme', effect: 'armor', cost: 3, dmgMin: 13, dmgMax: 26, fraco: 'ragememe' },
+  { token: 'brain', nome: '🧠 Brain: Vou Dormir?', tipo: 'normiememe', effect: 'stun', cost: 1, dmgMin: 5, dmgMax: 14, fraco: 'dankmeme' },
+  { token: 'streetlight', nome: '💡 Poste: Leitura Noturna', tipo: 'dankmeme', effect: 'armor', cost: 2, dmgMin: 8, dmgMax: 18, fraco: 'ragememe' },
+  { token: 'spider', nome: '🕷️ Spider-Man: Peter Parker', tipo: 'dankmeme', effect: 'armor', cost: 2, dmgMin: 9, dmgMax: 19, fraco: 'ragememe' },
+  { token: 'taken', nome: '🔍 Taken: Eu Vou Te Achar', tipo: 'ragememe', effect: 'burn', cost: 3, dmgMin: 15, dmgMax: 28, fraco: 'brmeme' },
+];
+
 function buildAttackPool() {
-  const pool = [];
-  const types = TIPOS_MEME;
-  const names = {
-    ragememe: [
-      'Rage Face Smash', 'Triggered Keyboard', 'Calma, Copa do Mundo!', 'Furação TikTok', 'Grito de Meme',
-      'Crash de Tablet', 'Fúria do Cereal', 'Meus Dados!', 'Churrasco Furioso', 'Estourada de Pipoca',
-      'Furioso no Zap', 'Explosão de Caps Lock', 'Trem Brasileiro', 'Chave de Fenda Grace', 'Seu Wifi',
-      'Gente Fofinha', 'Emoji Louco', 'NinguémMandou', 'Bugou o Sistema', 'Rage Quit Dono',
-    ],
-    dankmeme: [
-      'Meme do Dedinho', 'Pasta de Memes', 'Vibe do Pepe', 'Cabelo de Bolha', 'Café com Jojo',
-      'Meme do Porquinho', 'Telefone da Mãe', 'No Chill', 'Realidade Cancelada', 'Meme Clássico',
-      'Leg Day do Bot', 'Tá Tranquilo', 'Coringa do Discord', 'Biscoito da Sorte', 'Dandinho',
-      'Tornar GIF', 'Não Foi Bom', 'Rank S Memes', 'Sem Contexto', 'Meme do Baile',
-    ],
-    brmeme: [
-      'Senta Pai', 'É Hoje que Tem', 'Fora Temer', 'Chama no Pix', 'Tô de Corneta',
-      'Tira a Mão do Bolinho', 'É Nóis', 'Simsalabim do Meme', 'Vai Desce', 'Pagode de Batalha',
-      'Booyah do Zap', 'Meme do Churras', 'Cade meu Troco', 'Pé de Vento', 'Senta Tchutchuca',
-      'Bode no Topo', 'Senta Que Lage', 'Guerra de Katana', 'Me Chama no PV', 'Bomba de Risada',
-    ],
-    normiememe: [
-      'Senta Pai Normal', 'É Hoje que Tem Normal', 'Fora Temer Normal', 'Chama no Pix Normal', 'Tô de Corneta Normal',
-      'Tira a Mão do Bolinho Normal', 'É Nóis Normal', 'Simsalabim do Meme Normal', 'Vai Desce Normal', 'Pagode de Batalha Normal',
-      'Booyah do Zap Normal', 'Meme do Churras Normal', 'Cade meu Troco Normal', 'Pé de Vento Normal', 'Senta Tchutchuca Normal',
-      'Bode no Topo Normal', 'Senta Que Lage Normal', 'Guerra de Katana Normal', 'Me Chama no PV Normal', 'Bomba de Risada Normal',
-    ],
-  };
-  const effectMap = { ragememe: 'burn', dankmeme: 'armor', brmeme: 'drain', normiememe: 'stun' };
-  const imagesDir = path.resolve(__dirname, '..', 'static', 'guerra');
-  const available = fs.existsSync(imagesDir) ? fs.readdirSync(imagesDir).filter((f) => /\.(png|jpe?g)$/i.test(f)) : [];
-  for (let i = 1; i <= 80; i++) {
-    const type = types[i % types.length];
-    const namesList = names[type];
-    const attackName = namesList[(i - 1) % namesList.length];
-    const filename = `atk_${type}_${i}.png`;
-    const chosen = available.length > 0 ? available[(i - 1) % available.length] : filename;
-    const weakAgainst = type === 'dankmeme' ? 'ragememe' : type === 'ragememe' ? 'brmeme' : type === 'brmeme' ? 'normiememe' : 'dankmeme';
-    const effect = effectMap[type];
-    pool.push({
-      id: `atk${i}`,
-      name: attackName,
-      type,
-      typeLabel: getTypeLabel(type),
-      cost: rand(1, 3),
-      dmgMin: rand(6, 12),
-      dmgMax: rand(12, 28),
-      image: `static/guerra/${chosen}`,
-      weakAgainst,
-      weakLabel: getTypeLabel(weakAgainst),
-      effect,
-      effectLabel: getEffectLabel(effect),
-    });
-  }
-  return pool;
+  return TEMAS.map((t, i) => {
+    const imgPath = acharImagem(t.token);
+    return {
+      id: `atk${i + 1}`,
+      name: t.nome,
+      type: t.tipo,
+      typeLabel: getTypeLabel(t.tipo),
+      cost: t.cost,
+      dmgMin: t.dmgMin,
+      dmgMax: t.dmgMax,
+      image: imgPath ? `static/guerra/${path.basename(imgPath)}` : null,
+      imgPath: imgPath || null,
+      weakAgainst: t.fraco,
+      weakLabel: getTypeLabel(t.fraco),
+      effect: t.effect,
+      effectLabel: getEffectLabel(t.effect),
+    };
+  });
 }
 
 function buildSpecials() {
-  const specials = [];
-  const imagesDir = path.resolve(__dirname, '..', 'static', 'guerra');
-  const available = fs.existsSync(imagesDir) ? fs.readdirSync(imagesDir).filter((f) => /\.(png|jpe?g)$/i.test(f)) : [];
-  for (let i = 1; i <= 20; i++) {
-    const filename = `special_${i}.png`;
-    const chosen = available.length > 0 ? available[(100 + i - 1) % available.length] : filename;
-    specials.push({
-      id: `sp${i}`,
-      name: `Especial ${i}`,
+  const efeitos = ['heavy', 'multi', 'heal'];
+  return TEMAS.map((t, i) => {
+    const imgPath = acharImagem(t.token);
+    return {
+      id: `sp${i + 1}`,
+      name: `💥 Especial: ${t.nome.replace(/^[^a-zA-ZÀ-ÿ]+/, '')}`,
       cost: 3,
-      dmgMin: rand(18, 28),
-      dmgMax: rand(30, 60),
-      image: `static/guerra/${chosen}`,
+      dmgMin: 18,
+      dmgMax: 40,
+      image: imgPath ? `static/guerra/${path.basename(imgPath)}` : null,
+      imgPath: imgPath || null,
       special: true,
-      effect: i % 4 === 0 ? 'heal' : i % 3 === 0 ? 'multi' : 'heavy',
-    });
-  }
-  return specials;
+      effect: efeitos[i % efeitos.length],
+    };
+  });
 }
 
 const POOL = buildAttackPool();
 const SPECIALS = buildSpecials();
+
+// Anexa a imagem de um ataque/especial ao embed e devolve os arquivos para o Discord.
+function anexarImagem(embed, atk) {
+  if (!atk || !atk.imgPath) return [];
+  const ext = path.extname(atk.imgPath);
+  const nome = `guerra_${Date.now()}_${rand(1000, 9999)}${ext}`;
+  embed.setImage(`attachment://${nome}`);
+  return [new AttachmentBuilder(atk.imgPath).setName(nome)];
+}
 
 function sampleOptions(pool, count = 4) {
   const out = [];
@@ -222,6 +224,29 @@ function placarEmbed() {
   });
 }
 
+// Responde o manual/placar já anexando uma imagem da pasta para dar cara ao comando.
+function manualPayload() {
+  const embed = manualEmbed();
+  if (IMG_MANUAL) {
+    const ext = path.extname(IMG_MANUAL);
+    const nome = `manual${ext}`;
+    embed.setImage(`attachment://${nome}`);
+    return { embeds: [embed], files: [new AttachmentBuilder(IMG_MANUAL).setName(nome)] };
+  }
+  return { embeds: [embed] };
+}
+
+function placarPayload() {
+  const embed = placarEmbed();
+  if (IMG_MANUAL) {
+    const ext = path.extname(IMG_MANUAL);
+    const nome = `placar${ext}`;
+    embed.setImage(`attachment://${nome}`);
+    return { embeds: [embed], files: [new AttachmentBuilder(IMG_MANUAL).setName(nome)] };
+  }
+  return { embeds: [embed] };
+}
+
 module.exports = {
   data: { name: 'guerra', description: '⚔️ Inicia uma batalha contra outro usuário (desafie usando @)' },
   async execute(interaction) {
@@ -231,11 +256,11 @@ module.exports = {
 
     // Placar
     if (args === 'placar' || args === 'ranking') {
-      return interaction.reply({ embeds: [placarEmbed()] });
+      return interaction.reply(placarPayload());
     }
     // Manual explícito
     if (args === 'manual' || args === 'ajuda' || args === 'help') {
-      return interaction.reply({ embeds: [manualEmbed()] });
+      return interaction.reply(manualPayload());
     }
 
     // Resolução do oponente: prefere a menção da própria mensagem
@@ -250,7 +275,7 @@ module.exports = {
 
     // Sem oponente válido (ou bot que não seja a própria) -> mostra o manual
     if (!opponent || (opponent.bot && opponent.id !== interaction.client.user.id)) {
-      return interaction.reply({ embeds: [manualEmbed()] });
+      return interaction.reply(manualPayload());
     }
 
     const isBotOponente = opponent.id === interaction.client.user.id;
@@ -443,7 +468,9 @@ module.exports = {
               extra = '\n🏋️ Golpe pesado!';
             }
             target.hp = Math.max(0, target.hp - dmg);
-            await battleMsg.edit({ embeds: [renderStatusEmbed(`${actor.user.username} usou Especial! (-3 pt)`), criarEmbed({ titulo: `${actor.user.username} usou ${sp.name}!`, descricao: `Causou ${dmg} de dano.${extra}`, cor: 0xFF7BAC })] });
+            const spEmbed = criarEmbed({ titulo: `${actor.user.username} usou ${sp.name}!`, descricao: `Causou ${dmg} de dano.${extra}`, cor: 0xFF7BAC });
+            const spFiles = anexarImagem(spEmbed, sp);
+            await battleMsg.edit({ embeds: [renderStatusEmbed(`${actor.user.username} usou Especial! (-3 pt)`), spEmbed], files: spFiles });
             await sleep(ACTION_DELAY);
           }
         } else if (choice && EMOJI_NUM.includes(choice)) {
@@ -482,7 +509,9 @@ module.exports = {
               statusText.push('🛡️ Escudo aplicado!');
             }
             const statusLine = statusText.length ? `\n${statusText.join('\n')}` : '';
-            await battleMsg.edit({ embeds: [renderStatusEmbed(`${actor.user.username} atacou! (-${atk.cost} pt)`), criarEmbed({ titulo: `${actor.user.username} usou ${atk.name}!`, descricao: `${actor.user} → ${target.user}\nDano: \`${dmg}\`${statusLine}`, cor: 0xF5A962 })] });
+            const atkEmbed = criarEmbed({ titulo: `${actor.user.username} usou ${atk.name}!`, descricao: `${actor.user} → ${target.user}\nDano: \`${dmg}\`${statusLine}`, cor: 0xF5A962 });
+            const atkFiles = anexarImagem(atkEmbed, atk);
+            await battleMsg.edit({ embeds: [renderStatusEmbed(`${actor.user.username} atacou! (-${atk.cost} pt)`), atkEmbed], files: atkFiles });
             await sleep(ACTION_DELAY);
           }
         } else {
