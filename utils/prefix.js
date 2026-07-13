@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { criarEmbed, THEME } = require('./theme');
+const { botao } = require('./ui');
 const { ActionRowBuilder, ButtonStyle, StringSelectMenuBuilder } = require('discord.js');
 const { verificarCanal, obterConfig, salvarConfig, TIPOS_ANUNCIO } = require('./servidorStore');
 const { adicionarLembrete, carregarLembretes, removerLembrete, filtrarLembretes } = require('./lembretesStore');
