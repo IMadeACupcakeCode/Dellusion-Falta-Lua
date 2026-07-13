@@ -320,7 +320,7 @@ module.exports = {
       return embed;
     };
 
-    let battleMsg = await interaction.editReply({ embeds: [renderStatusEmbed('Preparando batalha...'), renderActionEmbed(interaction.user, 'Aguardando início da batalha...')] });
+    let battleMsg = await interaction.editReply({ embeds: [renderStatusEmbed('Preparando batalha...'), renderActionEmbed(p1, 'Aguardando início da batalha...')] });
 
     const attackPool = POOL.slice();
 
