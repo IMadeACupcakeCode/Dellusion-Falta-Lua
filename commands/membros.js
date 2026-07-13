@@ -68,8 +68,7 @@ module.exports = {
       .setColor(embed.data.color)
       .setTitle(embed.data.title)
       .setDescription(embed.data.description)
-      .setFooter(embed.data.footer)
-      .setTimestamp(embed.data.timestamp);
+      .setFooter(embed.data.footer);
 
     campos.forEach((c) => {
       if (c.value) embedFinal.addFields({ name: c.name, value: c.value, inline: true });
