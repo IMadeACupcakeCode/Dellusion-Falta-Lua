@@ -11,16 +11,23 @@ if (!DISCORD_TOKEN) {
   process.exit(1);
 }
 
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildPresences,
-  ],
-  partials: [Partials.GuildMember],
-});
+// Build intents dynamically so privileged intents can be toggled via env.
+const intents = [
+  GatewayIntentBits.Guilds,
+  GatewayIntentBits.GuildMessages,
+  GatewayIntentBits.MessageContent,
+];
+
+// Privileged intents (GuildMembers, GuildPresences) require explicit enablement
+// in the Discord Developer Portal. Toggle them with ENABLE_PRIVILEGED_INTENTS=true
+if ((process.env.ENABLE_PRIVILEGED_INTENTS || '').toLowerCase() === 'true') {
+  intents.push(GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildPresences);
+}
+
+const partials = [];
+if (intents.includes(GatewayIntentBits.GuildMembers)) partials.push(Partials.GuildMember);
+
+const client = new Client({ intents, partials });
 
 client.once('ready', () => {
   console.log(`${THEME.iconeFooter} ${THEME.nome} está online como ${client.user.tag}`);
