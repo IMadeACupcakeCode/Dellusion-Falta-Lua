@@ -173,6 +173,7 @@ function criarInteracao(message, client, valores) {
     channel: message.channel,
     member: message.member,
     memberPermissions: message.memberPermissions,
+    client: client,
     options: opt,
     message: message,
     _guerraMention: valores.usuario || null,
