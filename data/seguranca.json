@@ -1,7 +1,7 @@
 {
   "1515590554480545844": {
-    "atualizadoEm": 1783947401187,
-    "total": 3,
+    "atualizadoEm": 1783955304981,
+    "total": 4,
     "membros": [
       {
         "id": "1499177291144761394",
@@ -29,6 +29,15 @@
         "criadoEm": 1533332872030,
         "entrouEm": 1783899951562,
         "cargoAlto": "━━━━━━୧🎹 ✦ Cargos Staff! ⊰ ━━━━━━"
+      },
+      {
+        "id": "435243867948843018",
+        "tag": "mey_saki",
+        "nome": "mey_saki",
+        "bot": false,
+        "criadoEm": 1523840624559,
+        "entrouEm": 1782067330257,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
       }
     ]
   }

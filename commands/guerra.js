@@ -1,4 +1,6 @@
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
+const fs = require('fs');
+const path = require('path');
 const { criarEmbed, THEME } = require('../utils/theme');
 
 // Guerra: comando de batalha um-contra-outro por reação (turnos).
@@ -17,9 +19,12 @@ function rand(min, max) {
 function buildAttackPool() {
   const pool = [];
   const types = ['dank', 'rage', 'brasileiro', 'classic'];
+  const imagesDir = path.resolve(__dirname, '..', 'static', 'guerra');
+  const available = fs.existsSync(imagesDir) ? fs.readdirSync(imagesDir).filter(f => /\.(png|jpe?g)$/i.test(f)) : [];
   for (let i = 1; i <= 100; i++) {
     const type = types[i % types.length];
     const filename = `atk_${type}_${i}.png`;
+    const chosen = (available.length > 0) ? available[(i - 1) % available.length] : filename;
     pool.push({
       id: `atk${i}`,
       name: `${type === 'dank' ? 'Dank' : type === 'rage' ? 'Rage' : type === 'brasileiro' ? 'Brasileiro' : 'Classic'} Strike ${i}`,
@@ -27,7 +32,7 @@ function buildAttackPool() {
       cost: rand(1, 3),
       dmgMin: rand(6, 12),
       dmgMax: rand(12, 28),
-      image: `static/guerra/${filename}`,
+      image: `static/guerra/${chosen}`,
       weakAgainst: type === 'dank' ? 'rage' : type === 'rage' ? 'brasileiro' : type === 'brasileiro' ? 'classic' : 'dank',
     });
   }
@@ -36,15 +41,18 @@ function buildAttackPool() {
 
 function buildSpecials() {
   const specials = [];
+  const imagesDir = path.resolve(__dirname, '..', 'static', 'guerra');
+  const available = fs.existsSync(imagesDir) ? fs.readdirSync(imagesDir).filter(f => /\.(png|jpe?g)$/i.test(f)) : [];
   for (let i = 1; i <= 20; i++) {
     const filename = `special_${i}.png`;
+    const chosen = (available.length > 0) ? available[(100 + i - 1) % available.length] : filename;
     specials.push({
       id: `sp${i}`,
       name: `Especial ${i}`,
       cost: 3,
       dmgMin: rand(18, 28),
       dmgMax: rand(30, 60),
-      image: `static/guerra/${filename}`,
+      image: `static/guerra/${chosen}`,
       special: true,
       effect: i % 4 === 0 ? 'heal' : i % 3 === 0 ? 'multi' : 'heavy',
     });
