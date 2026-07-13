@@ -2,6 +2,7 @@ const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 const { criarEmbed, THEME } = require('../utils/theme');
+const { registerChallenge } = require('../utils/guerraManager');
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -102,44 +103,26 @@ module.exports = {
     const chal = criarEmbed({ titulo: '⚔️ Desafio de Guerra', descricao: `${interaction.user} desafiou ${opponent} para uma batalha!\n${opponent}, reaja com ✅ para aceitar ou ❌ para recusar.`, cor: THEME.corPrincipal });
     const msg = await interaction.reply({ embeds: [chal], fetchReply: true });
 
-    const filter = (reaction, user) => ['✅', '❌'].includes(reaction.emoji.name) && user.id === opponent.id;
-    const reactionPromise = msg.awaitReactions({ filter, max: 1, time: 60000, errors: ['time'] });
-
     await msg.react('✅');
     await msg.react('❌');
+    await msg.fetch();
 
-    // Check if opponent already reacted before or during reaction addition
     let accepted = false;
     try {
-      const acceptReaction = msg.reactions.cache.get('✅');
-      if (acceptReaction) {
-        const users = await acceptReaction.users.fetch();
-        if (users.has(opponent.id)) accepted = true;
+      const result = await registerChallenge(msg, opponent.id, 60000);
+      if (result === '❌') {
+        await msg.edit({ embeds: [criarEmbed({ titulo: 'Desafio recusado', descricao: `${opponent} recusou o desafio.`, cor: 0xE67E80 })], components: [] });
+        return;
       }
-      const declineReaction = msg.reactions.cache.get('❌');
-      if (declineReaction && !accepted) {
-        const users2 = await declineReaction.users.fetch();
-        if (users2.has(opponent.id)) {
-          await msg.edit({ embeds: [criarEmbed({ titulo: 'Desafio recusado', descricao: `${opponent} recusou o desafio.`, cor: 0xE67E80 })], components: [] });
-          return;
-        }
-      }
+      accepted = result === '✅';
     } catch (e) {
-      // ignore fetch errors and fall back to collector
+      await msg.edit({ embeds: [criarEmbed({ titulo: 'Desafio expirado', descricao: 'Ninguém respondeu ao desafio.', cor: 0xE67E80 })] });
+      return;
     }
 
     if (!accepted) {
-      try {
-        const collected = await reactionPromise;
-        const choice = collected.first().emoji.name;
-        if (choice === '❌') {
-          await msg.edit({ embeds: [criarEmbed({ titulo: 'Desafio recusado', descricao: `${opponent} recusou o desafio.`, cor: 0xE67E80 })], components: [] });
-          return;
-        }
-      } catch (e) {
-        await msg.edit({ embeds: [criarEmbed({ titulo: 'Desafio expirado', descricao: 'Ninguém respondeu ao desafio.', cor: 0xE67E80 })] });
-        return;
-      }
+      await msg.edit({ embeds: [criarEmbed({ titulo: 'Desafio recusado', descricao: `${opponent} recusou o desafio.`, cor: 0xE67E80 })], components: [] });
+      return;
     }
 
     // Initialize combatants
