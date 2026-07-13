@@ -4,7 +4,11 @@ const { botao } = require('../utils/ui');
 const { parseTempo, formatarDuracao, formatarDataAbsoluta } = require('../utils/tempo');
 
 const EMOJIS = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣'];
-const DEFAULT_DURATION_MS = 10 * 60 * 1000; // 10 minutos
+const DEFAULT_DURATION_MS = 5 * 60 * 1000; // 5 minutos (padrão automático)
+
+function sleep(ms) {
+  return new Promise((res) => setTimeout(res, ms));
+}
 
 function formatOptionLines(opcoes, votos) {
   return opcoes
@@ -51,9 +55,14 @@ function parsePollInput(pergunta, opcoesRaw, duracaoRaw) {
 
   let durationMs = DEFAULT_DURATION_MS;
   if (duracaoRaw) {
-    const parsed = parseTempo(duracaoRaw);
-    if (!parsed) return { error: true };
-    durationMs = parsed;
+    const low = String(duracaoRaw).trim().toLowerCase();
+    if (low === 'nada' || low === 'nulo' || low === 'null') {
+      // explicit request to use default duration
+    } else {
+      const parsed = parseTempo(duracaoRaw);
+      if (!parsed) return { error: true };
+      durationMs = parsed;
+    }
   }
 
   return { opcoes, durationMs };
@@ -62,9 +71,51 @@ function parsePollInput(pergunta, opcoesRaw, duracaoRaw) {
 module.exports = {
   data: { name: 'votar', description: '🗳️ Cria uma enquete rápida com botões e tempo customizável' },
   async execute(interaction) {
-    const pergunta = interaction.options.getString('pergunta');
-    const opcoesRaw = interaction.options.getString('opcoes');
-    const duracaoRaw = interaction.options.getString('duracao');
+    let pergunta = interaction.options.getString('pergunta');
+    let opcoesRaw = interaction.options.getString('opcoes');
+    let duracaoRaw = interaction.options.getString('duracao');
+
+    // If user didn't pass args, try to parse the most recent embed the user posted
+    if ((!pergunta || !opcoesRaw) && interaction.channel) {
+      try {
+        const msgs = await interaction.channel.messages.fetch({ limit: 12 });
+        const last = msgs.find((m) => m.author && m.author.id === interaction.user.id && m.embeds && m.embeds.length);
+        if (last) {
+          const emb = last.embeds[0];
+          // prefer title as question, else first line of description
+          const contentParts = [];
+          if (emb.title) contentParts.push(String(emb.title));
+          if (emb.description) contentParts.push(String(emb.description));
+          if (emb.fields && emb.fields.length) contentParts.push(emb.fields.map((f) => f.value).join('\n'));
+          const text = contentParts.join('\n').trim();
+          const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+          if (!pergunta && lines[0]) pergunta = lines[0];
+          if (!opcoesRaw && lines.length >= 2) {
+            if (lines[1].includes(',')) {
+              opcoesRaw = lines[1];
+            } else if (lines.length > 2) {
+              // lines[1..n-1] are options, last line might be duration
+              const lastLine = lines[lines.length - 1];
+              const maybeDur = String(lastLine).trim();
+              const parsedDur = parseTempo(maybeDur);
+              if (parsedDur || ['nada', 'nulo', 'null'].includes(maybeDur.toLowerCase())) {
+                opcoesRaw = lines.slice(1, -1).join(', ');
+                duracaoRaw = duracaoRaw || maybeDur;
+              } else {
+                opcoesRaw = lines.slice(1).join(', ');
+              }
+            } else {
+              opcoesRaw = lines[1];
+            }
+          }
+          if (!duracaoRaw && lines.length >= 3) {
+            duracaoRaw = lines[2];
+          }
+        }
+      } catch (err) {
+        // ignore fetch errors
+      }
+    }
 
     const parsed = parsePollInput(pergunta, opcoesRaw, duracaoRaw);
     if (!parsed || parsed.error) {
@@ -111,7 +162,45 @@ module.exports = {
 
     collector.on('end', async () => {
       const closedRow = buildButtons(opcoes, true);
-      const finalEmbed = buildEmbed(pergunta, opcoes, votos, interaction.user.username, endsAt, 0, true);
+
+      // Animated counting sequence
+      const frames = ['🔎 Contando votos', '🔎 Contando votos .', '🔎 Contando votos ..', '🔎 Contando votos ...'];
+      for (const f of frames) {
+        try {
+          const anim = criarEmbed({
+            titulo: `🗳️ ${pergunta}`,
+            descricao: `${formatOptionLines(opcoes, votos)}\n\n**${f}**`,
+            cor: THEME.corPrincipal,
+            rodape: `Enquete por ${interaction.user.username}`,
+          });
+          await resposta.edit({ embeds: [anim], components: [closedRow] });
+          // small pause for animation
+          // eslint-disable-next-line no-await-in-loop
+          await sleep(700);
+        } catch {}
+      }
+
+      // Determine winner
+      const counts = Object.values(votos);
+      const max = counts.length ? Math.max(...counts) : 0;
+      const winners = opcoes.filter((o) => votos[o] === max);
+      let resultText;
+      if (winners.length === 1) {
+        const idx = opcoes.indexOf(winners[0]);
+        resultText = `${EMOJIS[idx]} **${winners[0]}** venceu com \`${max}\` voto(s)!`;
+      } else if (winners.length > 1) {
+        resultText = `Empate entre ${winners.map((w) => `**${w}**`).join(', ')} com \`${max}\` votos`;
+      } else {
+        resultText = 'Nenhum voto registrado.';
+      }
+
+      const finalEmbed = criarEmbed({
+        titulo: `Resultado — ${winners.length === 1 ? winners[0] : 'Resultado'}`,
+        descricao: `${formatOptionLines(opcoes, votos)}\n\n**${resultText}**\n\nFraude Concluída 🎉`,
+        cor: 0x8B80FF,
+        rodape: `Enquete por ${interaction.user.username}`,
+      });
+
       try {
         await resposta.edit({ embeds: [finalEmbed], components: [closedRow] });
       } catch {}
