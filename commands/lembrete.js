@@ -56,16 +56,16 @@ async function abrirModalCriar(interaction, client) {
 
   const quandoInput = new TextInputBuilder()
     .setCustomId('lembrete_quando')
-    .setLabel('📅 Quando? (ex: 10m, 1h30m, 25/12/2026 15:30, amanhã 14:00)')
+    .setLabel('📅 Quando? (hora + data ou tempo relativo)')
     .setStyle(TextInputStyle.Short)
-    .setPlaceholder('10m • 1h30m • 25/12/2026 15:30 • amanhã 9:00')
+    .setPlaceholder('Ex: 2pm 21/08/2026 • 13:40 02/12 • 1h30m • 10m • amanhã 14:00')
     .setRequired(true);
 
   const mensagemInput = new TextInputBuilder()
     .setCustomId('lembrete_mensagem')
-    .setLabel('💬 Mensagem do lembrete')
+    .setLabel('💬 O que lembrar?')
     .setStyle(TextInputStyle.Paragraph)
-    .setPlaceholder('O que você quer lembrar?')
+    .setPlaceholder('Escreva aqui o lembrete...')
     .setMaxLength(500)
     .setRequired(true);
 
@@ -76,7 +76,6 @@ async function abrirModalCriar(interaction, client) {
 
   await interaction.showModal(modal);
 
-  // Aguarda o submit do modal
   const filtro = (i) => i.customId === 'lembrete_modal' && i.user.id === interaction.user.id;
   try {
     const submitted = await interaction.awaitModalSubmit({ filter: filtro, time: 5 * 60 * 1000 });
@@ -87,11 +86,12 @@ async function abrirModalCriar(interaction, client) {
 
     if (!ms) {
       const embedErro = criarEmbed({
-        titulo: 'Tempo inválido',
+        titulo: '⏰ Tempo inválido',
         descricao:
-          'Não entendi esse tempo. Use:\n' +
-          '• `10m` • `1h30m` • `2d` • `45s`\n' +
-          '• `25/12/2026 15:30`\n' +
+          'Não entendi esse tempo. Tente:\n' +
+          '• `2pm 21/08/2026` — data com AM/PM\n' +
+          '• `13:40 02/12` — hora e data curta\n' +
+          '• `1h30m` • `10m` • `2d` — tempo relativo\n' +
           '• `amanhã 14:00` • `hoje 18:30`',
         cor: 0xE67E80,
       });
@@ -100,7 +100,7 @@ async function abrirModalCriar(interaction, client) {
 
     if (ms > 365 * 24 * 60 * 60 * 1000) {
       const embedErro = criarEmbed({
-        titulo: 'Tempo muito longo',
+        titulo: '⏰ Tempo muito longo',
         descricao: 'O limite é de **1 ano** por lembrete.',
         cor: 0xE67E80,
       });
@@ -135,14 +135,20 @@ async function abrirModalCriar(interaction, client) {
 
     return submitted.reply({ embeds: [embed] });
   } catch {
-    // Modal expirou ou foi cancelado — silêncio
+    // Modal expirou ou foi cancelado
   }
+}
+
+// ── Verifica se o usuário é staff (ManageGuild) ───────────────────────
+function isStaff(member) {
+  return member?.permissions?.has('ManageGuild') ?? false;
 }
 
 // ── Lista interativa ──────────────────────────────────────────────────
 async function mostrarLista(interaction, client, filtrosIniciais = {}) {
   let filtros = { ...filtrosIniciais, ordenar: 'mais_proximo' };
   let pagina = 0;
+  const staff = isStaff(interaction.member);
 
   function renderizar() {
     const lista = filtrarLembretes(filtros);
@@ -158,8 +164,18 @@ async function mostrarLista(interaction, client, filtrosIniciais = {}) {
       const restante = l.disparaEm - agora;
       const status = restante <= 0 ? '🔴 VENCIDO' : `⏳ ${formatarDuracao(restante)}`;
       const data = formatarDataAbsoluta(l.disparaEm);
+      const criado = formatarDataAbsoluta(l.criadoEm);
       const autor = l.usuarioNome || l.userId;
-      return `**\`${l.id}\`** — ${autor}\n📅 ${data} — ${status}\n💬 "${l.mensagem}"`;
+
+      // Privacidade: só o dono ou staff veem o conteúdo
+      const isOwner = l.userId === interaction.user.id;
+      const podeVerConteudo = isOwner || staff;
+
+      if (podeVerConteudo) {
+        return `**\`${l.id}\`** — ${autor}\n📅 **Dispara:** ${data} — ${status}\n📝 **Criado:** ${criado}\n💬 "${l.mensagem}"`;
+      } else {
+        return `**\`${l.id}\`** — ${autor}\n📅 **Dispara:** ${data} — ${status}\n📝 **Criado:** ${criado}\n🔒 *Lembrete privado*`;
+      }
     });
 
     const descricao = linhas.length
@@ -172,8 +188,10 @@ async function mostrarLista(interaction, client, filtrosIniciais = {}) {
     if (filtros.pessoa) infoFiltros.push(`👤 ${filtros.pessoa}`);
     if (filtros.status === 'pendentes') infoFiltros.push('✅ Pendentes');
     if (filtros.status === 'vencidos') infoFiltros.push('🔴 Vencidos');
-    if (filtros.ordenar === 'mais_antigo') infoFiltros.push('📅 Mais antigos');
-    if (filtros.ordenar === 'mais_recente') infoFiltros.push('📅 Mais recentes');
+    if (filtros.ordenar === 'mais_antigo') infoFiltros.push('📅 Expira: mais antigo');
+    if (filtros.ordenar === 'mais_recente') infoFiltros.push('📅 Expira: mais recente');
+    if (filtros.ordenar === 'criado_antigo') infoFiltros.push('📝 Criado: mais antigo');
+    if (filtros.ordenar === 'criado_recente') infoFiltros.push('📝 Criado: mais recente');
 
     const rodape = `Página ${pagina + 1}/${totalPaginas} • ${total} lembrete(s)${infoFiltros.length ? ' • ' + infoFiltros.join(' • ') : ''}`;
 
@@ -208,8 +226,10 @@ async function mostrarLista(interaction, client, filtrosIniciais = {}) {
         { label: 'Todos os lembretes', value: 'todos', description: 'Mostrar lembretes de todos', emoji: '🌍' },
         { label: '✅ Só pendentes', value: 'pendentes', description: 'Apenas lembretes não vencidos', emoji: '✅' },
         { label: '🔴 Só vencidos', value: 'vencidos', description: 'Apenas lembretes vencidos', emoji: '🔴' },
-        { label: '📅 Mais antigos primeiro', value: 'ord_antigo', description: 'Ordenar do mais antigo', emoji: '📅' },
-        { label: '📅 Mais recentes primeiro', value: 'ord_recente', description: 'Ordenar do mais recente', emoji: '📅' },
+        { label: '📅 Expira: mais próximo', value: 'ord_proximo', description: 'Quem vence primeiro', emoji: '⏳' },
+        { label: '📅 Expira: mais distante', value: 'ord_distante', description: 'Quem vence por último', emoji: '⏰' },
+        { label: '📝 Criado: mais recente', value: 'ord_criado_recente', description: 'Recém-criados primeiro', emoji: '🆕' },
+        { label: '📝 Criado: mais antigo', value: 'ord_criado_antigo', description: 'Mais antigos primeiro', emoji: '📜' },
       ]);
     return new ActionRowBuilder().addComponents(menu);
   }
@@ -235,8 +255,10 @@ async function mostrarLista(interaction, client, filtrosIniciais = {}) {
       else if (valor === 'todos') delete filtros.userId;
       else if (valor === 'pendentes') filtros.status = 'pendentes';
       else if (valor === 'vencidos') filtros.status = 'vencidos';
-      else if (valor === 'ord_antigo') filtros.ordenar = 'mais_antigo';
-      else if (valor === 'ord_recente') filtros.ordenar = 'mais_recente';
+      else if (valor === 'ord_proximo') filtros.ordenar = 'mais_proximo';
+      else if (valor === 'ord_distante') filtros.ordenar = 'mais_recente';
+      else if (valor === 'ord_criado_recente') filtros.ordenar = 'criado_recente';
+      else if (valor === 'ord_criado_antigo') filtros.ordenar = 'criado_antigo';
       pagina = 0;
     }
 

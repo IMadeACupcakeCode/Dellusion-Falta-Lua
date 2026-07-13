@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { criarEmbed, THEME } = require('./theme');
+const { ActionRowBuilder, ButtonStyle, StringSelectMenuBuilder } = require('discord.js');
 const { verificarCanal, obterConfig, salvarConfig, TIPOS_ANUNCIO } = require('./servidorStore');
 const { adicionarLembrete, carregarLembretes, removerLembrete, filtrarLembretes } = require('./lembretesStore');
 const { agendarLembrete } = require('./agendador');
@@ -9,6 +10,7 @@ const crypto = require('crypto');
 const codex = require('../commands/codex');
 
 const PREFIXO = '$';
+const ITENS_POR_PAGINA = 5;
 
 // ── Carga dos comandos (modo prefixo `$`, sem slash) ──────────────────
 // Comandos que já têm tratamento inline abaixo (não precisam do bridge).
@@ -337,29 +339,7 @@ async function handlePrefix(message, client) {
   if (comando === 'lembrete') {
     const sub = (args[0] || '').toLowerCase();
     if (sub === 'listar') {
-      const meus = filtrarLembretes({ userId: message.author.id });
-      if (meus.length === 0) {
-        return responder(
-          message,
-          criarEmbed({ titulo: 'Nenhum lembrete por aqui', descricao: 'Você não tem lembretes ativos.', cor: THEME.corLembrete }),
-          true
-        );
-      }
-      const agora = Date.now();
-      const linhas = meus
-        .slice(0, 10)
-        .map((l) => {
-          const restante = l.disparaEm - agora;
-          const status = restante <= 0 ? '🔴 VENCIDO' : `⏳ ${formatarDuracao(restante)}`;
-          const data = formatarDataAbsoluta(l.disparaEm);
-          return `˖ \`${l.id}\` — "${l.mensagem}"\n  📅 ${data} — ${status}`;
-        })
-        .join('\n\n');
-      return responder(
-        message,
-        criarEmbed({ titulo: 'Seus lembretes ativos', descricao: linhas, cor: THEME.corLembrete }),
-        true
-      );
+      return mostrarListaLembretes(message, client, { userId: message.author.id });
     }
     if (sub === 'cancelar') {
       const id = args[1];
@@ -386,7 +366,7 @@ async function handlePrefix(message, client) {
         message,
         criarEmbed({
           titulo: 'Uso incorreto',
-          descricao: 'Use: `$lembrete 10m beber água` ou `$lembrete listar`.',
+          descricao: 'Use: `$lembrete 10m beber água`, `$lembrete 2pm 21/08/2026 reunião` ou `$lembrete listar`.',
           cor: 0xE67E80,
         }),
         true
@@ -396,7 +376,11 @@ async function handlePrefix(message, client) {
     if (!ms || ms > 365 * 24 * 60 * 60 * 1000) {
       return responder(
         message,
-        criarEmbed({ titulo: 'Tempo inválido', descricao: 'Use algo como `10m`, `1h30m`, `2d`, `25/12/2026 15:30` (máx 1 ano).', cor: 0xE67E80 }),
+        criarEmbed({
+          titulo: 'Tempo inválido',
+          descricao: 'Use formatos como `10m`, `1h30m`, `2d`, `13:40 02/12`, `2pm 21/08/2026`, `amanhã 14:00` (máx 1 ano).',
+          cor: 0xE67E80,
+        }),
         true
       );
     }
@@ -416,7 +400,7 @@ async function handlePrefix(message, client) {
     return responder(
       message,
       criarEmbed({
-        titulo: 'Lembrete guardado sob a lua',
+        titulo: '🌙 Lembrete guardado sob a lua',
         descricao: `⏰ **Quando:** ${formatarDataAbsoluta(disparaEm)} (em ${formatarDuracao(ms)})\n💬 **Mensagem:**\n> "${mensagemTxt}"\n\n**ID:** \`${id}\``,
         cor: THEME.corLembrete,
         rodape: `${THEME.nome} não vai esquecer, ${message.author.username}`,
@@ -638,6 +622,131 @@ async function handlePrefix(message, client) {
     }
     return;
   }
+}
+
+// ── Lista interativa de lembretes (privacidade + filtros) ─────────────
+async function mostrarListaLembretes(message, client, filtrosIniciais = {}) {
+  let filtros = { ...filtrosIniciais, ordenar: 'mais_proximo' };
+  let pagina = 0;
+  const staff = message.member?.permissions?.has('ManageGuild') ?? false;
+
+  function renderizar() {
+    const lista = filtrarLembretes(filtros);
+    const total = lista.length;
+    const totalPaginas = Math.max(1, Math.ceil(total / ITENS_POR_PAGINA));
+    pagina = Math.min(pagina, totalPaginas - 1);
+
+    const inicio = pagina * ITENS_POR_PAGINA;
+    const paginaItens = lista.slice(inicio, inicio + ITENS_POR_PAGINA);
+
+    const agora = Date.now();
+    const linhas = paginaItens.map((l) => {
+      const restante = l.disparaEm - agora;
+      const status = restante <= 0 ? '🔴 VENCIDO' : `⏳ ${formatarDuracao(restante)}`;
+      const data = formatarDataAbsoluta(l.disparaEm);
+      const criado = formatarDataAbsoluta(l.criadoEm);
+      const autor = l.usuarioNome || l.userId;
+
+      const isOwner = l.userId === message.author.id;
+      const podeVerConteudo = isOwner || staff;
+
+      if (podeVerConteudo) {
+        return `**\`${l.id}\`** — ${autor}\n📅 **Dispara:** ${data} — ${status}\n📝 **Criado:** ${criado}\n💬 "${l.mensagem}"`;
+      } else {
+        return `**\`${l.id}\`** — ${autor}\n📅 **Dispara:** ${data} — ${status}\n📝 **Criado:** ${criado}\n🔒 *Lembrete privado*`;
+      }
+    });
+
+    const descricao = linhas.length
+      ? linhas.map((l, i) => `**${inicio + i + 1}.** ${l}`).join('\n\n')
+      : 'Nenhum lembrete encontrado com esses filtros.';
+
+    const infoFiltros = [];
+    if (filtros.userId) infoFiltros.push('🔍 Seus lembretes');
+    if (filtros.pessoa) infoFiltros.push(`👤 ${filtros.pessoa}`);
+    if (filtros.status === 'pendentes') infoFiltros.push('✅ Pendentes');
+    if (filtros.status === 'vencidos') infoFiltros.push('🔴 Vencidos');
+    if (filtros.ordenar === 'mais_antigo') infoFiltros.push('📅 Expira: mais antigo');
+    if (filtros.ordenar === 'mais_recente') infoFiltros.push('📅 Expira: mais recente');
+    if (filtros.ordenar === 'criado_antigo') infoFiltros.push('📝 Criado: mais antigo');
+    if (filtros.ordenar === 'criado_recente') infoFiltros.push('📝 Criado: mais recente');
+
+    const rodape = `Página ${pagina + 1}/${totalPaginas} • ${total} lembrete(s)${infoFiltros.length ? ' • ' + infoFiltros.join(' • ') : ''}`;
+
+    return {
+      embed: criarEmbed({
+        titulo: '📋 Lembretes sob a lua',
+        descricao,
+        cor: THEME.corLembrete,
+        rodape,
+      }),
+      totalPaginas,
+    };
+  }
+
+  function botoes(totalPaginas) {
+    const row = new ActionRowBuilder();
+    row.addComponents(
+      botao('⏮️', 'lemb_first', ButtonStyle.Secondary).setDisabled(pagina <= 0),
+      botao('◀️', 'lemb_prev', ButtonStyle.Primary).setDisabled(pagina <= 0),
+      botao('▶️', 'lemb_next', ButtonStyle.Primary).setDisabled(pagina >= totalPaginas - 1),
+      botao('⏭️', 'lemb_last', ButtonStyle.Secondary).setDisabled(pagina >= totalPaginas - 1)
+    );
+    return row;
+  }
+
+  function menuFiltros() {
+    const menu = new StringSelectMenuBuilder()
+      .setCustomId('lemb_filtro')
+      .setPlaceholder('🔽 Filtrar / Ordenar')
+      .addOptions([
+        { label: 'Meus lembretes', value: 'meus', description: 'Mostrar só os seus', emoji: '👤' },
+        { label: 'Todos os lembretes', value: 'todos', description: 'Mostrar todos', emoji: '🌍' },
+        { label: '✅ Só pendentes', value: 'pendentes', description: 'Apenas não vencidos', emoji: '✅' },
+        { label: '🔴 Só vencidos', value: 'vencidos', description: 'Apenas vencidos', emoji: '🔴' },
+        { label: '📅 Expira: mais próximo', value: 'ord_proximo', description: 'Quem vence primeiro', emoji: '⏳' },
+        { label: '📅 Expira: mais distante', value: 'ord_distante', description: 'Quem vence por último', emoji: '⏰' },
+        { label: '📝 Criado: mais recente', value: 'ord_criado_recente', description: 'Recém-criados primeiro', emoji: '🆕' },
+        { label: '📝 Criado: mais antigo', value: 'ord_criado_antigo', description: 'Mais antigos primeiro', emoji: '📜' },
+      ]);
+    return new ActionRowBuilder().addComponents(menu);
+  }
+
+  const { embed, totalPaginas } = renderizar();
+  const resposta = await message.reply({
+    embeds: [embed],
+    components: [botoes(totalPaginas), menuFiltros()],
+  });
+
+  const coletor = resposta.createMessageComponentCollector({ time: 5 * 60 * 1000, filter: (i) => i.user.id === message.author.id });
+
+  coletor.on('collect', async (i) => {
+    if (i.customId === 'lemb_first') pagina = 0;
+    else if (i.customId === 'lemb_prev') pagina = Math.max(0, pagina - 1);
+    else if (i.customId === 'lemb_next') pagina = Math.min(totalPaginas - 1, pagina + 1);
+    else if (i.customId === 'lemb_last') pagina = totalPaginas - 1;
+    else if (i.customId === 'lemb_filtro') {
+      const valor = i.values[0];
+      if (valor === 'meus') filtros.userId = i.user.id;
+      else if (valor === 'todos') delete filtros.userId;
+      else if (valor === 'pendentes') filtros.status = 'pendentes';
+      else if (valor === 'vencidos') filtros.status = 'vencidos';
+      else if (valor === 'ord_proximo') filtros.ordenar = 'mais_proximo';
+      else if (valor === 'ord_distante') filtros.ordenar = 'mais_recente';
+      else if (valor === 'ord_criado_recente') filtros.ordenar = 'criado_recente';
+      else if (valor === 'ord_criado_antigo') filtros.ordenar = 'criado_antigo';
+      pagina = 0;
+    }
+
+    const { embed: novoEmbed, totalPaginas: novasPag } = renderizar();
+    await i.update({ embeds: [novoEmbed], components: [botoes(novasPag), menuFiltros()] });
+  });
+
+  coletor.on('end', async () => {
+    try {
+      await resposta.edit({ components: [] });
+    } catch {}
+  });
 }
 
 module.exports = { PREFIXO, handlePrefix };
