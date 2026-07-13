@@ -35,4 +35,43 @@ function removerLembrete(id) {
   salvarLembretes(lista);
 }
 
-module.exports = { carregarLembretes, salvarLembretes, adicionarLembrete, removerLembrete };
+// Filtros: { userId?, pessoa?, ordenar?, status? }
+function filtrarLembretes(opcoes = {}) {
+  let lista = carregarLembretes();
+  const agora = Date.now();
+
+  // Filtro por usuário específico
+  if (opcoes.userId) {
+    lista = lista.filter((l) => l.userId === opcoes.userId);
+  }
+
+  // Filtro por pessoa (nome ou ID)
+  if (opcoes.pessoa) {
+    const termo = opcoes.pessoa.toLowerCase();
+    lista = lista.filter((l) => {
+      const nome = (l.usuarioNome || '').toLowerCase();
+      return nome.includes(termo) || l.userId === termo;
+    });
+  }
+
+  // Filtro por status
+  if (opcoes.status === 'pendentes') {
+    lista = lista.filter((l) => l.disparaEm > agora);
+  } else if (opcoes.status === 'vencidos') {
+    lista = lista.filter((l) => l.disparaEm <= agora);
+  }
+
+  // Ordenação
+  if (opcoes.ordenar === 'mais_antigo') {
+    lista.sort((a, b) => a.disparaEm - b.disparaEm);
+  } else if (opcoes.ordenar === 'mais_recente') {
+    lista.sort((a, b) => b.disparaEm - a.disparaEm);
+  } else {
+    // padrão: mais próximo de vencer primeiro
+    lista.sort((a, b) => a.disparaEm - b.disparaEm);
+  }
+
+  return lista;
+}
+
+module.exports = { carregarLembretes, salvarLembretes, adicionarLembrete, removerLembrete, filtrarLembretes };

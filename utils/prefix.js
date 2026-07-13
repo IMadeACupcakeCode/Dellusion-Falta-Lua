@@ -2,9 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const { criarEmbed, THEME } = require('./theme');
 const { verificarCanal, obterConfig, salvarConfig, TIPOS_ANUNCIO } = require('./servidorStore');
-const { adicionarLembrete, carregarLembretes, removerLembrete } = require('./lembretesStore');
+const { adicionarLembrete, carregarLembretes, removerLembrete, filtrarLembretes } = require('./lembretesStore');
 const { agendarLembrete } = require('./agendador');
-const { parseTempo, formatarDuracao } = require('./tempo');
+const { parseTempo, formatarDuracao, formatarDataAbsoluta } = require('./tempo');
 const crypto = require('crypto');
 const codex = require('../commands/codex');
 
@@ -337,7 +337,7 @@ async function handlePrefix(message, client) {
   if (comando === 'lembrete') {
     const sub = (args[0] || '').toLowerCase();
     if (sub === 'listar') {
-      const meus = carregarLembretes().filter((l) => l.userId === message.author.id);
+      const meus = filtrarLembretes({ userId: message.author.id });
       if (meus.length === 0) {
         return responder(
           message,
@@ -345,13 +345,16 @@ async function handlePrefix(message, client) {
           true
         );
       }
+      const agora = Date.now();
       const linhas = meus
-        .sort((a, b) => a.disparaEm - b.disparaEm)
+        .slice(0, 10)
         .map((l) => {
-          const restante = l.disparaEm - Date.now();
-          return `˖ \`${l.id}\` — "${l.mensagem}" em **${formatarDuracao(Math.max(restante, 0))}**`;
+          const restante = l.disparaEm - agora;
+          const status = restante <= 0 ? '🔴 VENCIDO' : `⏳ ${formatarDuracao(restante)}`;
+          const data = formatarDataAbsoluta(l.disparaEm);
+          return `˖ \`${l.id}\` — "${l.mensagem}"\n  📅 ${data} — ${status}`;
         })
-        .join('\n');
+        .join('\n\n');
       return responder(
         message,
         criarEmbed({ titulo: 'Seus lembretes ativos', descricao: linhas, cor: THEME.corLembrete }),
@@ -390,22 +393,31 @@ async function handlePrefix(message, client) {
       );
     }
     const ms = parseTempo(tempoTexto);
-    if (!ms || ms > 30 * 24 * 60 * 60 * 1000) {
+    if (!ms || ms > 365 * 24 * 60 * 60 * 1000) {
       return responder(
         message,
-        criarEmbed({ titulo: 'Tempo inválido', descricao: 'Use algo como `10m`, `1h30m`, `2d` (máx 30 dias).', cor: 0xE67E80 }),
+        criarEmbed({ titulo: 'Tempo inválido', descricao: 'Use algo como `10m`, `1h30m`, `2d`, `25/12/2026 15:30` (máx 1 ano).', cor: 0xE67E80 }),
         true
       );
     }
     const id = crypto.randomBytes(3).toString('hex');
-    const lembrete = { id, userId: message.author.id, channelId: message.channelId, mensagem: mensagemTxt, disparaEm: Date.now() + ms };
+    const disparaEm = Date.now() + ms;
+    const lembrete = {
+      id,
+      userId: message.author.id,
+      usuarioNome: message.author.username,
+      channelId: message.channelId,
+      mensagem: mensagemTxt,
+      disparaEm,
+      criadoEm: Date.now(),
+    };
     adicionarLembrete(lembrete);
     agendarLembrete(client, lembrete);
     return responder(
       message,
       criarEmbed({
         titulo: 'Lembrete guardado sob a lua',
-        descricao: `Vou te lembrar em **${formatarDuracao(ms)}**:\n> "${mensagemTxt}"\n\n**ID:** \`${id}\``,
+        descricao: `⏰ **Quando:** ${formatarDataAbsoluta(disparaEm)} (em ${formatarDuracao(ms)})\n💬 **Mensagem:**\n> "${mensagemTxt}"\n\n**ID:** \`${id}\``,
         cor: THEME.corLembrete,
         rodape: `${THEME.nome} não vai esquecer, ${message.author.username}`,
       })

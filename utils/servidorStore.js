@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const CAMINHO_ARQUIVO = path.join(__dirname, '..', 'data', 'servidores.json');
+const CAMINHO_BACKUP = path.join(__dirname, '..', 'data', 'servidores.backup.json');
 
 // Tipos de anúncio que o bot consegue classificar em canais diferentes
 const TIPOS_ANUNCIO = ['geral', 'evento', 'regra', 'atualizacao', 'aviso'];
@@ -27,18 +28,37 @@ function garantirArquivo() {
   if (!fs.existsSync(CAMINHO_ARQUIVO)) fs.writeFileSync(CAMINHO_ARQUIVO, '{}', 'utf-8');
 }
 
+function fazerBackup() {
+  try {
+    if (fs.existsSync(CAMINHO_ARQUIVO)) {
+      fs.copyFileSync(CAMINHO_ARQUIVO, CAMINHO_BACKUP);
+    }
+  } catch {
+    // Silêncio — backup não crítico
+  }
+}
+
 function carregarTodos() {
   garantirArquivo();
   const conteudo = fs.readFileSync(CAMINHO_ARQUIVO, 'utf-8');
   try {
     return JSON.parse(conteudo);
   } catch {
-    return {};
+    // Tenta recuperar do backup
+    try {
+      const backup = fs.readFileSync(CAMINHO_BACKUP, 'utf-8');
+      const dados = JSON.parse(backup);
+      fs.writeFileSync(CAMINHO_ARQUIVO, backup, 'utf-8');
+      return dados;
+    } catch {
+      return {};
+    }
   }
 }
 
 function salvarTodos(registro) {
   garantirArquivo();
+  fazerBackup();
   fs.writeFileSync(CAMINHO_ARQUIVO, JSON.stringify(registro, null, 2), 'utf-8');
 }
 
@@ -61,6 +81,31 @@ function salvarConfig(guildId, config) {
   const registro = carregarTodos();
   registro[guildId] = config;
   salvarTodos(registro);
+}
+
+/**
+ * Exporta a configuração de um servidor como JSON.
+ */
+function exportarConfig(guildId) {
+  const cfg = obterConfig(guildId);
+  return JSON.stringify(cfg, null, 2);
+}
+
+/**
+ * Importa uma configuração para um servidor.
+ */
+function importarConfig(guildId, jsonString) {
+  try {
+    const dados = JSON.parse(jsonString);
+    // Valida estrutura mínima
+    if (!Array.isArray(dados.canaisPermitidos) || !Array.isArray(dados.canaisBloqueados) || !dados.anuncios) {
+      return { ok: false, erro: 'Estrutura inválida. Esperado: canaisPermitidos[], canaisBloqueados[], anuncios{}' };
+    }
+    salvarConfig(guildId, dados);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, erro: `JSON inválido: ${e.message}` };
+  }
 }
 
 /**
@@ -87,4 +132,6 @@ module.exports = {
   obterConfig,
   salvarConfig,
   verificarCanal,
+  exportarConfig,
+  importarConfig,
 };
