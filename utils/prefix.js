@@ -152,6 +152,16 @@ function criarInteracao(message, client, valores) {
     getChannel: (n) => valores[n] || null,
     getSubcommand: () => null,
   };
+
+  let replyMessage = null;
+
+  function stripEphemeral(payload) {
+    if (!payload || typeof payload !== 'object') return payload;
+    const cleaned = { ...payload };
+    delete cleaned.ephemeral;
+    return cleaned;
+  }
+
   return {
     user: message.author,
     guild: message.guild,
@@ -164,17 +174,23 @@ function criarInteracao(message, client, valores) {
     replied: false,
     deferred: false,
     async reply(o) {
-      const m = await message.reply(o);
+      const payload = stripEphemeral(o);
+      replyMessage = await message.reply(payload);
       this.replied = true;
-      return m;
+      return replyMessage;
     },
     async followUp(o) {
-      return message.channel.send(o);
+      const payload = stripEphemeral(o);
+      if (replyMessage) return replyMessage.channel.send(payload);
+      return message.channel.send(payload);
     },
     async editReply(o) {
-      return message.edit(o);
+      const payload = stripEphemeral(o);
+      if (replyMessage) return replyMessage.edit(payload);
+      return message.edit(payload);
     },
     async deferReply() {
+      this.deferred = true;
       return message;
     },
   };

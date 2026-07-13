@@ -11,8 +11,11 @@ module.exports = {
       return interaction.reply({ embeds: [criarEmbed({ titulo: 'Acesso negado', descricao: 'Somente staff pode usar este comando.', cor: 0xE67E80 })], ephemeral: true });
     }
 
-    // Usa apenas o cache já disponível (evita GuildMembersTimeout em servidores grandes)
-    const total = guild.memberCount;
+    // Tenta carregar o máximo possível do servidor para contar membros e cargos corretamente.
+    await guild.members.fetch().catch(() => {});
+    await guild.roles.fetch().catch(() => {});
+
+    const total = guild.memberCount || guild.members.cache.size;
     const membrosCache = Array.from(guild.members.cache.values());
     const bots = [];
     const staff = [];
@@ -40,7 +43,7 @@ module.exports = {
 
     const agora = new Date();
     const inicioDoDia = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate()).getTime();
-    const entradasHoje = membrosCache.filter((m) => (m.joinedAt || 0) * 1000 >= inicioDoDia).size;
+    const entradasHoje = membrosCache.filter((m) => (m.joinedAt?.getTime() || 0) >= inicioDoDia).length;
     const saidasHoje = 0;
     const humanos = staff.length + players.length;
 
