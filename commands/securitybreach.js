@@ -10,7 +10,6 @@ module.exports = {
     }
 
     const guild = interaction.guild;
-    await guild.members.fetch();
     const membros = Array.from(guild.members.cache.values());
 
     function painelMenu() {

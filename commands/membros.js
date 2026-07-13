@@ -11,15 +11,15 @@ module.exports = {
       return interaction.reply({ embeds: [criarEmbed({ titulo: 'Acesso negado', descricao: 'Somente staff pode usar este comando.', cor: 0xE67E80 })], ephemeral: true });
     }
 
-    await guild.members.fetch();
-
+    // Usa apenas o cache já disponível (evita GuildMembersTimeout em servidores grandes)
     const total = guild.memberCount;
+    const membrosCache = Array.from(guild.members.cache.values());
     const bots = [];
     const staff = [];
     const players = [];
     const grupos = new Map();
 
-    guild.members.cache.forEach((m) => {
+    membrosCache.forEach((m) => {
       const roles = m.roles.cache.filter((r) => r.id !== guild.id && !r.managed);
       const cargoAlto = roles.sort((a, b) => b.position - a.position).first();
       const nomeCargo = cargoAlto ? cargoAlto.name : 'Sem cargo';
@@ -40,7 +40,7 @@ module.exports = {
 
     const agora = new Date();
     const inicioDoDia = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate()).getTime();
-    const entradasHoje = guild.members.cache.filter((m) => (m.joinedAt || 0) * 1000 >= inicioDoDia).size;
+    const entradasHoje = membrosCache.filter((m) => (m.joinedAt || 0) * 1000 >= inicioDoDia).size;
     const saidasHoje = 0;
     const humanos = staff.length + players.length;
 
