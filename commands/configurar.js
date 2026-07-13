@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits, ChannelType } = require('discord.js');
+const { PermissionFlagsBits, ChannelType } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 const { obterConfig, salvarConfig, TIPOS_ANUNCIO } = require('../utils/servidorStore');
 
@@ -8,92 +8,7 @@ function mencionarCanais(ids, client) {
 }
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName('configurar')
-    .setDescription('Define onde a bot fala e organiza os canais de anúncio (requer gerir servidor)')
-    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
-    .addSubcommand((sub) =>
-      sub
-        .setName('permitir')
-        .setDescription('Adiciona um canal à lista de onde a bot pode falar')
-        .addChannelOption((op) =>
-          op
-            .setName('canal')
-            .setDescription('Canal que passará a ser permitido')
-            .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
-            .setRequired(true)
-        )
-    )
-    .addSubcommand((sub) =>
-      sub
-        .setName('proibir')
-        .setDescription('Bloqueia a bot de falar num canal específico')
-        .addChannelOption((op) =>
-          op
-            .setName('canal')
-            .setDescription('Canal que será bloqueado')
-            .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
-            .setRequired(true)
-        )
-    )
-    .addSubcommand((sub) =>
-      sub
-        .setName('liberar')
-        .setDescription('Remove um canal da lista de permitidos')
-        .addChannelOption((op) =>
-          op
-            .setName('canal')
-            .setDescription('Canal a remover dos permitidos')
-            .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
-            .setRequired(true)
-        )
-    )
-    .addSubcommand((sub) =>
-      sub
-        .setName('desproibir')
-        .setDescription('Remove um canal da lista de bloqueados')
-        .addChannelOption((op) =>
-          op
-            .setName('canal')
-            .setDescription('Canal a desbloquear')
-            .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
-            .setRequired(true)
-        )
-    )
-    .addSubcommand((sub) =>
-      sub
-        .setName('anuncio')
-        .setDescription('Define o canal de um tipo de anúncio')
-        .addStringOption((op) =>
-          op
-            .setName('tipo')
-            .setDescription('Tipo de anúncio')
-            .setRequired(true)
-            .addChoices(
-              ...TIPOS_ANUNCIO.map((t) => ({ name: t, value: t }))
-            )
-        )
-        .addChannelOption((op) =>
-          op
-            .setName('canal')
-            .setDescription('Canal onde esse tipo de anúncio será enviado')
-            .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
-            .setRequired(true)
-        )
-    )
-    .addSubcommand((sub) =>
-      sub
-        .setName('limparanuncio')
-        .setDescription('Remove o canal definido para um tipo de anúncio')
-        .addStringOption((op) =>
-          op
-            .setName('tipo')
-            .setDescription('Tipo de anúncio a limpar')
-            .setRequired(true)
-            .addChoices(...TIPOS_ANUNCIO.map((t) => ({ name: t, value: t })))
-        )
-    )
-    .addSubcommand((sub) => sub.setName('ver').setDescription('Mostra a configuração atual do servidor')),
+  data: { name: 'configurar', description: 'Define onde a bot fala e organiza os canais de anúncio (requer gerir servidor)' },
 
   async execute(interaction, client) {
     const guildId = interaction.guildId;

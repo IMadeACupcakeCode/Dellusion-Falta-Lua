@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, ActionRowBuilder, ButtonStyle } = require('discord.js');
+const { ActionRowBuilder, ButtonStyle } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 const { botao } = require('../utils/ui');
 
@@ -15,7 +15,7 @@ function nomeCarta(c) {
 }
 
 module.exports = {
-  data: new SlashCommandBuilder().setName('guerra').setDescription('⚔️ Mini guerra de cartas: você vs bot, melhor de 3'),
+  data: { name: 'guerra', description: '⚔️ Mini guerra de cartas: você vs bot, melhor de 3' },
   async execute(interaction) {
     let voce = 0;
     let bot = 0;

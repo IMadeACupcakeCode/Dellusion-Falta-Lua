@@ -1,13 +1,9 @@
-const { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonStyle } = require('discord.js');
+const { PermissionFlagsBits, ActionRowBuilder, ButtonStyle } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 const { botao } = require('../utils/ui');
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName('limpar')
-    .setDescription('🧹 Apaga mensagens recentes do canal')
-    .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
-    .addIntegerOption((op) => op.setName('quantidade').setDescription('Quantas mensagens (2-100)').setRequired(true).setMinValue(2).setMaxValue(100)),
+  data: { name: 'limpar', description: '🧹 Apaga mensagens recentes do canal' },
   async execute(interaction) {
     const qtd = interaction.options.getInteger('quantidade');
     const row = new ActionRowBuilder().addComponents(

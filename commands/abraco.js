@@ -1,4 +1,3 @@
-const { SlashCommandBuilder } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 
 const FRASES = [
@@ -9,10 +8,7 @@ const FRASES = [
 ];
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName('abraco')
-    .setDescription('🤗 Envia um abraço carinhoso para alguém')
-    .addUserOption((op) => op.setName('usuario').setDescription('Quem recebe o abraço').setRequired(false)),
+  data: { name: 'abraco', description: '🤗 Envia um abraço carinhoso para alguém' },
   async execute(interaction) {
     const alvo = interaction.options.getUser('usuario') || interaction.user;
     const frase = FRASES[Math.floor(Math.random() * FRASES.length)];

@@ -1,12 +1,7 @@
-const { SlashCommandBuilder } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName('cartasecreta')
-    .setDescription('✉️ Entrega uma carta misteriosa para um membro')
-    .addUserOption((op) => op.setName('usuario').setDescription('Quem recebe').setRequired(true))
-    .addStringOption((op) => op.setName('mensagem').setDescription('O que escrever na carta').setRequired(true)),
+  data: { name: 'cartasecreta', description: '✉️ Entrega uma carta misteriosa para um membro' },
   async execute(interaction) {
     const alvo = interaction.options.getUser('usuario');
     const msg = interaction.options.getString('mensagem');

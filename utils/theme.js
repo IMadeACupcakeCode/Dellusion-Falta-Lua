@@ -1,8 +1,9 @@
 const { EmbedBuilder } = require('discord.js');
+const { NOME_BOT } = require('./configuracao');
 
 // 🌙 Identidade visual do Falta Lua
 const THEME = {
-  nome: '✧ ⎯ ੭ Falta Lua',
+  nome: NOME_BOT,
   corPrincipal: 0xB9A7E6, // lilás suave
   corSucesso: 0xC9B8F2,
   corDado: 0xA895E0,

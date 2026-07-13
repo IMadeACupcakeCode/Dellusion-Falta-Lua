@@ -1,19 +1,17 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 const { obterConfig, TIPOS_ANUNCIO } = require('../utils/servidorStore');
 
 // Categorias de organização do servidor que a bot ajuda a manter
 const CATEGORIAS = [
-  { nome: '🎲 Diversão', itens: '/dado, /roleta', desc: 'Rolagens e sorteios' },
-  { nome: '⏰ Lembretes', itens: '/lembrete', desc: 'Avisos agendados por pessoa' },
-  { nome: '📣 Comunicação', itens: '/anuncio, /configurar', desc: 'Canais e anúncios classificados' },
-  { nome: '🛠️ Utilidades', itens: '/ping, /organizar', desc: 'Status e painel do servidor' },
+  { nome: '🎲 Diversão', itens: '$dado, $roleta', desc: 'Rolagens e sorteios' },
+  { nome: '⏰ Lembretes', itens: '$lembrete', desc: 'Avisos agendados por pessoa' },
+  { nome: '📣 Comunicação', itens: '$anuncio, $configurar', desc: 'Canais e anúncios classificados' },
+  { nome: '🛠️ Utilidades', itens: '$ping, $organizar', desc: 'Status e painel do servidor' },
 ];
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName('organizar')
-    .setDescription('Mostra um painel de organização do servidor e como a bot está distribuída'),
+  data: { name: 'organizar', description: 'Mostra um painel de organização do servidor e como a bot está distribuída' },
 
   async execute(interaction, client) {
     const guild = interaction.guild;
@@ -37,7 +35,7 @@ module.exports = {
       .setTitle(`${THEME.iconeFooter} Painel de Organização — ${guild.name}`)
       .setDescription(
         'Aqui está como a **Falta Lua** mantém este servidor organizado. ' +
-          'Use `/configurar` para ajustar os canais e `/anuncio` para enviar avisos classificados.'
+          'Use `$configurar` para ajustar os canais e `$anuncio` para enviar avisos classificados.'
       )
       .addFields(
         { name: '✦ Centro de comandos', value: camposComandos.map((c) => `**${c.name}**`).join('   '), inline: false },

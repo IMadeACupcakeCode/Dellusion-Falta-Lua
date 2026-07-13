@@ -1,4 +1,3 @@
-const { SlashCommandBuilder } = require('discord.js');
 const crypto = require('crypto');
 const { criarEmbed, THEME } = require('../utils/theme');
 const { parseTempo, formatarDuracao } = require('../utils/tempo');
@@ -6,29 +5,7 @@ const { adicionarLembrete, carregarLembretes, removerLembrete } = require('../ut
 const { agendarLembrete } = require('../utils/agendador');
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName('lembrete')
-    .setDescription('Cria, lista ou cancela lembretes')
-    .addSubcommand((sub) =>
-      sub
-        .setName('criar')
-        .setDescription('Cria um novo lembrete')
-        .addStringOption((op) =>
-          op.setName('tempo').setDescription('Ex: 10m, 1h30m, 2d').setRequired(true)
-        )
-        .addStringOption((op) =>
-          op.setName('mensagem').setDescription('O que devo te lembrar?').setRequired(true)
-        )
-    )
-    .addSubcommand((sub) => sub.setName('listar').setDescription('Lista seus lembretes ativos'))
-    .addSubcommand((sub) =>
-      sub
-        .setName('cancelar')
-        .setDescription('Cancela um lembrete pelo ID')
-        .addStringOption((op) =>
-          op.setName('id').setDescription('ID do lembrete (veja em /lembrete listar)').setRequired(true)
-        )
-    ),
+  data: { name: 'lembrete', description: 'Cria, lista ou cancela lembretes' },
 
   async execute(interaction, client) {
     const subcomando = interaction.options.getSubcommand();

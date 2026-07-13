@@ -1,13 +1,9 @@
-const { SlashCommandBuilder, ActionRowBuilder, ButtonStyle } = require('discord.js');
+const { ActionRowBuilder, ButtonStyle } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 const { botao } = require('../utils/ui');
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName('votar')
-    .setDescription('🗳️ Cria uma enquete rápida com botões')
-    .addStringOption((op) => op.setName('pergunta').setDescription('A pergunta').setRequired(true))
-    .addStringOption((op) => op.setName('opcoes').setDescription('Opções separadas por vírgula (máx 5)').setRequired(true)),
+  data: { name: 'votar', description: '🗳️ Cria uma enquete rápida com botões' },
   async execute(interaction) {
     const pergunta = interaction.options.getString('pergunta');
     const opcoes = interaction.options

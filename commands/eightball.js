@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, ActionRowBuilder, ButtonStyle } = require('discord.js');
+const { ActionRowBuilder, ButtonStyle } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 const { botao } = require('../utils/ui');
 
@@ -30,10 +30,7 @@ function embed8(pergunta, autor) {
 }
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName('8ball')
-    .setDescription('A bola mágica responde sua pergunta')
-    .addStringOption((op) => op.setName('pergunta').setDescription('Sua pergunta').setRequired(true)),
+  data: { name: '8ball', description: 'A bola mágica responde sua pergunta' },
   async execute(interaction) {
     const pergunta = interaction.options.getString('pergunta');
     const row = new ActionRowBuilder().addComponents(

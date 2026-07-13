@@ -1,12 +1,9 @@
-const { SlashCommandBuilder, ActionRowBuilder, ButtonStyle } = require('discord.js');
+const { ActionRowBuilder, ButtonStyle } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 const { botao } = require('../utils/ui');
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName('avatar')
-    .setDescription('🖼️ Mostra o avatar de um usuário em tamanho grande')
-    .addUserOption((op) => op.setName('usuario').setDescription('Membro').setRequired(false)),
+  data: { name: 'avatar', description: '🖼️ Mostra o avatar de um usuário em tamanho grande' },
   async execute(interaction) {
     const user = interaction.options.getUser('usuario') || interaction.user;
     const url = user.displayAvatarURL({ size: 512 });

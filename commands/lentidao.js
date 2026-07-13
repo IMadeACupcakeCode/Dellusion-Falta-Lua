@@ -1,14 +1,8 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { PermissionFlagsBits } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName('lentidao')
-    .setDescription('🐌 Define o modo lento (slowmode) do canal')
-    .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels)
-    .addIntegerOption((op) =>
-      op.setName('segundos').setDescription('Intervalo em segundos (0 para desativar, máx 21600)').setRequired(true).setMinValue(0).setMaxValue(21600)
-    ),
+  data: { name: 'lentidao', description: '🐌 Define o modo lento (slowmode) do canal' },
   async execute(interaction) {
     const seg = interaction.options.getInteger('segundos');
     try {

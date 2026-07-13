@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { PermissionFlagsBits } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 const { obterConfig, TIPOS_ANUNCIO } = require('../utils/servidorStore');
 
@@ -12,35 +12,7 @@ const ROTULOS = {
 };
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName('anuncio')
-    .setDescription('Envia um anúncio classificado no canal configurado para o tipo')
-    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
-    .addStringOption((op) =>
-      op
-        .setName('tipo')
-        .setDescription('Tipo de anúncio (define para qual canal vai)')
-        .setRequired(true)
-        .addChoices(...TIPOS_ANUNCIO.map((t) => ({ name: t, value: t })))
-    )
-    .addStringOption((op) =>
-      op
-        .setName('titulo')
-        .setDescription('Título do anúncio')
-        .setRequired(false)
-    )
-    .addStringOption((op) =>
-      op
-        .setName('mensagem')
-        .setDescription('Conteúdo do anúncio')
-        .setRequired(true)
-    )
-    .addBooleanOption((op) =>
-      op
-        .setName('mencionar')
-        .setDescription('Mencionar @everyone no anúncio?')
-        .setRequired(false)
-    ),
+  data: { name: 'anuncio', description: 'Envia um anúncio classificado no canal configurado para o tipo' },
 
   async execute(interaction, client) {
     const guildId = interaction.guildId;
@@ -57,7 +29,7 @@ module.exports = {
         titulo: 'Nenhum canal configurado',
         descricao:
           `Não há um canal definido para anúncios do tipo **${tipo}**.\n` +
-          `Use \`/configurar anuncio tipo:${tipo} canal:#...\` primeiro.`,
+          `Use \`$configurar anuncio ${tipo} #canal\` primeiro.`,
         cor: 0xE67E80,
       });
       return interaction.reply({ embeds: [embedErro], ephemeral: true });

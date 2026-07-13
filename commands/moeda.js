@@ -1,4 +1,3 @@
-const { SlashCommandBuilder } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 const { botao, linhaNavegacao } = require('../utils/ui');
 
@@ -16,7 +15,7 @@ function embedMoeda(resultado, autor) {
 }
 
 module.exports = {
-  data: new SlashCommandBuilder().setName('moeda').setDescription('Cara ou coroa, com botão para jogar de novo'),
+  data: { name: 'moeda', description: 'Cara ou coroa, com botão para jogar de novo' },
   async execute(interaction) {
     const resultado = caraOuCoroa();
     const row = new (require('discord.js').ActionRowBuilder)().addComponents(

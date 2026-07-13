@@ -1,12 +1,8 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { PermissionFlagsBits } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName('aviso')
-    .setDescription('📢 Atalho de aviso em destaque no canal atual')
-    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
-    .addStringOption((op) => op.setName('mensagem').setDescription('O aviso').setRequired(true)),
+  data: { name: 'aviso', description: '📢 Atalho de aviso em destaque no canal atual' },
   async execute(interaction) {
     const msg = interaction.options.getString('mensagem');
     const embed = criarEmbed({

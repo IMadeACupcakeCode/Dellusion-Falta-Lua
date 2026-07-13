@@ -1,4 +1,3 @@
-const { SlashCommandBuilder } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 
 // Interpreta notação de dados: NdM+X ou NdM-X (ex: 1d20, 2d6+3, 4d8-1)
@@ -26,15 +25,7 @@ function rolarDados(notacao) {
 }
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName('dado')
-    .setDescription('Rola dados no estilo NdM (ex: 1d20, 2d6+3)')
-    .addStringOption((opcao) =>
-      opcao
-        .setName('notacao')
-        .setDescription('Ex: 1d20, 2d6+3, 4d8-1')
-        .setRequired(true)
-    ),
+  data: { name: 'dado', description: 'Rola dados no estilo NdM (ex: 1d20, 2d6+3)' },
 
   async execute(interaction) {
     const notacao = interaction.options.getString('notacao');

@@ -1,8 +1,7 @@
-const { SlashCommandBuilder } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 
 module.exports = {
-  data: new SlashCommandBuilder().setName('status').setDescription('📡 Mostra o status da bot'),
+  data: { name: 'status', description: '📡 Mostra o status da bot' },
   async execute(interaction, client) {
     const ping = Math.round(client.ws.ping);
     const embed = criarEmbed({

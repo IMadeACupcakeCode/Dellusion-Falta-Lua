@@ -1,4 +1,3 @@
-const { SlashCommandBuilder } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 const { CATEGORIAS, COMANDOS, TOTAL } = require('../utils/codexData');
 const { linhaNavegacao, menuPular, aproximar, EmbedBuilder } = require('../utils/ui');
@@ -8,7 +7,7 @@ const AUTOR_COVER =
   `Um grimório de comandos da **${THEME.nome}**.\n\n` +
   `↻ Use os botões para folhear as páginas.\n` +
   `⤵️ Use o menu para pular direto a um comando.\n` +
-  `🔎 Ou busque: \`/codex comando:nome\` • \`$codex nome\`\n\n` +
+  `🔎 Ou busque: \`$codex nome\` para ir direto a um comando.\n\n` +
   `Total de encantamentos: **${TOTAL}** comandos.`;
 
 function renderizarPagina(indice) {
@@ -73,64 +72,10 @@ function componentes(indice) {
   return [nav, menu];
 }
 
+// Módulo de apoio ao prefixo `$codex` / `$ajuda` (não há mais comandos slash).
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName('codex')
-    .setDescription('📖 O livro de comandos da bot, página a página')
-    .addStringOption((op) =>
-      op.setName('comando').setDescription('Busque um comando pelo nome').setRequired(false)
-    ),
-  async execute(interaction, client) {
-    const busca = interaction.options.getString('comando');
-
-    let pagina = 0;
-    if (busca) {
-      const achado = aproximar(busca, COMANDOS);
-      if (achado) {
-        pagina = COMANDOS.indexOf(achado) + 1;
-      } else {
-        const embedErro = criarEmbed({
-          titulo: 'Comando não encontrado',
-          descricao: `Não encontrei nada parecido com \`${busca}\`. Tente \`/codex\` e use o menu de pular.`,
-          cor: 0xE67E80,
-        });
-        return interaction.reply({ embeds: [embedErro], ephemeral: true });
-      }
-    }
-
-    const resposta = await interaction.reply({
-      embeds: [renderizarPagina(pagina)],
-      components: componentes(pagina),
-      fetchReply: true,
-    });
-
-    const coletor = resposta.createMessageComponentCollector({
-      time: 5 * 60 * 1000,
-    });
-
-    coletor.on('collect', async (i) => {
-      const id = i.customId;
-      if (id === 'codex_first') pagina = 0;
-      else if (id === 'codex_prev') pagina = Math.max(0, pagina - 1);
-      else if (id === 'codex_next') pagina = Math.min(TOTAL, pagina + 1);
-      else if (id === 'codex_last') pagina = TOTAL;
-      else if (id === 'codex_jump') pagina = parseInt(i.values[0], 10);
-
-      await i.update({ embeds: [renderizarPagina(pagina)], components: componentes(pagina) });
-    });
-
-    coletor.on('end', async () => {
-      try {
-        await resposta.edit({ components: [] });
-      } catch {
-        /* ignora */
-      }
-    });
-  },
+  buscar: (termo) => aproximar(termo, COMANDOS),
+  renderizarPagina,
+  componentes,
+  TOTAL,
 };
-
-// Exporta também a lógica de busca para o prefixo
-module.exports.buscar = (termo) => aproximar(termo, COMANDOS);
-module.exports.renderizarPagina = renderizarPagina;
-module.exports.componentes = componentes;
-module.exports.TOTAL = TOTAL;

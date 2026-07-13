@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const { criarEmbed, THEME } = require('./theme');
 const { verificarCanal, obterConfig, salvarConfig, TIPOS_ANUNCIO } = require('./servidorStore');
 const { adicionarLembrete, carregarLembretes, removerLembrete } = require('./lembretesStore');
@@ -7,6 +9,55 @@ const crypto = require('crypto');
 const codex = require('../commands/codex');
 
 const PREFIXO = '$';
+
+// ── Carga dos comandos (modo prefixo `$`, sem slash) ──────────────────
+// Comandos que já têm tratamento inline abaixo (não precisam do bridge).
+const INLINE = new Set(['ping', 'dado', 'roleta', 'lembrete', 'anuncio', 'configurar', 'organizar', 'codex']);
+
+// Assinaturas para converter os argumentos do `$mensagem` nas opções que
+// cada comando slash espera. Tipos: user, int, rest (resto da linha), token.
+const SIGNATURES = {
+  abraco: [{ name: 'usuario', user: true, optional: true }],
+  avatar: [{ name: 'usuario', user: true, optional: true }],
+  aviso: [{ name: 'mensagem', rest: true }],
+  cartasecreta: [{ name: 'usuario', user: true, required: true }, { name: 'mensagem', rest: true }],
+  '8ball': [{ name: 'pergunta', rest: true }],
+  guerra: [],
+  lentidao: [{ name: 'segundos', int: true }],
+  limpar: [{ name: 'quantidade', int: true }],
+  membros: [],
+  mila: [],
+  moeda: [],
+  roleta_russa: [],
+  seguranca: [],
+  ship: [{ name: 'usuario1', user: true }, { name: 'usuario2', user: true }],
+  social: [{ name: 'usuario', user: true, optional: true }],
+  status: [],
+  votar: 'especial',
+};
+
+const USO_PADRAO = {
+  abraco: 'Use: `$abraco [@usuário]`',
+  avatar: 'Use: `$avatar [@usuário]`',
+  aviso: 'Use: `$aviso sua mensagem aqui`',
+  cartasecreta: 'Use: `$cartasecreta @usuário sua mensagem`',
+  '8ball': 'Use: `$8ball sua pergunta?`',
+  lentidao: 'Use: `$lentidao 5` (segundos, 0–21600)',
+  limpar: 'Use: `$limpar 10` (2–100 mensagens)',
+  ship: 'Use: `$ship @usuario1 @usuario2`',
+  votar: 'Use: `$votar sua pergunta? opcao1, opcao2, opcao3`',
+};
+
+// Carrega os módulos de comando que não são tratados inline.
+const EXTRA = {};
+const pastaCmds = path.join(__dirname, '..', 'commands');
+for (const arquivo of fs.readdirSync(pastaCmds)) {
+  if (!arquivo.endsWith('.js')) continue;
+  const mod = require(path.join(pastaCmds, arquivo));
+  if (mod && mod.data && typeof mod.execute === 'function' && mod.data.name) {
+    if (!INLINE.has(mod.data.name)) EXTRA[mod.data.name] = mod;
+  }
+}
 
 // ── Helpers de parsing ────────────────────────────────────────────────
 
@@ -38,6 +89,130 @@ function extrairCanal(mensagem) {
 
 function responder(mensagem, embed, ephemeral) {
   return mensagem.reply({ embeds: [embed], ephemeral: !!ephemeral });
+}
+
+async function resolveUser(token, message, client) {
+  if (!token) return null;
+  const men = token.match(/^<@!?(\d+)>$/);
+  const id = men ? men[1] : /^\d+$/.test(token) ? token : null;
+  if (id) {
+    try {
+      return await client.users.fetch(id);
+    } catch {
+      return message.mentions.users.get(id) || null;
+    }
+  }
+  return message.mentions.users.first() || null;
+}
+
+async function parseArgs(comando, args, message, client) {
+  if (comando === 'votar') {
+    if (args.length < 1) return null;
+    const opcoes = args[args.length - 1];
+    const pergunta = args.slice(0, -1).join(' ').trim() || 'Sem pergunta';
+    return { pergunta, opcoes };
+  }
+  const sig = SIGNATURES[comando] || [];
+  const v = {};
+  let idx = 0;
+  for (const s of sig) {
+    if (s.rest) {
+      v[s.name] = args.slice(idx).join(' ').trim() || null;
+      idx = args.length;
+    } else if (s.user) {
+      const tok = args[idx];
+      idx++;
+      const u = tok ? await resolveUser(tok, message, client) : null;
+      if (s.required && !u) return null;
+      v[s.name] = u;
+    } else if (s.int) {
+      const tok = args[idx];
+      idx++;
+      v[s.name] = tok != null ? parseInt(tok, 10) : null;
+    } else {
+      const tok = args[idx];
+      idx++;
+      v[s.name] = tok || null;
+    }
+  }
+  return v;
+}
+
+// Cria uma "interação" sintética a partir de uma mensagem `$comando`,
+// suficiente para os comandos existentes (que usam a API de interação).
+function criarInteracao(message, client, valores) {
+  const opt = {
+    getString: (n) => (valores[n] != null ? String(valores[n]) : null),
+    getBoolean: (n) => (valores[n] != null ? Boolean(valores[n]) : null),
+    getInteger: (n) => (valores[n] != null ? Number(valores[n]) : null),
+    getUser: (n) => valores[n] || null,
+    getChannel: (n) => valores[n] || null,
+    getSubcommand: () => null,
+  };
+  return {
+    user: message.author,
+    guild: message.guild,
+    guildId: message.guildId,
+    channelId: message.channelId,
+    channel: message.channel,
+    member: message.member,
+    memberPermissions: message.memberPermissions,
+    options: opt,
+    replied: false,
+    deferred: false,
+    async reply(o) {
+      const m = await message.reply(o);
+      this.replied = true;
+      return m;
+    },
+    async followUp(o) {
+      return message.channel.send(o);
+    },
+    async editReply(o) {
+      return message.edit(o);
+    },
+    async deferReply() {
+      return message;
+    },
+  };
+}
+
+async function responderCodex(mensagem, termo) {
+  termo = (termo || '').trim();
+  let pagina = 0;
+  if (termo) {
+    const achado = codex.buscar(termo);
+    if (achado) {
+      const COMANDOS = require('../utils/codexData').COMANDOS;
+      pagina = COMANDOS.indexOf(achado);
+    } else {
+      return responder(
+        mensagem,
+        criarEmbed({ titulo: 'Comando não encontrado', descricao: `Nada parecido com \`${termo}\`. Tente \`$codex\` e use o menu.`, cor: 0xE67E80 }),
+        true
+      );
+    }
+  }
+  const resposta = await mensagem.reply({
+    embeds: [codex.renderizarPagina(pagina)],
+    components: codex.componentes(pagina),
+    fetchReply: true,
+  });
+  const coletor = resposta.createMessageComponentCollector({ time: 5 * 60 * 1000, filter: () => true });
+  coletor.on('collect', async (i) => {
+    const id = i.customId;
+    if (id === 'codex_first') pagina = 0;
+    else if (id === 'codex_prev') pagina = Math.max(0, pagina - 1);
+    else if (id === 'codex_next') pagina = Math.min(codex.TOTAL, pagina + 1);
+    else if (id === 'codex_last') pagina = codex.TOTAL;
+    else if (id === 'codex_jump') pagina = parseInt(i.values[0], 10);
+    await i.update({ embeds: [codex.renderizarPagina(pagina)], components: codex.componentes(pagina) });
+  });
+  coletor.on('end', async () => {
+    try {
+      await resposta.edit({ components: [] });
+    } catch {}
+  });
 }
 
 async function enviarConfiguracao(mensagem, guildId) {
@@ -99,41 +274,7 @@ async function handlePrefix(message, client) {
 
   // ── $codex / $livro ── (livro de comandos com busca aproximada)
   if (comando === 'codex' || comando === 'livro' || comando === 'comandos') {
-    const termo = args.join(' ').trim();
-    let pagina = 0;
-    if (termo) {
-      const achado = codex.buscar(termo);
-      if (achado) {
-        pagina = codex.TOTAL - (codex.TOTAL - (require('../utils/codexData').COMANDOS.indexOf(achado) + 1));
-      } else {
-        return responder(
-          message,
-          criarEmbed({ titulo: 'Comando não encontrado', descricao: `Nada parecido com \`${termo}\`. Tente \`$codex\` e use o menu.`, cor: 0xE67E80 }),
-          true
-        );
-      }
-    }
-    const resposta = await message.reply({
-      embeds: [codex.renderizarPagina(pagina)],
-      components: codex.componentes(pagina),
-      fetchReply: true,
-    });
-    const coletor = resposta.createMessageComponentCollector({ time: 5 * 60 * 1000, filter: () => true });
-    coletor.on('collect', async (i) => {
-      const id = i.customId;
-      if (id === 'codex_first') pagina = 0;
-      else if (id === 'codex_prev') pagina = Math.max(0, pagina - 1);
-      else if (id === 'codex_next') pagina = Math.min(codex.TOTAL, pagina + 1);
-      else if (id === 'codex_last') pagina = codex.TOTAL;
-      else if (id === 'codex_jump') pagina = parseInt(i.values[0], 10);
-      await i.update({ embeds: [codex.renderizarPagina(pagina)], components: codex.componentes(pagina) });
-    });
-    coletor.on('end', async () => {
-      try {
-        await resposta.edit({ components: [] });
-      } catch {}
-    });
-    return;
+    return responderCodex(message, args.join(' '));
   }
 
   // ── $dado NdM ──
@@ -153,7 +294,7 @@ async function handlePrefix(message, client) {
     }
     const { quantidade, lados, modificador, rolagens, total } = resultado;
     const linha = rolagens.map((v) => `\`${v}\``).join('  ·  ');
-    const linhaMod = modificador !== 0 ? `\n**Modificador:** ${modificador > 0 ? '+' : ''}$modificador}` : '';
+    const linhaMod = modificador !== 0 ? `\n**Modificador:** ${modificador > 0 ? '+' : ''}${modificador}` : '';
     return responder(
       message,
       criarEmbed({
@@ -433,7 +574,7 @@ async function handlePrefix(message, client) {
     const embed = new EmbedBuilder()
       .setColor(THEME.corPrincipal)
       .setTitle(`${THEME.iconeFooter} Painel de Organização`)
-      .setDescription('Comandos por prefixo `$` e slash `/` funcionam igual. Use `$configurar` para ajustar canais.')
+      .setDescription('Todos os meus comandos usam o prefixo `$`. Use `$codex` ou `$ajuda` para abrir o livro de comandos. Use `$configurar` para ajustar canais.')
       .addFields(
         { name: '🎲 Diversão', value: '`$dado`, `$roleta`', inline: true },
         { name: '⏰ Lembretes', value: '`$lembrete`', inline: true },
@@ -453,16 +594,37 @@ async function handlePrefix(message, client) {
     return message.reply({ embeds: [embed] });
   }
 
-  // ── $ajuda ──
+  // ── $ajuda / $help ── (mesmo resultado do $codex)
   if (comando === 'ajuda' || comando === 'help') {
-    const embed = criarEmbed({
-      titulo: 'Comandos por prefixo $',
-      descricao:
-        '`$ping` · `$dado 1d20` · `$roleta a, b` · `$lembrete 10m msg` · `$lembrete listar` · `$anuncio <tipo> msg` · `$configurar ver` · `$organizar`\n\n' +
-        'Todos também funcionam como slash `/`. Para gerenciar canais use `$configurar`.',
-      cor: THEME.corPrincipal,
-    });
-    return responder(message, embed, true);
+    return responderCodex(message, args.join(' '));
+  }
+
+  // ── Demais comandos (bridge a partir dos módulos de comando) ──
+  if (EXTRA[comando]) {
+    const valores = await parseArgs(comando, args, message, client);
+    if (valores === null) {
+      return responder(
+        message,
+        criarEmbed({
+          titulo: 'Faltam argumentos',
+          descricao: USO_PADRAO[comando] || 'Verifique os argumentos deste comando.',
+          cor: 0xE67E80,
+        }),
+        true
+      );
+    }
+    const interaction = criarInteracao(message, client, valores);
+    try {
+      await EXTRA[comando].execute(interaction, client);
+    } catch (erro) {
+      console.error(`✧ ⎯ ੭ Erro ao executar $${comando}:`, erro);
+      await responder(
+        message,
+        criarEmbed({ titulo: 'Algo se perdeu no caminho', descricao: 'Tive um problema ao executar esse comando. Tente novamente.', cor: 0xE67E80 }),
+        true
+      ).catch(() => {});
+    }
+    return;
   }
 }
 

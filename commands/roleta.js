@@ -1,16 +1,7 @@
-const { SlashCommandBuilder } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName('roleta')
-    .setDescription('Sorteia uma opção entre várias, separadas por vírgula')
-    .addStringOption((opcao) =>
-      opcao
-        .setName('opcoes')
-        .setDescription('Ex: pizza, sushi, hambúrguer')
-        .setRequired(true)
-    ),
+  data: { name: 'roleta', description: 'Sorteia uma opção entre várias, separadas por vírgula' },
 
   async execute(interaction) {
     const bruto = interaction.options.getString('opcoes');

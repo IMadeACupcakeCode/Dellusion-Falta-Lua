@@ -1,4 +1,3 @@
-const { SlashCommandBuilder } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 
 function barra(pct) {
@@ -14,11 +13,7 @@ function mensagemTematica(pct) {
 }
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName('ship')
-    .setDescription('Calcula a compatibilidade amorosa entre dois membros')
-    .addUserOption((op) => op.setName('usuario1').setDescription('Primeira pessoa').setRequired(true))
-    .addUserOption((op) => op.setName('usuario2').setDescription('Segunda pessoa').setRequired(true)),
+  data: { name: 'ship', description: 'Calcula a compatibilidade amorosa entre dois membros' },
   async execute(interaction) {
     const u1 = interaction.options.getUser('usuario1');
     const u2 = interaction.options.getUser('usuario2');

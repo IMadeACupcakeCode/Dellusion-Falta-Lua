@@ -9,14 +9,14 @@ const CATEGORIAS = {
   admin: { nome: '🛡️ Administração', cor: 0x8E7BD6, emoji: '🛡️' },
 };
 
-// slash: nome do comando slash; prefix: nome por prefixo ($)
+// prefix: nome do comando por prefixo ($)
 const COMANDOS = [
   {
     nome: 'dado',
     categoria: 'diversao',
     emoji: '🎲',
     descricao: 'Rola dados no formato NdM, com modificadores. Ex: 2d6+3, 4d8-1.',
-    uso: '/dado notacao:1d20  •  $dado 2d6+3',
+    uso: '$dado 2d6+3',
     exemplo: 'Rola 1d20 e mostra cada valor + modificador.',
   },
   {
@@ -24,7 +24,7 @@ const COMANDOS = [
     categoria: 'diversao',
     emoji: '🪙',
     descricao: 'Cara ou coroa, com animação de giro e botão para jogar de novo.',
-    uso: '/moeda  •  $moeda',
+    uso: '$moeda',
     exemplo: 'Sorteia Cara ou Coroa e permite repetir com um botão.',
   },
   {
@@ -32,7 +32,7 @@ const COMANDOS = [
     categoria: 'diversao',
     emoji: '🎡',
     descricao: 'Sorteia uma opção entre várias separadas por vírgula.',
-    uso: '/roleta opcoes:pizza, sushi  •  $roleta pizza, sushi',
+    uso: '$roleta pizza, sushi',
     exemplo: 'Escolhe uma das opções e destaca a vencedora.',
   },
   {
@@ -40,7 +40,7 @@ const COMANDOS = [
     categoria: 'diversao',
     emoji: '🔮',
     descricao: 'A bola mágica responde sua pergunta com mistério.',
-    uso: '/8ball pergunta:O bot gosta de mim?  •  $8ball o bot gosta de mim?',
+    uso: '$8ball o bot gosta de mim?',
     exemplo: 'Respostas místicas aleatórias com botão para perguntar de novo.',
   },
   {
@@ -48,7 +48,7 @@ const COMANDOS = [
     categoria: 'diversao',
     emoji: '💞',
     descricao: 'Calcula a compatibilidade amorosa entre dois membros.',
-    uso: '/ship usuario1:@alguem usuario2:@outro  •  $ship @a @b',
+    uso: '$ship @a @b',
     exemplo: 'Mostra uma barra de amor e uma mensagem temática.',
   },
   {
@@ -56,7 +56,7 @@ const COMANDOS = [
     categoria: 'diversao',
     emoji: '⚔️',
     descricao: 'Mini guerra de cartas: você vs bot, melhor de 3 rodadas.',
-    uso: '/guerra  •  $guerra',
+    uso: '$guerra',
     exemplo: 'Cada rodada revela cartas e o botão avança para a próxima.',
   },
   {
@@ -64,7 +64,7 @@ const COMANDOS = [
     categoria: 'diversao',
     emoji: '🔫',
     descricao: 'Uma roleta russa de 6 câmaras. Você sobrevive?',
-    uso: '/roleta_russa  •  $roleta_russa',
+    uso: '$roleta_russa',
     exemplo: 'Sorteia a câmara e diz se você "sobreviveu".',
   },
   {
@@ -72,7 +72,7 @@ const COMANDOS = [
     categoria: 'social',
     emoji: '🤗',
     descricao: 'Envia um abraço carinhoso para alguém (ou para você).',
-    uso: '/abraco usuario:@alguem  •  $abraco @alguem',
+    uso: '$abraco @alguem',
     exemplo: 'Menciona o usuário com uma mensagem fofa.',
   },
   {
@@ -80,7 +80,7 @@ const COMANDOS = [
     categoria: 'social',
     emoji: '✉️',
     descricao: 'Entrega uma carta anônima/misteriosa para um membro.',
-    uso: '/cartasecreta usuario:@alguem mensagem:...  •  $cartasecreta @a oi',
+    uso: '$cartasecreta @a oi',
     exemplo: 'Envia a mensagem como uma carta selada no privado do alvo.',
   },
   {
@@ -88,7 +88,7 @@ const COMANDOS = [
     categoria: 'social',
     emoji: '👤',
     descricao: 'Mostra um cartão de perfil do usuário, com botões de ações.',
-    uso: '/social usuario:@alguem  •  $social @alguem',
+    uso: '$social @alguem',
     exemplo: 'Cartão com avatar, tag, cargo e botões de interação.',
   },
   {
@@ -96,7 +96,7 @@ const COMANDOS = [
     categoria: 'util',
     emoji: '🖼️',
     descricao: 'Mostra o avatar de um usuário em tamanho grande.',
-    uso: '/avatar usuario:@alguem  •  $avatar @alguem',
+    uso: '$avatar @alguem',
     exemplo: 'Botões para baixar e trocar entre avatar e avatar do servidor.',
   },
   {
@@ -104,7 +104,7 @@ const COMANDOS = [
     categoria: 'util',
     emoji: '👥',
     descricao: 'Conta membros, bots e humanos do servidor.',
-    uso: '/membros  •  $membros',
+    uso: '$membros',
     exemplo: 'Embed com contadores e botão de atualizar.',
   },
   {
@@ -112,7 +112,7 @@ const COMANDOS = [
     categoria: 'util',
     emoji: '📡',
     descricao: 'Mostra o status da bot (latência, servidores, uptime).',
-    uso: '/status  •  $status',
+    uso: '$status',
     exemplo: 'Latência da API e do bot em ms.',
   },
   {
@@ -120,23 +120,32 @@ const COMANDOS = [
     categoria: 'util',
     emoji: '🗳️',
     descricao: 'Cria uma enquete rápida com botões de opções.',
-    uso: '/votar pergunta:... opcoes:a, b, c  •  $votar ...',
+    uso: '$votar sua pergunta? opcao1, opcao2, opcao3',
     exemplo: 'Cada opção vira um botão; clicar conta o voto.',
   },
   {
-    nome: 'mila',
+    nome: 'sobre',
+    alias: ['mila', 'faltalua'],
     categoria: 'util',
     emoji: '🌙',
     descricao: 'Sobre a Falta Lua — quem ela é e o que faz.',
-    uso: '/mila  •  $mila',
+    uso: '$sobre  •  $mila  •  $faltalua',
     exemplo: 'Cartão de apresentação da bot.',
+  },
+  {
+    nome: 'logs',
+    categoria: 'admin',
+    emoji: '📜',
+    descricao: 'Mostra os logs registrados pela bot, com filtro por pessoa.',
+    uso: '$logs @alguem',
+    exemplo: 'Veja o histórico organizado ou filtre por um usuário específico.',
   },
   {
     nome: 'lembrete',
     categoria: 'util',
     emoji: '⏰',
     descricao: 'Cria, lista ou cancela lembretes agendados.',
-    uso: '/lembrete criar tempo:10m mensagem:...  •  $lembrete 10m ...',
+    uso: '$lembrete 10m beber água',
     exemplo: 'A bot te avisa no canal no tempo certo.',
   },
   {
@@ -144,7 +153,7 @@ const COMANDOS = [
     categoria: 'organizacao',
     emoji: '⚙️',
     descricao: 'Define onde a bot fala e organiza canais de anúncio (requer Gerir Servidor).',
-    uso: '/configurar ver | permitir | proibir | anuncio  •  $configurar ver',
+    uso: '$configurar ver | permitir | proibir | anuncio',
     exemplo: 'Controla canais permitidos/proibidos e roteamento de anúncios.',
   },
   {
@@ -152,7 +161,7 @@ const COMANDOS = [
     categoria: 'organizacao',
     emoji: '📣',
     descricao: 'Envia anúncio classificado no canal do tipo (requer Gerir Servidor).',
-    uso: '/anuncio tipo:evento mensagem:...  •  $anuncio evento ...',
+    uso: '$anuncio evento Sexta tem evento!',
     exemplo: 'Tipos: geral, evento, regra, atualizacao, aviso.',
   },
   {
@@ -160,7 +169,7 @@ const COMANDOS = [
     categoria: 'organizacao',
     emoji: '🗂️',
     descricao: 'Painel de organização do servidor e roteamento de anúncios.',
-    uso: '/organizar  •  $organizar',
+    uso: '$organizar',
     exemplo: 'Visão geral de categorias e canais configurados.',
   },
   {
@@ -168,7 +177,7 @@ const COMANDOS = [
     categoria: 'organizacao',
     emoji: '📖',
     descricao: 'Este livro: lista todos os comandos, página a página.',
-    uso: '/codex  •  $codex  •  /codex comando:dado  •  $codex roleta',
+    uso: '$codex  •  $codex roleta',
     exemplo: 'Navegue com botões, menu de pular e busca por nome.',
   },
   {
@@ -176,7 +185,7 @@ const COMANDOS = [
     categoria: 'admin',
     emoji: '🧹',
     descricao: 'Apaga mensagens recentes do canal (requer Gerenciar Mensagens).',
-    uso: '/limpar quantidade:10  •  $limpar 10',
+    uso: '$limpar 10',
     exemplo: 'Remove até N mensagens com confirmação.',
   },
   {
@@ -184,7 +193,7 @@ const COMANDOS = [
     categoria: 'admin',
     emoji: '🐌',
     descricao: 'Define o modo lento (slowmode) do canal (requer Gerenciar Canais).',
-    uso: '/lentidao segundos:5  •  $lentidao 5',
+    uso: '$lentidao 5',
     exemplo: 'Define o intervalo mínimo entre mensagens.',
   },
   {
@@ -192,7 +201,7 @@ const COMANDOS = [
     categoria: 'admin',
     emoji: '📢',
     descricao: 'Atalho de anúncio geral em qualquer canal (requer Gerir Servidor).',
-    uso: '/aviso mensagem:...  •  $aviso ...',
+    uso: '$aviso sua mensagem aqui',
     exemplo: 'Envia aviso destacado no canal atual.',
   },
   {
@@ -200,7 +209,7 @@ const COMANDOS = [
     categoria: 'admin',
     emoji: '🛡️',
     descricao: 'Dicas de segurança para o servidor e a bot.',
-    uso: '/seguranca  •  $seguranca',
+    uso: '$seguranca',
     exemplo: 'Lista práticas de proteção.',
   },
   {
@@ -208,7 +217,7 @@ const COMANDOS = [
     categoria: 'util',
     emoji: '🏓',
     descricao: 'Responde Pong! para testar se a bot está viva.',
-    uso: '/ping  •  $ping',
+    uso: '$ping',
     exemplo: 'Resposta rápida de teste.',
   },
 ];
