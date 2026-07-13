@@ -25,7 +25,7 @@ const SIGNATURES = {
   aviso: [{ name: 'mensagem', rest: true }],
   cartasecreta: [{ name: 'usuario', user: true, required: true }, { name: 'mensagem', rest: true }],
   '8ball': [{ name: 'pergunta', rest: true }],
-  guerra: [],
+  guerra: [{ name: 'usuario', user: true, optional: true }, { name: 'sub', rest: true, optional: true }],
   lentidao: [{ name: 'segundos', int: true }],
   limpar: [{ name: 'quantidade', int: true }],
   membros: [],
@@ -174,6 +174,9 @@ function criarInteracao(message, client, valores) {
     member: message.member,
     memberPermissions: message.memberPermissions,
     options: opt,
+    message: message,
+    _guerraMention: valores.usuario || null,
+    _guerraArgs: valores.sub ? [valores.sub] : [],
     replied: false,
     deferred: false,
     async reply(o) {
