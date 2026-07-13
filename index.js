@@ -4,6 +4,7 @@ const path = require('path');
 const { Client, GatewayIntentBits, Collection, ActivityType } = require('discord.js');
 const { THEME, criarEmbed } = require('./utils/theme');
 const { reagendarTodosLembretes } = require('./utils/agendador');
+const { verificarCanal } = require('./utils/servidorStore');
 
 const { DISCORD_TOKEN } = process.env;
 
@@ -45,6 +46,24 @@ client.on('interactionCreate', async (interaction) => {
 
   const comando = client.commands.get(interaction.commandName);
   if (!comando) return;
+
+  // Comandos de gerência de canal podem ser usados em qualquer lugar (para poder reconfigurar)
+  const comandosLivres = ['configurar'];
+  if (interaction.guildId && !comandosLivres.includes(interaction.commandName)) {
+    const checagem = verificarCanal(interaction.guildId, interaction.channelId);
+    if (!checagem.ok) {
+      const motivos = {
+        bloqueado: 'Este canal está na lista de **proibidos**. Use outro ou ajuste em `/configurar`.',
+        foraDaLista: 'Só falo nos canais permitidos. Veja em `/configurar ver` ou peça pra me liberarem aqui.',
+      };
+      const embed = criarEmbed({
+        titulo: 'Silêncio sob a lua',
+        descricao: motivos[checagem.motivo] || 'Não falo aqui.',
+        cor: 0xE67E80,
+      });
+      return interaction.reply({ embeds: [embed], ephemeral: true });
+    }
+  }
 
   try {
     await comando.execute(interaction, client);
