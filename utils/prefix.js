@@ -48,7 +48,7 @@ const USO_PADRAO = {
   lentidao: 'Use: `$lentidao 5` (segundos, 0–21600)',
   limpar: 'Use: `$limpar 10` (2–100 mensagens)',
   ship: 'Use: `$ship @usuario1 @usuario2`',
-  votar: 'Use: `$votar sua pergunta? opcao1, opcao2, opcao3`',
+  votar: 'Use: `$votar pergunta | opção 1, opção 2, opção 3 | 10m`',
 };
 
 // Carrega os módulos de comando que não são tratados inline.
@@ -110,10 +110,13 @@ async function resolveUser(token, message, client) {
 
 async function parseArgs(comando, args, message, client) {
   if (comando === 'votar') {
-    if (args.length < 1) return null;
-    const opcoes = args[args.length - 1];
-    const pergunta = args.slice(0, -1).join(' ').trim() || 'Sem pergunta';
-    return { pergunta, opcoes };
+    if (args.length === 0) return {};
+    const raw = args.join(' ').trim();
+    const partes = raw.split('|').map((p) => p.trim()).filter((p) => p.length);
+    const pergunta = partes[0] || 'Sem pergunta';
+    const opcoes = partes[1] || null;
+    const duracao = partes[2] || null;
+    return { pergunta, opcoes, duracao };
   }
   const sig = SIGNATURES[comando] || [];
   const v = {};
