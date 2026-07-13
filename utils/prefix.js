@@ -358,54 +358,86 @@ async function handlePrefix(message, client) {
         true
       );
     }
-    // criar: $lembrete <tempo> <mensagem...>
-    const tempoTexto = args[0];
-    const mensagemTxt = args.slice(1).join(' ');
-    if (!tempoTexto || !mensagemTxt) {
-      return responder(
-        message,
-        criarEmbed({
-          titulo: 'Uso incorreto',
-          descricao: 'Use: `$lembrete 10m beber água`, `$lembrete 2pm 21/08/2026 reunião` ou `$lembrete listar`.',
-          cor: 0xE67E80,
-        }),
-        true
-      );
-    }
-    const ms = parseTempo(tempoTexto);
-    if (!ms || ms > 365 * 24 * 60 * 60 * 1000) {
-      return responder(
-        message,
-        criarEmbed({
-          titulo: 'Tempo inválido',
-          descricao: 'Use formatos como `10m`, `1h30m`, `2d`, `13:40 02/12`, `2pm 21/08/2026`, `amanhã 14:00` (máx 1 ano).',
-          cor: 0xE67E80,
-        }),
-        true
-      );
-    }
-    const id = crypto.randomBytes(3).toString('hex');
-    const disparaEm = Date.now() + ms;
-    const lembrete = {
-      id,
-      userId: message.author.id,
-      usuarioNome: message.author.username,
-      channelId: message.channelId,
-      mensagem: mensagemTxt,
-      disparaEm,
-      criadoEm: Date.now(),
-    };
-    adicionarLembrete(lembrete);
-    agendarLembrete(client, lembrete);
-    return responder(
-      message,
-      criarEmbed({
-        titulo: '🌙 Lembrete guardado sob a lua',
-        descricao: `⏰ **Quando:** ${formatarDataAbsoluta(disparaEm)} (em ${formatarDuracao(ms)})\n💬 **Mensagem:**\n> "${mensagemTxt}"\n\n**ID:** \`${id}\``,
-        cor: THEME.corLembrete,
-        rodape: `${THEME.nome} não vai esquecer, ${message.author.username}`,
-      })
+
+    // $lembrete sozinho: mostra opções de criação via modal interativo
+    const embedCriar = criarEmbed({
+      titulo: '🌙 Criar Lembrete',
+      descricao:
+        'Escolha como deseja criar:\n\n' +
+        '📝 **Modal interativo** (recomendado)\n' +
+        'Clique no botão para abrir um formulário com campos separados:\n' +
+        '• Campo 1: Data/hora (`2pm 21/08/2026`, `10m`, `amanhã 14:00`)\n' +
+        '• Campo 2: Mensagem do lembrete\n\n' +
+        '💬 **Texto direto:** `$lembrete <quando> <mensagem>`\n' +
+        'Ex: `$lembrete 10m beber água`\n' +
+        'Ex: `$lembrete 2pm 21/08/2026 reunião`',
+      cor: THEME.corLembrete,
+    });
+
+    const row = new ActionRowBuilder().addComponents(
+      botao('📝 Abrir formulário', 'lembrete_modal', ButtonStyle.Primary, '📝')
     );
+
+    const resposta = await message.reply({ embeds: [embedCriar], components: [row] });
+
+    const coletor = resposta.createMessageComponentCollector({ time: 60 * 1000, filter: (i) => i.user.id === message.author.id });
+
+    coletor.on('collect', async (i) => {
+      if (i.customId === 'lembrete_modal') {
+        const modal = new ModalBuilder()
+          .setCustomId('lembrete_modal_prefix')
+          .setTitle('🌙 Novo Lembrete');
+
+        const quandoInput = new TextInputBuilder()
+          .setCustomId('lembrete_quando')
+          .setLabel('📅 Quando? (hora + data ou tempo relativo)')
+          .setStyle(TextInputStyle.Short)
+          .setPlaceholder('Ex: 2pm 21/08/2026 • 13:40 02/12 • 1h30m • 10m • amanhã 14:00')
+          .setRequired(true);
+
+        const mensagemInput = new TextInputBuilder()
+          .setCustomId('lembrete_mensagem')
+          .setLabel('💬 O que lembrar?')
+          .setStyle(TextInputStyle.Paragraph)
+          .setPlaceholder('Escreva aqui o lembrete...')
+          .setMaxLength(500)
+          .setRequired(true);
+
+        modal.addComponents(
+          new ActionRowBuilder().addComponents(quandoInput),
+          new ActionRowBuilder().addComponents(mensagemInput)
+        );
+
+        await i.showModal(modal);
+
+        try {
+          const submitted = await i.awaitModalSubmit({ filter: (m) => m.user.id === message.author.id, time: 5 * 60 * 1000 });
+          const quando = submitted.fields.getTextInputValue('lembrete_quando');
+          const mensagem = submitted.fields.getTextInputValue('lembrete_mensagem');
+          const ms = parseTempo(quando);
+
+          if (!ms) {
+            return submitted.reply({ embeds: [criarEmbed({ titulo: 'Tempo inválido', descricao: 'Use formatos como `10m`, `1h30m`, `2d`, `13:40 02/12`, `2pm 21/08/2026`, `amanhã 14:00`.', cor: 0xE67E80 })], ephemeral: true });
+          }
+
+          const id = crypto.randomBytes(3).toString('hex');
+          const disparaEm = Date.now() + ms;
+          const lembrete = { id, userId: message.author.id, usuarioNome: message.author.username, channelId: message.channelId, mensagem, disparaEm, criadoEm: Date.now() };
+          adicionarLembrete(lembrete);
+          agendarLembrete(client, lembrete);
+
+          return submitted.reply({ embeds: [criarEmbed({ titulo: '🌙 Lembrete guardado', descricao: `⏰ **Quando:** ${formatarDataAbsoluta(disparaEm)} (em ${formatarDuracao(ms)})\n💬 **Mensagem:**\n> ${mensagem}\n\n**ID:** \`${id}\``, cor: THEME.corLembrete, rodape: `${THEME.nome} não vai esquecer, ${message.author.username}` })], ephemeral: true });
+        } catch {
+          // Modal expirou
+        }
+      }
+    });
+
+    coletor.on('end', async () => {
+      try {
+        await resposta.edit({ components: [] });
+      } catch {}
+    });
   }
 
   // ── $anuncio <tipo> <mensagem> ──
