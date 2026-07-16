@@ -5,7 +5,7 @@ const {
   PermissionFlagsBits,
 } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
-const { isStaff } = require('../utils/perms');
+const { isStaff, STAFF_CARGO_IDS } = require('../utils/perms');
 const { salvarSnapshot, obterMarcacoes } = require('../utils/segurancaStore');
 
 const ONLINE_STATUSES = new Set(['online', 'idle', 'dnd']);
@@ -16,6 +16,8 @@ function isGuildStaff(member) {
   if (member.permissions?.has(PermissionFlagsBits.Administrator) || member.permissions?.has(PermissionFlagsBits.ManageGuild)) {
     return true;
   }
+  const cargos = member.roles?.cache || [];
+  if (cargos.some((role) => STAFF_CARGO_IDS.includes(role.id))) return true;
   return member.roles.cache.some((role) => STAFF_KEYWORDS.test(role.name));
 }
 

@@ -5,6 +5,7 @@ const { parseTempo, formatarDuracao, formatarDataAbsoluta } = require('../utils/
 const { adicionarLembrete, carregarLembretes, removerLembrete, filtrarLembretes } = require('../utils/lembretesStore');
 const { agendarLembrete } = require('../utils/agendador');
 const { botao } = require('../utils/ui');
+const { isStaff } = require('../utils/perms');
 
 const ITENS_POR_PAGINA = 5;
 
@@ -137,11 +138,6 @@ async function abrirModalCriar(interaction, client) {
   } catch {
     // Modal expirou ou foi cancelado
   }
-}
-
-// ── Verifica se o usuário é staff (ManageGuild) ───────────────────────
-function isStaff(member) {
-  return member?.permissions?.has('ManageGuild') ?? false;
 }
 
 // ── Lista interativa ──────────────────────────────────────────────────

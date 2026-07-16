@@ -8,6 +8,7 @@ const { adicionarLembrete, carregarLembretes, removerLembrete, filtrarLembretes 
 const { agendarLembrete } = require('./agendador');
 const { parseTempo, formatarDuracao, formatarDataAbsoluta } = require('./tempo');
 const crypto = require('crypto');
+const { isStaff } = require('./perms');
 const codex = require('../commands/codex');
 
 const PREFIXO = '$';
@@ -548,10 +549,10 @@ async function handlePrefix(message, client) {
   // ── $configurar ... ──
   if (comando === 'configurar') {
     const sub = (args[0] || '').toLowerCase();
-    if (!message.memberPermissions || !message.memberPermissions.has('ManageGuild')) {
+    if (!isStaff(message.member)) {
       return responder(
         message,
-        criarEmbed({ titulo: 'Sem permissão', descricao: 'Você precisa de **Gerir Servidor** para usar isso.', cor: 0xE67E80 }),
+        criarEmbed({ titulo: 'Sem permissão', descricao: 'Você precisa de **Gerir Servidor** ou de um cargo de staff para usar isso.', cor: 0xE67E80 }),
         true
       );
     }
@@ -694,7 +695,7 @@ async function handlePrefix(message, client) {
 async function mostrarListaLembretes(message, client, filtrosIniciais = {}) {
   let filtros = { ...filtrosIniciais, ordenar: 'mais_proximo' };
   let pagina = 0;
-  const staff = message.member?.permissions?.has('ManageGuild') ?? false;
+  const staff = isStaff(message.member);
 
   function renderizar() {
     const lista = filtrarLembretes(filtros);

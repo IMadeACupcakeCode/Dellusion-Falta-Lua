@@ -1,5 +1,9 @@
 // Verifica se um membro é staff por permissão ou cargo específico
-const STAFF_CARGO_IDS = ['1518773740295422042']; // IDs de cargos considerados staff
+const STAFF_CARGO_IDS = [
+  '1515594057387081808',
+  '1518773740295422042',
+  '1515594080254693586',
+]; // IDs de cargos considerados staff
 
 function isStaff(member) {
   if (!member) return false;
@@ -11,4 +15,4 @@ function isStaff(member) {
   return cargos.some((r) => STAFF_CARGO_IDS.includes(r.id));
 }
 
-module.exports = { isStaff };
+module.exports = { isStaff, STAFF_CARGO_IDS };
