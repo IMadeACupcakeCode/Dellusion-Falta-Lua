@@ -5,8 +5,8 @@ const {
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
-  PermissionFlagsBits,
   StringSelectMenuBuilder,
+  PermissionFlagsBits,
 } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 const { isStaff, STAFF_CARGO_IDS } = require('../utils/perms');
@@ -40,14 +40,12 @@ function isOnline(member) {
   return ONLINE_STATUSES.has(presenceStatus(member));
 }
 
-// Converte o cache (Map) em array de membros
 function cacheArray(guildId) {
   const entry = clientCache.get(guildId);
   if (!entry || !entry.members) return [];
   return Array.from(entry.members.values());
 }
 
-// Aplica filtros de visão
 function filtrar(view, membros) {
   switch (view) {
     case 'online':
@@ -71,17 +69,17 @@ function filtrar(view, membros) {
   }
 }
 
-// Busca textual por nome/tag/id
+// Busca textual por nome/tag/id (case-insensitive)
 function buscar(termo, membros) {
-  const t = termo.trim().toLowerCase();
+  const t = (termo || '').trim().toLowerCase();
   if (!t) return membros;
   return membros.filter((m) => {
     const u = m.user;
     return (
-      u.username.toLowerCase().includes(t) ||
+      (u.username && u.username.toLowerCase().includes(t)) ||
       (u.tag && u.tag.toLowerCase().includes(t)) ||
       (u.globalName && u.globalName.toLowerCase().includes(t)) ||
-      u.id.includes(t)
+      (u.id && u.id.includes(t))
     );
   });
 }
@@ -119,7 +117,6 @@ function buildStats(membros) {
   };
 }
 
-// ── Listagem paginada ─────────────────────────────────────────────────────
 const POR_PAGINA = 12;
 
 function formatPage(lista, pagina, termo) {
@@ -140,48 +137,113 @@ function formatPage(lista, pagina, termo) {
     : ['Nenhum membro encontrado.'];
 
   const filtroInfo = termo ? `\n🔎 Busca: \`${termo}\`` : '';
-  return {
-    texto: linhas.join('\n') + filtroInfo,
-    pagina,
-    paginas,
-    total,
-  };
+  return { texto: linhas.join('\n') + filtroInfo, pagina, paginas, total };
+}
+
+// ── Embed de detalhe de um membro (reutilizado no painel) ─────────────────
+function buildMembroEmbed(member) {
+  const hist = obterHistorico(member.user.id);
+  const risco = avaliarRisco(member);
+  const marcacoes = obterMarcacoes(member.guild.id)[member.user.id];
+  const st = presenceStatus(member);
+  const criadoEm = member.user.createdAt ? formatarDataAbsoluta(member.user.createdAt.getTime()) : 'desconhecido';
+  const entrouEm = member.joinedAt ? formatarDataAbsoluta(member.joinedAt.getTime()) : 'desconhecido';
+
+  const desc =
+    `**Tag:** ${member.user.tag}\n` +
+    `**ID:** \`${member.user.id}\`\n` +
+    `**Tipo:** ${member.user.bot ? '🤖 Bot' : '👤 Humano'}  ${isGuildStaff(member) ? '• 👑 Staff' : ''}\n` +
+    `**Status agora:** ${STATUS_EMOJI[st] || '⚪'} ${st}\n` +
+    `**Conta criada:** ${criadoEm}\n` +
+    `**Entrou no servidor:** ${entrouEm}\n`;
+
+  const embed = criarEmbed({
+    titulo: `🔍 Detalhe de ${member.user.username}`,
+    descricao: desc,
+    cor: hist.suspenso > 0 || risco.length ? 0xE67E80 : THEME.corPrincipal,
+  });
+
+  embed.addFields({
+    name: '🚫 Suspensões registradas',
+    value: `Total: **${hist.suspenso}**  (servidor: ${hist.suspensoServidor || 0} • Discord: ${hist.suspensoDiscord || 0})`,
+    inline: false,
+  });
+
+  if (risco.length) {
+    embed.addFields({ name: '⚠️ Sinais de risco (Discord)', value: risco.map((r) => `• ${r}`).join('\n'), inline: false });
+  }
+  if (marcacoes) {
+    embed.addFields({ name: '📌 Marcação no servidor', value: `**${marcacoes.tipo}**: ${marcacoes.nota || ''}`, inline: false });
+  }
+  return embed;
 }
 
 // ── Botões / menus ────────────────────────────────────────────────────────
+function navRow(pagina, paginas) {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('sec_first').setLabel('⏮️').setStyle(ButtonStyle.Secondary).setDisabled(pagina <= 0),
+    new ButtonBuilder().setCustomId('sec_prev').setLabel('◀️').setStyle(ButtonStyle.Primary).setDisabled(pagina <= 0),
+    new ButtonBuilder().setCustomId('sec_next').setLabel('▶️').setStyle(ButtonStyle.Primary).setDisabled(pagina >= paginas - 1),
+    new ButtonBuilder().setCustomId('sec_last').setLabel('⏭️').setStyle(ButtonStyle.Secondary).setDisabled(pagina >= paginas - 1)
+  );
+}
+
 function buildButtons(view) {
-  const ativo = (v) => v === view;
   const mk = (id, label, emoji, style) =>
     new ButtonBuilder().setCustomId(id).setLabel(label).setEmoji(emoji).setStyle(style);
+  const ativo = (v) => v === view;
   const wrap = (b) => b.setDisabled(ativo(b.data.custom_id.replace('sec_view_', '')));
 
   const row1 = new ActionRowBuilder().addComponents(
     wrap(mk('sec_view_all', 'Todos', '📋', ButtonStyle.Primary)),
     wrap(mk('sec_view_online', 'Online', '🟢', ButtonStyle.Success)),
     wrap(mk('sec_view_offline', 'Offline', '⚪', ButtonStyle.Secondary)),
-    mk('sec_search', '🔍 Buscar', '🔍', ButtonStyle.Primary),
-    mk('sec_refresh', 'Recarregar', '🔄', ButtonStyle.Secondary)
+    wrap(mk('sec_view_bots', 'Bots', '🤖', ButtonStyle.Secondary)),
+    wrap(mk('sec_view_staff', 'Staff', '👑', ButtonStyle.Secondary))
   );
   const row2 = new ActionRowBuilder().addComponents(
-    wrap(mk('sec_view_bots', 'Bots', '🤖', ButtonStyle.Secondary)),
-    wrap(mk('sec_view_staff', 'Staff', '👑', ButtonStyle.Secondary)),
     wrap(mk('sec_view_members', 'Membros', '👤', ButtonStyle.Secondary)),
-    wrap(mk('sec_view_suspeitos', 'Suspeitos', '🚨', ButtonStyle.Danger))
+    wrap(mk('sec_view_suspeitos', 'Suspeitos', '🚨', ButtonStyle.Danger)),
+    mk('sec_search', 'Buscar', '🔍', ButtonStyle.Primary),
+    mk('sec_refresh', 'Recarregar', '🔄', ButtonStyle.Secondary)
   );
   return [row1, row2];
 }
 
-function navRow(view, pagina, paginas) {
-  const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('sec_first').setLabel('⏮️').setStyle(ButtonStyle.Secondary).setDisabled(pagina <= 0),
-    new ButtonBuilder().setCustomId('sec_prev').setLabel('◀️').setStyle(ButtonStyle.Primary).setDisabled(pagina <= 0),
-    new ButtonBuilder().setCustomId('sec_next').setLabel('▶️').setStyle(ButtonStyle.Primary).setDisabled(pagina >= paginas - 1),
-    new ButtonBuilder().setCustomId('sec_last').setLabel('⏭️').setStyle(ButtonStyle.Secondary).setDisabled(pagina >= paginas - 1)
-  );
-  return row;
+function membroSelectRow(guildId) {
+  const membros = cacheArray(guildId).slice(0, 25);
+  const menu = new StringSelectMenuBuilder()
+    .setCustomId('sec_membro')
+    .setPlaceholder('👤 Selecionar membro para ver detalhe')
+    .addOptions(
+      membros.map((m) => ({
+        label: m.user.username.slice(0, 100),
+        value: m.user.id,
+        description: `${m.user.bot ? 'Bot' : 'Humano'}${isGuildStaff(m) ? ' • Staff' : ''}`,
+        emoji: m.user.bot ? '🤖' : '👤',
+      }))
+    );
+  return new ActionRowBuilder().addComponents(menu);
 }
 
-// ── Embeds ────────────────────────────────────────────────────────────────
+function buildSearchModal() {
+  return new ModalBuilder()
+    .setCustomId('sec_search_modal')
+    .setTitle('🔍 Buscar membro')
+    .addComponents(
+      new ActionRowBuilder().addComponents(
+        new TextInputBuilder()
+          .setCustomId('sec_termo')
+          .setLabel('Nome, tag ou ID')
+          .setStyle(TextInputStyle.Short)
+          .setPlaceholder('Ex: Nikki, nome#1234, ou ID numérico')
+          .setRequired(true)
+          .setMaxLength(64)
+      )
+    );
+}
+
+// ── Embeds de painel ──────────────────────────────────────────────────────
 function buildPainelEmbed(stats, view, paginaInfo, termo, warning) {
   const embed = criarEmbed({
     titulo: '🛡️ SecurityBreach — Painel de Segurança',
@@ -203,110 +265,12 @@ function buildPainelEmbed(stats, view, paginaInfo, termo, warning) {
   embed.addFields({
     name: '🧭 Como usar',
     value:
-      'Toque nos emojes para filtrar. 🔍 abre busca (nome/tag/id). Use ◀️▶️ para paginar. ' +
-      '🔄 recarrega o cache. Clique em 🚨 para ver só suspeitos. ' +
-      'Para ver o histórico de um membro, use `$omnitrix`.',
+      'Toque nos emojes para filtrar. 🔍 abre busca (nome/tag/id). 👤 seleciona um membro para ver o detalhe. ' +
+      'Use ◀️▶️ para paginar e 🔄 para recarregar o cache.',
     inline: false,
   });
   if (warning) embed.addFields({ name: '⚠️ Aviso', value: warning, inline: false });
   return embed;
-}
-
-function buildHistoricoEmbed(member) {
-  const hist = obterHistorico(member.user.id);
-  const risco = avaliarRisco(member);
-  const marcacoes = obterMarcacoes(member.guild.id)[member.user.id];
-
-  const st = presenceStatus(member);
-  const criadoEm = member.user.createdAt ? formatarDataAbsoluta(member.user.createdAt.getTime()) : 'desconhecido';
-  const entrouEm = member.joinedAt ? formatarDataAbsoluta(member.joinedAt.getTime()) : 'desconhecido';
-
-  const desc =
-    `**Tag:** ${member.user.tag}\n` +
-    `**ID:** \`${member.user.id}\`\n` +
-    `**Tipo:** ${member.user.bot ? '🤖 Bot' : '👤 Humano'}  ${isGuildStaff(member) ? '• 👑 Staff' : ''}\n` +
-    `**Status agora:** ${STATUS_EMOJI[st] || '⚪'} ${st}\n` +
-    `**Conta criada:** ${criadoEm}\n` +
-    `**Entrou no servidor:** ${entrouEm}\n`;
-
-  const embed = criarEmbed({
-    titulo: `🔍 Histórico de ${member.user.username}`,
-    descricao: desc,
-    cor: hist.suspenso > 0 || risco.length ? 0xE67E80 : THEME.corPrincipal,
-  });
-
-  embed.addFields({
-    name: '🚫 Suspensões registradas',
-    value:
-      `Total: **${hist.suspenso}**  (servidor: ${hist.suspensoServidor || 0} • Discord: ${hist.suspensoDiscord || 0})`,
-    inline: false,
-  });
-
-  if (hist.historico && hist.historico.length) {
-    const linhas = hist.historico
-      .slice(-8)
-      .reverse()
-      .map((h) => {
-        const quando = formatarDataAbsoluta(h.em);
-        const det = h.motivo ? ` — ${h.motivo}` : '';
-        const quem = h.por ? ` (por ${h.por})` : '';
-        return `• **${h.tipo}** [${h.origem}] em ${quando}${det}${quem}`;
-      });
-    embed.addFields({ name: '📜 Log de eventos', value: linhas.join('\n') || 'Sem eventos.', inline: false });
-  }
-
-  if (hist.suspeitas && hist.suspeitas.length) {
-    const linhas = hist.suspeitas
-      .slice(-8)
-      .reverse()
-      .map((s) => `• [${s.escopo}] ${s.motivo || 'sem motivo'} (${formatarDataAbsoluta(s.em)})`);
-    embed.addFields({ name: '🚨 Suspeitas anotadas', value: linhas.join('\n') || 'Nenhuma.', inline: false });
-  }
-
-  if (risco.length) {
-    embed.addFields({ name: '⚠️ Sinais de risco (Discord)', value: risco.map((r) => `• ${r}`).join('\n'), inline: false });
-  }
-
-  if (marcacoes) {
-    embed.addFields({ name: '📌 Marcação no servidor', value: `**${marcacoes.tipo}**: ${marcacoes.nota || ''}`, inline: false });
-  }
-
-  embed.addFields({
-    name: '🧭 Ações',
-    value:
-      'Use os botões para marcar este membro como suspeito ou registrar uma suspensão no histórico.',
-    inline: false,
-  });
-
-  return embed;
-}
-
-function buildHistoricoBotoes() {
-  return [
-    new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId('hist_suspeito').setLabel('Marcar suspeito').setEmoji('🚨').setStyle(ButtonStyle.Danger),
-      new ButtonBuilder().setCustomId('hist_suspensao').setLabel('Registrar suspensão').setEmoji('🚫').setStyle(ButtonStyle.Danger),
-      new ButtonBuilder().setCustomId('hist_voltar').setLabel('Voltar ao painel').setEmoji('🔙').setStyle(ButtonStyle.Secondary)
-    ),
-  ];
-}
-
-// ── Modal de busca ────────────────────────────────────────────────────────
-function buildSearchModal() {
-  return new ModalBuilder()
-    .setCustomId('sec_search_modal')
-    .setTitle('🔍 Buscar membro')
-    .addComponents(
-      new ActionRowBuilder().addComponents(
-        new TextInputBuilder()
-          .setCustomId('sec_termo')
-          .setLabel('Nome, tag ou ID')
-          .setStyle(TextInputStyle.Short)
-          .setPlaceholder('Ex: Nikki, nome#1234, ou ID numérico')
-          .setRequired(true)
-          .setMaxLength(64)
-      )
-    );
 }
 
 // ── Comando principal ──────────────────────────────────────────────────────
@@ -316,21 +280,18 @@ module.exports = {
   async execute(interaction) {
     if (!isStaff(interaction.member)) {
       return interaction.reply({
-        embeds: [
-          criarEmbed({ titulo: 'Acesso negado', descricao: 'Somente staff pode usar este comando.', cor: 0xE67E80 }),
-        ],
+        embeds: [criarEmbed({ titulo: 'Acesso negado', descricao: 'Somente staff pode usar este comando.', cor: 0xE67E80 })],
         ephemeral: true,
       });
     }
 
     const guild = interaction.guild;
 
-    // 1️⃣ Carrega do cache em memória (instantâneo) — sem fetch demorado.
+    // 1️⃣ Carrega do cache em memória (instantâneo)
     let membros = cacheArray(guild.id);
     let warning = null;
 
     if (!membros.length) {
-      // Fallback: tenta um fetch único (pode ser lento, só se cache vazio).
       try {
         const fetched = await guild.members.fetch({ withPresences: true });
         clientCache.set(guild.id, { members: fetched, timestamp: Date.now() });
@@ -342,21 +303,18 @@ module.exports = {
       }
     }
 
-    // Snapshot em disco (histórico leve)
     salvarSnapshot(guild.id, membros);
 
-    // Estado da sessão
     let view = 'all';
     let termo = '';
     let pagina = 0;
-    const termoAtivo = () => (view === 'search' ? termo : '');
 
     function renderPainel() {
       const base = view === 'search' ? buscar(termo, membros) : filtrar(view, membros);
       const stats = buildStats(membros);
       const info = formatPage(base, pagina, view === 'search' ? termo : '');
-      const embed = buildPainelEmbed(stats, view === 'search' ? 'all' : view, info, termoAtivo(), warning);
-      const comps = [navRow(view, info.pagina, info.paginas), ...buildButtons(view)];
+      const embed = buildPainelEmbed(stats, view === 'search' ? 'all' : view, info, termo, warning);
+      const comps = [navRow(info.pagina, info.paginas), ...buildButtons(view), membroSelectRow(guild.id)];
       return { embed, comps, info };
     }
 
@@ -368,53 +326,82 @@ module.exports = {
       filter: (i) => i.user.id === interaction.user.id,
     });
 
-    collector.on('collect', async (i) => {
-      // Abrir modal de busca
-      if (i.customId === 'sec_search') {
-        await i.showModal(buildSearchModal());
-        return;
-      }
-
-      // Resultado do modal
-      if (i.customId === 'sec_search_modal') {
-        termo = i.fields.getTextInputValue('sec_termo');
+    // Abre o modal de busca e AGUARDA o envio (modais não passam pelo collector)
+    async function abrirBusca(i) {
+      await i.showModal(buildSearchModal());
+      try {
+        const submitted = await i.awaitModalSubmit({
+          filter: (m) => m.user.id === interaction.user.id,
+          time: 5 * 60 * 1000,
+        });
+        termo = submitted.fields.getTextInputValue('sec_termo');
         view = 'search';
         pagina = 0;
         const r = renderPainel();
-        return i.update({ embeds: [r.embed], components: r.comps });
+        await submitted.editReply({ embeds: [r.embed], components: r.comps });
+      } catch {
+        // modal expirou/ cancelado
       }
+    }
 
-      await i.deferUpdate();
-
-      // Recarregar cache
-      if (i.customId === 'sec_refresh') {
-        try {
-          const fetched = await guild.members.fetch({ withPresences: true });
-          clientCache.set(guild.id, { members: fetched, timestamp: Date.now() });
-          for (const [, m] of fetched) if (m.presence) presenceMap.set(m.id, m.presence.status || 'offline');
-          membros = Array.from(fetched.values());
-          warning = null;
-          salvarSnapshot(guild.id, membros);
-        } catch {
-          warning = 'Falha ao recarregar. Continuando com o cache atual.';
+    collector.on('collect', async (i) => {
+      try {
+        // Select de membro -> detalhe
+        if (i.customId === 'sec_membro') {
+          const id = i.values[0];
+          let m = clientCache.get(guild.id)?.members?.get(id) || guild.members.cache.get(id) || null;
+          if (!m) {
+            try {
+              m = await guild.members.fetch(id);
+            } catch {
+              m = null;
+            }
+          }
+          if (!m) {
+            return i.reply({ embeds: [criarEmbed({ titulo: 'Membro não encontrado', descricao: 'Não achei esse ID.', cor: 0xE67E80 })], ephemeral: true });
+          }
+          return i.reply({ embeds: [buildMembroEmbed(m)], ephemeral: true });
         }
-        pagina = 0;
-      } else if (i.customId.startsWith('sec_view_')) {
-        view = i.customId.replace('sec_view_', '');
-        pagina = 0;
-      } else if (i.customId === 'sec_first') {
-        pagina = 0;
-      } else if (i.customId === 'sec_prev') {
-        pagina = Math.max(0, pagina - 1);
-      } else if (i.customId === 'sec_next') {
-        pagina = pagina + 1;
-      } else if (i.customId === 'sec_last') {
-        const r = renderPainel();
-        pagina = r.info.paginas - 1;
-      }
 
-      const r = renderPainel();
-      await i.editReply({ embeds: [r.embed], components: r.comps });
+        // Botão buscar -> modal
+        if (i.customId === 'sec_search') {
+          await abrirBusca(i);
+          return;
+        }
+
+        await i.deferUpdate();
+
+        if (i.customId === 'sec_refresh') {
+          try {
+            const fetched = await guild.members.fetch({ withPresences: true });
+            clientCache.set(guild.id, { members: fetched, timestamp: Date.now() });
+            for (const [, m] of fetched) if (m.presence) presenceMap.set(m.id, m.presence.status || 'offline');
+            membros = Array.from(fetched.values());
+            warning = null;
+            salvarSnapshot(guild.id, membros);
+          } catch {
+            warning = 'Falha ao recarregar. Continuando com o cache atual.';
+          }
+          pagina = 0;
+        } else if (i.customId.startsWith('sec_view_')) {
+          view = i.customId.replace('sec_view_', '');
+          pagina = 0;
+        } else if (i.customId === 'sec_first') {
+          pagina = 0;
+        } else if (i.customId === 'sec_prev') {
+          pagina = Math.max(0, pagina - 1);
+        } else if (i.customId === 'sec_next') {
+          pagina = pagina + 1;
+        } else if (i.customId === 'sec_last') {
+          const r = renderPainel();
+          pagina = r.info.paginas - 1;
+        }
+
+        const r = renderPainel();
+        await i.editReply({ embeds: [r.embed], components: r.comps });
+      } catch (err) {
+        console.error('Erro no collector securitybreach:', err);
+      }
     });
 
     collector.on('end', async () => {

@@ -14,66 +14,75 @@ const { clientCache, presenceMap } = require('../utils/cache');
 const { formatarDataAbsoluta } = require('../utils/tempo');
 const { isGuildStaff, presenceStatus, STATUS_EMOJI } = require('./securitybreach');
 
-// ── Manual do Omnitrix (todas as funcionalidades do SecurityBreach) ───────
-function buildManualEmbed() {
+// ── Conteúdo do manual (seções pesquisáveis) ───────────────────────────────
+const SECOES = [
+  {
+    titulo: '🛡️ $securitybreach — Painel principal',
+    palavras: ['securitybreach', 'painel', 'principal', 'visao', 'geral', 'servidor'],
+    texto:
+      'Abre um painel staff (ephemeral) com visão geral do servidor e lista de membros em tempo real.\n' +
+      '• 📋 Todos – todos os membros do cache\n' +
+      '• 🟢 Online – só quem está online/idle/dnd\n' +
+      '• ⚪ Offline – offline ou invisível\n' +
+      '• 🤖 Bots – só bots (diferenciados dos humanos)\n' +
+      '• 👑 Staff – cargos de staff / permissões\n' +
+      '• 👤 Membros – humanos comuns (sem staff)\n' +
+      '• 🚨 Suspeitos – com suspensões, suspeitas ou sinais de risco',
+  },
+  {
+    titulo: '🔍 Busca e filtros (no painel)',
+    palavras: ['busca', 'filtro', 'filtros', 'pesquisa', 'nome', 'tag', 'id', 'procurar'],
+    texto:
+      'No painel, toque em 🔍 Buscar para abrir um formulário e pesquisar por NOME, TAG ou ID. ' +
+      'Use ◀️ ▶️ ⏮️ ⏭️ para paginar a lista. Há também um menu 👤 para selecionar um membro e ver o detalhe. ' +
+      'A presença é mostrada em tempo real (via listeners de presença).',
+  },
+  {
+    titulo: '🔄 Recarregar',
+    palavras: ['recarregar', 'atualizar', 'refresh', 'cache'],
+    texto: 'No painel, 🔄 força um novo fetch de membros/presenças e atualiza o cache. Use se a lista estiver desatualizada.',
+  },
+  {
+    titulo: '🔎 Histórico de um membro (Omnitrix)',
+    palavras: ['historico', 'membro', 'omnitrix', 'suspensao', 'suspensao', 'suspeito', 'risco'],
+    texto:
+      'Use $omnitrix para abrir o histórico completo: suspensões (servidor e Discord, e quantas vezes), ' +
+      'suspeitas anotadas, sinais de risco do Discord (ex.: conta nova) e marcações do servidor. ' +
+      'Você também pode marcar como SUSPEITO ou REGISTRAR UMA SUSPENSÃO direto nos botões.',
+  },
+  {
+    titulo: '🚨 Como funciona a suspeita',
+    palavras: ['suspeita', 'suspeito', 'risco', 'conta', 'nova', 'bot', 'heuristica'],
+    texto:
+      'O bot cruza dados do Discord (idade da conta, se é bot) e o histórico salvo em data/historico.json. ' +
+      'Suspensões registradas contam quantas vezes o membro já foi suspenso e se foi no servidor ou no Discord.',
+  },
+  {
+    titulo: '⚙️ Requisitos (intents)',
+    palavras: ['requisito', 'intent', 'intents', 'privilegiado', 'desenvolvedor', 'portal', 'tempo', 'real'],
+    texto:
+      'Para dados 100% em tempo real, o .env precisa de ENABLE_PRIVILEGED_INTENTS=true e as intents ' +
+      'Server Members e Presences ativadas no Discord Developer Portal. Sem isso, o cache é populado sob demanda.',
+  },
+];
+
+function buildManualEmbed(termo) {
+  const t = (termo || '').trim().toLowerCase();
+  const embeds = t
+    ? SECOES.filter((s) => s.titulo.toLowerCase().includes(t) || s.palavras.some((p) => p.includes(t) || t.includes(p)))
+    : SECOES;
+
+  const lista = embeds.length ? embeds : SECOES;
   const embed = criarEmbed({
     titulo: '🌟 Omnitrix — Manual de Segurança 🌟',
     descricao:
-      'O **Omnitrix** é o centro de controle de segurança da Falta Lua. Ele abre o painel ' +
-      '**`$securitybreach`** e registra o histórico de cada membro. Aqui está o guia completo:',
+      t && embeds.length
+        ? `🔎 Resultados para \`${termo}\`:\n\n` + lista.map((s) => `**${s.titulo}**\n${s.texto}`).join('\n\n')
+        : 'O **Omnitrix** é o centro de controle de segurança da Falta Lua. Abaixo está o guia completo.\n\n' +
+          lista.map((s) => `**${s.titulo}**\n${s.texto}`).join('\n\n') +
+          '\n\n💡 Use o botão 🔍 para buscar um termo específico no manual, ou 👤 para abrir o histórico de um membro.',
     cor: THEME.corPrincipal,
   });
-
-  embed.addFields(
-    {
-      name: '🛡️ $securitybreach — Painel principal',
-      value:
-        'Abre um painel staff (ephemeral) com visão geral do servidor e lista de membros em tempo real.\n' +
-        '• 📋 **Todos** – todos os membros do cache\n' +
-        '• 🟢 **Online** – só quem está online/idle/dnd\n' +
-        '• ⚪ **Offline** – offline ou invisível\n' +
-        '• 🤖 **Bots** – só bots (diferenciados dos humanos)\n' +
-        '• 👑 **Staff** – cargos de staff / permissões\n' +
-        '• 👤 **Membros** – humanos comuns (sem staff)\n' +
-        '• 🚨 **Suspeitos** – com suspensões, suspeitas ou sinais de risco',
-      inline: false,
-    },
-    {
-      name: '🔍 Busca e filtros',
-      value:
-        'Toque em **🔍 Buscar** para abrir um formulário e pesquisar por **nome, tag ou ID** (inclui data/hora no histórico de cada um). ' +
-        'Use **◀️ ▶️ ⏮️ ⏭️** para paginar a lista. O painel mostra presença **em tempo real** (atualiza via listeners de presença).',
-      inline: false,
-    },
-    {
-      name: '🔄 Recarregar',
-      value: 'Força um novo fetch de membros/presenças e atualiza o cache. Use se a lista estiver desatualizada.',
-      inline: false,
-    },
-    {
-      name: '🔎 Histórico de um membro (este comando)',
-      value:
-        'Use **`$omnitrix @usuário`** para abrir o histórico completo: suspensões (servidor e Discord, e quantas vezes), ' +
-        'suspeitas anotadas, sinais de risco do Discord (ex.: conta nova) e marcações do servidor. ' +
-        'Você também pode marcar como **suspeito** ou **registrar uma suspensão** direto nos botões.',
-      inline: false,
-    },
-    {
-      name: '🚨 Como funciona a suspeita',
-      value:
-        'O bot cruza dados do Discord (idade da conta, se é bot) e o histórico salvo em `data/historico.json`. ' +
-        'Suspensões registradas contam quantas vezes o membro já foi suspenso e se foi no servidor ou no Discord.',
-      inline: false,
-    },
-    {
-      name: '⚙️ Requisitos',
-      value:
-        'Para dados 100% em tempo real, o `.env` precisa de `ENABLE_PRIVILEGED_INTENTS=true` e as intents ' +
-        '**Server Members** e **Presences** ativadas no Discord Developer Portal. Sem isso, o cache é populado sob demanda.',
-      inline: false,
-    }
-  );
-
   return embed;
 }
 
@@ -153,6 +162,48 @@ function buildHistoricoBotoes() {
   ];
 }
 
+function buildAcoesRow() {
+  return [
+    new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setCustomId('omni_buscar_manual').setLabel('Buscar no manual').setEmoji('🔍').setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId('omni_membro').setLabel('Histórico de membro').setEmoji('👤').setStyle(ButtonStyle.Secondary)
+    ),
+  ];
+}
+
+function membroSelectRow(guildId) {
+  const membros = (clientCache.get(guildId)?.members ? Array.from(clientCache.get(guildId).members.values()) : []).slice(0, 25);
+  const menu = new StringSelectMenuBuilder()
+    .setCustomId('omni_membro_select')
+    .setPlaceholder('👤 Selecionar membro')
+    .addOptions(
+      membros.map((m) => ({
+        label: m.user.username.slice(0, 100),
+        value: m.user.id,
+        description: `${m.user.bot ? 'Bot' : 'Humano'}${isGuildStaff(m) ? ' • Staff' : ''}`,
+        emoji: m.user.bot ? '🤖' : '👤',
+      }))
+    );
+  return new ActionRowBuilder().addComponents(menu);
+}
+
+function buildBuscaManualModal() {
+  return new ModalBuilder()
+    .setCustomId('omni_busca_modal')
+    .setTitle('🔍 Buscar no manual')
+    .addComponents(
+      new ActionRowBuilder().addComponents(
+        new TextInputBuilder()
+          .setCustomId('omni_termo')
+          .setLabel('Termo (ex: busca, suspeito, intents)')
+          .setStyle(TextInputStyle.Short)
+          .setPlaceholder('termo...')
+          .setRequired(true)
+          .setMaxLength(64)
+      )
+    );
+}
+
 function buildSuspeitoModal(userId) {
   return new ModalBuilder()
     .setCustomId(`omni_suspeito_modal:${userId}`)
@@ -208,45 +259,25 @@ module.exports = {
     }
 
     const guild = interaction.guild;
-    const alvo = interaction.options?.getUser?.('usuario') || null;
 
-    // Resolve o membro (do cache ou fetch leve)
-    let member = null;
-    if (alvo) {
-      const cache = clientCache.get(guild.id)?.members;
-      member = cache?.get(alvo.id) || guild.members.cache.get(alvo.id) || null;
-      if (!member) {
-        try {
-          member = await guild.members.fetch(alvo.id);
-        } catch {
-          member = null;
-        }
-      }
-    }
-
-    const mostrarManual = () => buildManualEmbed();
-    const mostrarHistorico = () => buildHistoricoEmbed(member);
+    const mostrarManual = (termo) => buildManualEmbed(termo);
 
     const reply = await interaction.reply({
-      embeds: [member ? mostrarHistorico() : mostrarManual()],
-      components: member ? buildHistoricoBotoes() : [buildVoltarOuManualRow()],
+      embeds: [mostrarManual()],
+      components: buildAcoesRow(),
       ephemeral: true,
     });
 
-    function buildVoltarOuManualRow() {
-      // Sem membro: oferece abrir o painel ou buscar via select
-      const menu = new StringSelectMenuBuilder()
-        .setCustomId('omni_buscar')
-        .setPlaceholder('🔎 Selecionar membro para ver histórico')
-        .addOptions(
-          Array.from(clientCache.get(guild.id)?.members?.values() || []).slice(0, 25).map((m) => ({
-            label: m.user.username.slice(0, 100),
-            value: m.user.id,
-            description: m.user.bot ? 'Bot' : 'Humano',
-            emoji: m.user.bot ? '🤖' : '👤',
-          }))
-        );
-      return new ActionRowBuilder().addComponents(menu);
+    async function abrirBuscaManual(i) {
+      await i.showModal(buildBuscaManualModal());
+      try {
+        const submitted = await i.awaitModalSubmit({
+          filter: (m) => m.user.id === interaction.user.id,
+          time: 5 * 60 * 1000,
+        });
+        const termo = submitted.fields.getTextInputValue('omni_termo');
+        await submitted.editReply({ embeds: [mostrarManual(termo)], components: buildAcoesRow() });
+      } catch {}
     }
 
     const collector = reply.createMessageComponentCollector({
@@ -255,50 +286,66 @@ module.exports = {
     });
 
     collector.on('collect', async (i) => {
-      // Select de membro (sem alvo inicial)
-      if (i.customId === 'omni_buscar') {
-        const id = i.values[0];
-        let m = clientCache.get(guild.id)?.members?.get(id) || guild.members.cache.get(id) || null;
-        if (!m) {
-          try {
-            m = await guild.members.fetch(id);
-          } catch {
-            m = null;
-          }
+      try {
+        // Busca textual no manual
+        if (i.customId === 'omni_buscar_manual') {
+          await abrirBuscaManual(i);
+          return;
         }
-        if (!m) return i.update({ embeds: [criarEmbed({ titulo: 'Membro não encontrado', descricao: 'Não consegui achar esse ID.', cor: 0xE67E80 })], components: [] });
-        member = m;
-        return i.update({ embeds: [mostrarHistorico()], components: buildHistoricoBotoes() });
-      }
 
-      // Botão voltar ao manual
-      if (i.customId === 'omni_voltar') {
-        return i.update({ embeds: [mostrarManual()], components: [buildVoltarOuManualRow()] });
-      }
+        // Abre select de membro
+        if (i.customId === 'omni_membro') {
+          return i.update({ embeds: [criarEmbed({ titulo: 'Selecione um membro', descricao: 'Escolha abaixo o membro para ver o histórico.', cor: THEME.corPrincipal })], components: [membroSelectRow(guild.id)] });
+        }
 
-      // Marcar suspeito
-      if (i.customId === 'omni_suspeito') {
-        await i.showModal(buildSuspeitoModal(member.user.id));
-        return;
-      }
-      if (i.customId.startsWith('omni_suspeito_modal:')) {
-        const motivo = i.fields.getTextInputValue('omni_suspeito_motivo');
-        marcarSuspeito(member.user.id, { escopo: /externo/i.test(motivo) ? 'externo' : 'interno', motivo, por: i.user.username });
-        return i.update({ embeds: [mostrarHistorico()], components: buildHistoricoBotoes() });
-      }
+        // Selecionou membro
+        if (i.customId === 'omni_membro_select') {
+          const id = i.values[0];
+          let m = clientCache.get(guild.id)?.members?.get(id) || guild.members.cache.get(id) || null;
+          if (!m) {
+            try {
+              m = await guild.members.fetch(id);
+            } catch {
+              m = null;
+            }
+          }
+          if (!m) {
+            return i.reply({ embeds: [criarEmbed({ titulo: 'Membro não encontrado', descricao: 'Não achei esse ID.', cor: 0xE67E80 })], ephemeral: true });
+          }
+          _ultimo.set(reply.id, m);
+          return i.update({ embeds: [buildHistoricoEmbed(m)], components: buildHistoricoBotoes() });
+        }
 
-      // Registrar suspensão
-      if (i.customId === 'omni_suspensao') {
-        await i.showModal(buildSuspensaoModal(member.user.id));
-        return;
-      }
-      if (i.customId.startsWith('omni_suspensao_modal:')) {
-        const origem = (i.fields.getTextInputValue('omni_suspensao_origem') || 'servidor').toLowerCase().includes('discord')
-          ? 'discord'
-          : 'servidor';
-        const motivo = i.fields.getTextInputValue('omni_suspensao_motivo') || '';
-        registrarSuspensao(member.user.id, { origem, motivo, por: i.user.username, guildId: guild.id });
-        return i.update({ embeds: [mostrarHistorico()], components: buildHistoricoBotoes() });
+        if (i.customId === 'omni_voltar') {
+          return i.update({ embeds: [mostrarManual()], components: buildAcoesRow() });
+        }
+
+        if (i.customId === 'omni_suspeito') {
+          await i.showModal(buildSuspeitoModal(ultimoMembro(i).user.id));
+          return;
+        }
+        if (i.customId.startsWith('omni_suspeito_modal:')) {
+          const userId = i.customId.split(':')[1];
+          const motivo = i.fields.getTextInputValue('omni_suspeito_motivo');
+          marcarSuspeito(userId, { escopo: /externo/i.test(motivo) ? 'externo' : 'interno', motivo, por: i.user.username });
+          const m = await resolverMembro(guild, userId);
+          return i.update({ embeds: [buildHistoricoEmbed(m)], components: buildHistoricoBotoes() });
+        }
+
+        if (i.customId === 'omni_suspensao') {
+          await i.showModal(buildSuspensaoModal(ultimoMembro(i).user.id));
+          return;
+        }
+        if (i.customId.startsWith('omni_suspensao_modal:')) {
+          const userId = i.customId.split(':')[1];
+          const origem = (i.fields.getTextInputValue('omni_suspensao_origem') || 'servidor').toLowerCase().includes('discord') ? 'discord' : 'servidor';
+          const motivo = i.fields.getTextInputValue('omni_suspensao_motivo') || '';
+          registrarSuspensao(userId, { origem, motivo, por: i.user.username, guildId: guild.id });
+          const m = await resolverMembro(guild, userId);
+          return i.update({ embeds: [buildHistoricoEmbed(m)], components: buildHistoricoBotoes() });
+        }
+      } catch (err) {
+        console.error('Erro no collector omnitrix:', err);
       }
     });
 
@@ -309,3 +356,14 @@ module.exports = {
     });
   },
 };
+
+// Referência ao membro atual em tela (último embed de histórico editado)
+const _ultimo = new Map();
+function ultimoMembro(interaction) {
+  return _ultimo.get(interaction.message?.id) || interaction.member;
+}
+async function resolverMembro(guild, userId) {
+  let m = clientCache.get(guild.id)?.members?.get(userId) || guild.members.cache.get(userId) || null;
+  if (!m) m = await guild.members.fetch(userId).catch(() => null);
+  return m;
+}
