@@ -16,7 +16,7 @@ const ITENS_POR_PAGINA = 5;
 
 // ── Carga dos comandos (modo prefixo `$`, sem slash) ──────────────────
 // Comandos que já têm tratamento inline abaixo (não precisam do bridge).
-const INLINE = new Set(['ping', 'dado', 'roleta', 'lembrete', 'anuncio', 'configurar', 'organizar', 'codex']);
+const INLINE = new Set(['ping', 'dado', 'roleta', 'lembrete', 'anuncio', 'configurar', 'organizar', 'codex', 'buscar']);
 
 // Assinaturas para converter os argumentos do `$mensagem` nas opções que
 // cada comando slash espera. Tipos: user, int, rest (resto da linha), token.
