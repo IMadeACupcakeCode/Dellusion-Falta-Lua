@@ -75,9 +75,77 @@ function obterMarcacoes(guildId) {
   return (dados[guildId] && dados[guildId].marcacoes) || {};
 }
 
+// ── Histórico de suspensões / suspeitas (servidor + Discord) ──────────────
+// Guarda por userId (global, cruza servidores) para rastrear "já foi suspenso
+// e quantas vezes", além de suspeitas internas e externas.
+const CAMINHO_HIST = path.join(__dirname, '..', 'data', 'historico.json');
+
+function carregarHistorico() {
+  try {
+    if (fs.existsSync(CAMINHO_HIST)) return JSON.parse(fs.readFileSync(CAMINHO_HIST, 'utf-8'));
+  } catch {}
+  return {};
+}
+
+function salvarHistorico(dados) {
+  try {
+    fs.writeFileSync(CAMINHO_HIST, JSON.stringify(dados, null, 2), 'utf-8');
+  } catch {}
+}
+
+// Registra uma suspensão (ban/kick/time-out) de um membro.
+// origem: 'servidor' | 'discord'
+function registrarSuspensao(userId, { origem = 'servidor', motivo = '', por = 'desconhecido', guildId = null } = {}) {
+  const h = carregarHistorico();
+  if (!h[userId]) h[userId] = { suspenso: 0, suspensoDiscord: 0, suspensoServidor: 0, suspeitas: [], historico: [] };
+  const entry = h[userId];
+  entry.suspenso += 1;
+  if (origem === 'discord') entry.suspensoDiscord += 1;
+  else entry.suspensoServidor += 1;
+  entry.historico.push({ tipo: 'suspensao', origem, motivo, por, em: Date.now(), guildId });
+  salvarHistorico(h);
+  return entry;
+}
+
+// Marca um membro como suspeito (interno ou externo ao servidor).
+function marcarSuspeito(userId, { escopo = 'interno', motivo = '', por = 'desconhecido' } = {}) {
+  const h = carregarHistorico();
+  if (!h[userId]) h[userId] = { suspenso: 0, suspensoDiscord: 0, suspensoServidor: 0, suspeitas: [], historico: [] };
+  const entry = h[userId];
+  entry.suspeitas.push({ escopo, motivo, por, em: Date.now() });
+  salvarHistorico(h);
+  return entry;
+}
+
+// Lê o histórico de um membro (ou objeto vazio).
+function obterHistorico(userId) {
+  const h = carregarHistorico();
+  return h[userId] || { suspenso: 0, suspensoDiscord: 0, suspensoServidor: 0, suspeitas: [], historico: [] };
+}
+
+// Sinaliza suspeita automática a partir de heurísticas do próprio Discord
+// (conta nova, nome suspeito, etc.) — consulta apenas dados que a API expõe.
+function avaliarRisco(member) {
+  const sinais = [];
+  const user = member.user || member;
+  const agora = Date.now();
+  const criadoEm = user.createdAt ? user.createdAt.getTime() : 0;
+  const idadeConta = agora - criadoEm;
+  const SETE_DIAS = 7 * 24 * 60 * 60 * 1000;
+  if (criadoEm && idadeConta < SETE_DIAS) {
+    sinais.push('Conta criada há menos de 7 dias');
+  }
+  if (user.bot) sinais.push('É um bot (verifique se é oficial/autorizado)');
+  return sinais;
+}
+
 module.exports = {
   salvarSnapshot,
   obterSnapshot,
   marcarMembro,
   obterMarcacoes,
+  registrarSuspensao,
+  marcarSuspeito,
+  obterHistorico,
+  avaliarRisco,
 };

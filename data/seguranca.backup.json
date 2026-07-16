@@ -1,7 +1,7 @@
 {
   "1515590554480545844": {
-    "atualizadoEm": 1783955304981,
-    "total": 4,
+    "atualizadoEm": 1783977528266,
+    "total": 21,
     "membros": [
       {
         "id": "1499177291144761394",
@@ -31,12 +31,165 @@
         "cargoAlto": "━━━━━━୧🎹 ✦ Cargos Staff! ⊰ ━━━━━━"
       },
       {
+        "id": "451479688116961290",
+        "tag": "deeadly",
+        "nome": "deeadly",
+        "bot": false,
+        "criadoEm": 1527711545734,
+        "entrouEm": 1782634582841,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
+      },
+      {
+        "id": "853363495504445501",
+        "tag": ".sammywritter",
+        "nome": ".sammywritter",
+        "bot": false,
+        "criadoEm": 1623528112055,
+        "entrouEm": 1782090743270,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
+      },
+      {
+        "id": "1163612199135215647",
+        "tag": "verycoolguyonline",
+        "nome": "verycoolguyonline",
+        "bot": false,
+        "criadoEm": 1697497167143,
+        "entrouEm": 1782084602726,
+        "cargoAlto": "”📃 ͎ᵎ Tea. ⊰ 颜色"
+      },
+      {
+        "id": "297153970613387264",
+        "tag": "Loritta#0219",
+        "nome": "Loritta",
+        "bot": true,
+        "criadoEm": 1490917427448,
+        "entrouEm": 1781474056179,
+        "cargoAlto": "”🍇 ͎ᵎ  Bots! ⊰ 机器人"
+      },
+      {
+        "id": "1520502963548848321",
+        "tag": "Dellusion SMP#2858",
+        "nome": "Dellusion SMP",
+        "bot": true,
+        "criadoEm": 1782586556089,
+        "entrouEm": 1782587680498,
+        "cargoAlto": "”🍇 ͎ᵎ  Bots! ⊰ 机器人"
+      },
+      {
+        "id": "959436959191806035",
+        "tag": "zer00st.",
+        "nome": "zer00st.",
+        "bot": false,
+        "criadoEm": 1648817996548,
+        "entrouEm": 1782365874783,
+        "cargoAlto": "”📃 ͎ᵎ Blood. ⊰ 颜色"
+      },
+      {
+        "id": "985291192545726524",
+        "tag": "toons4ever777",
+        "nome": "toons4ever777",
+        "bot": false,
+        "criadoEm": 1654982126128,
+        "entrouEm": 1782077956688,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
+      },
+      {
+        "id": "879397603031265285",
+        "tag": "mimiyboo",
+        "nome": "mimiyboo",
+        "bot": false,
+        "criadoEm": 1629735126980,
+        "entrouEm": 1782067420653,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
+      },
+      {
+        "id": "710034409214181396",
+        "tag": "Ticket King#5772",
+        "nome": "Ticket King",
+        "bot": true,
+        "criadoEm": 1589355794958,
+        "entrouEm": 1781927705528,
+        "cargoAlto": "”🍇 ͎ᵎ  Bots! ⊰ 机器人"
+      },
+      {
         "id": "435243867948843018",
         "tag": "mey_saki",
         "nome": "mey_saki",
         "bot": false,
         "criadoEm": 1523840624559,
         "entrouEm": 1782067330257,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
+      },
+      {
+        "id": "1491569930905321562",
+        "tag": "discor_80316",
+        "nome": "discor_80316",
+        "bot": false,
+        "criadoEm": 1775688383557,
+        "entrouEm": 1781910555170,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cargos Staff! ⊰ ━━━━━━"
+      },
+      {
+        "id": "1478260731743830119",
+        "tag": "flamengo5abril",
+        "nome": "flamengo5abril",
+        "bot": false,
+        "criadoEm": 1772515223204,
+        "entrouEm": 1782850844186,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
+      },
+      {
+        "id": "1070806072585109604",
+        "tag": "taxonomize",
+        "nome": "taxonomize",
+        "bot": false,
+        "criadoEm": 1675370462319,
+        "entrouEm": 1782595940242,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
+      },
+      {
+        "id": "1316877525451804706",
+        "tag": "eloark_96915",
+        "nome": "eloark_96915",
+        "bot": false,
+        "criadoEm": 1734038468469,
+        "entrouEm": 1781817203608,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cargos Staff! ⊰ ━━━━━━"
+      },
+      {
+        "id": "575419416808783873",
+        "tag": "sundra_of",
+        "nome": "sundra_of",
+        "bot": false,
+        "criadoEm": 1557261079743,
+        "entrouEm": 1783650399537,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
+      },
+      {
+        "id": "387009744977526795",
+        "tag": "dnpc002",
+        "nome": "dnpc002",
+        "bot": false,
+        "criadoEm": 1512340713496,
+        "entrouEm": 1783219388565,
+        "cargoAlto": "”📃 ͎ᵎ Red. ⊰ 颜色"
+      },
+      {
+        "id": "893248460483076137",
+        "tag": "tkaue",
+        "nome": "tkaue",
+        "bot": false,
+        "criadoEm": 1633037428733,
+        "entrouEm": 1782092109082,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
+      },
+      {
+        "id": "1520640139691429918",
+        "tag": "cookiesey",
+        "nome": "cookiesey",
+        "bot": false,
+        "criadoEm": 1782619261430,
+        "entrouEm": 1782619573022,
         "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
       }
     ]

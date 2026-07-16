@@ -54,4 +54,51 @@ client.on('messageReactionAdd', async (reaction, user) => {
   }
 });
 
+// ── Cache de presença e membros (alimenta $securitybreach em tempo real) ──
+// Só faz sentido se as intents privilegiadas estiverem ativas.
+if (intents.includes(GatewayIntentBits.GuildMembers) && intents.includes(GatewayIntentBits.GuildPresences)) {
+  const { clientCache, presenceMap } = require('./utils/cache');
+
+  // Mantém o presenceMap sempre atualizado (status online/offline/etc.)
+  client.on('presenceUpdate', (_oldPresence, newPresence) => {
+    if (newPresence && newPresence.userId) {
+      presenceMap.set(newPresence.userId, newPresence.status || 'offline');
+    }
+  });
+
+  // Quando um membro entra, garante que ele esteja no cache de membros
+  client.on('guildMemberAdd', (member) => {
+    const entry = clientCache.get(member.guild.id);
+    if (entry) entry.members.set(member.id, member);
+    else clientCache.set(member.guild.id, { members: new Map([[member.id, member]]), timestamp: Date.now() });
+  });
+
+  // Quando um membro sai, remove do cache
+  client.on('guildMemberRemove', (member) => {
+    clientCache.get(member.guild.id)?.members.delete(member.id);
+  });
+
+  // Popula o cache de presença já no boot, para o primeiro $securitybreach não depender de fetch
+  client.once('ready', async () => {
+    try {
+      for (const guild of client.guilds.cache.values()) {
+        const members = await guild.members.fetch({ withPresences: true }).catch(() => null);
+        if (members) {
+          clientCache.set(guild.id, { members, timestamp: Date.now() });
+          for (const [, m] of members) {
+            if (m.presence) presenceMap.set(m.id, m.presence.status || 'offline');
+          }
+        }
+      }
+      console.log(`${THEME.iconeFooter} Cache de membros/presença populado.`);
+    } catch (err) {
+      console.error('Erro ao popular cache de membros no boot:', err);
+    }
+  });
+} else {
+  console.warn(
+    '⚠️ ENABLE_PRIVILEGED_INTENTS não está ativo: $securitybreach fará fetch sob demanda (mais lento). Ative no .env para cache em tempo real.'
+  );
+}
+
 client.login(DISCORD_TOKEN);
