@@ -4,7 +4,6 @@ const { THEME } = require('./utils/theme');
 const { reagendarTodosLembretes } = require('./utils/agendador');
 const { handlePrefix } = require('./utils/prefix');
 const { handleReaction } = require('./utils/guerraManager');
-const { registrar: registrarSlash, tratar: tratarSlash } = require('./utils/slash');
 
 const { DISCORD_TOKEN } = process.env;
 
@@ -41,9 +40,6 @@ client.once('ready', () => {
   });
 
   reagendarTodosLembretes(client);
-
-  // Registra os slash commands (ex.: /buscar com autocomplete ao vivo)
-  registrarSlash().catch((err) => console.error('Falha ao registrar slash commands:', err));
 });
 
 client.on('messageCreate', (message) => {
@@ -56,11 +52,6 @@ client.on('messageReactionAdd', async (reaction, user) => {
   } catch (error) {
     console.error('Erro ao processar reação de guerra:', error);
   }
-});
-
-// ── Slash commands: roteia interações (autocomplete e chat-input) ──
-client.on('interactionCreate', (interaction) => {
-  tratarSlash(interaction).catch((err) => console.error('Erro no interactionCreate:', err));
 });
 
 // ── Cache de presença e membros (alimenta $securitybreach em tempo real) ──

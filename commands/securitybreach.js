@@ -60,6 +60,7 @@ function filtrar(view, membros) {
       return membros.filter((m) => !m.user.bot && !isGuildStaff(m));
     case 'suspeitos':
       return membros.filter((m) => {
+        if (m.user.bot) return false; // bots nunca são "suspeitos"
         const hist = obterHistorico(m.user.id);
         if (hist.suspenso > 0 || (hist.suspeitas && hist.suspeitas.length)) return true;
         return avaliarRisco(m).length > 0;
@@ -102,6 +103,7 @@ function buildStats(membros) {
   const online = membros.filter(isOnline);
   const offline = membros.filter((m) => !isOnline(m));
   const suspeitos = membros.filter((m) => {
+    if (m.user.bot) return false; // bots não contam como suspeitos
     const h = obterHistorico(m.user.id);
     if (h.suspenso > 0 || (h.suspeitas && h.suspeitas.length)) return true;
     return avaliarRisco(m).length > 0;
@@ -137,7 +139,7 @@ function formatPage(lista, pagina, termo) {
     : ['Nenhum membro encontrado.'];
 
   const filtroInfo = termo ? `\n🔎 Busca: \`${termo}\`` : '';
-  return { texto: linhas.join('\n') + filtroInfo, pagina, paginas, total };
+  return { texto: linhas.join('\n') + filtroInfo, pagina, paginas, total, fatia };
 }
 
 // ── Embed de detalhe de um membro (reutilizado no painel) ─────────────────
@@ -210,11 +212,14 @@ function buildButtons(view) {
   return [row1, row2];
 }
 
-function membroSelectRow(guildId) {
-  const membros = cacheArray(guildId).slice(0, 25);
+// Menu de seleção sincronizado com a lista atualmente exibida na página.
+// Recebe a fatia de membros visível (máx. 25, limite do Discord).
+function membroSelectRow(listaMembros) {
+  const membros = (listaMembros || []).slice(0, 25);
+  if (!membros.length) return null;
   const menu = new StringSelectMenuBuilder()
     .setCustomId('sec_membro')
-    .setPlaceholder('👤 Selecionar membro para ver detalhe')
+    .setPlaceholder('👤 Selecionar membro da lista para ver detalhe')
     .addOptions(
       membros.map((m) => ({
         label: m.user.username.slice(0, 100),
@@ -314,7 +319,9 @@ module.exports = {
       const stats = buildStats(membros);
       const info = formatPage(base, pagina, view === 'search' ? termo : '');
       const embed = buildPainelEmbed(stats, view === 'search' ? 'all' : view, info, termo, warning);
-      const comps = [navRow(info.pagina, info.paginas), ...buildButtons(view), membroSelectRow(guild.id)];
+      const comps = [navRow(info.pagina, info.paginas), ...buildButtons(view)];
+      const selectRow = membroSelectRow(info.fatia);
+      if (selectRow) comps.push(selectRow);
       return { embed, comps, info };
     }
 
