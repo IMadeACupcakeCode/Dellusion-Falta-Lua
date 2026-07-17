@@ -56,6 +56,23 @@ function modalConteudo() {
     );
 }
 
+function modalAutor() {
+  return new ModalBuilder()
+    .setCustomId('cs_autor_modal')
+    .setTitle('✍️ Como assinar a carta?')
+    .addComponents(
+      new ActionRowBuilder().addComponents(
+        new TextInputBuilder()
+          .setCustomId('cs_autor')
+          .setLabel('Nome do autor (como deve aparecer)')
+          .setStyle(TextInputStyle.Short)
+          .setPlaceholder('Ex: Um admirador secreto, Fulano, etc.')
+          .setRequired(true)
+          .setMaxLength(80)
+      )
+    );
+}
+
 module.exports = {
   data: { name: 'cartasecreta', description: '✉️ Entrega uma carta misteriosa para um membro' },
   async execute(interaction) {
@@ -280,50 +297,24 @@ module.exports = {
           return;
         }
 
-        // 3️⃣ Escolha de autoria e entrega
-        if (i.customId === 'cs_anon' || i.customId === 'cs_assin') {
-          const assinar = i.customId === 'cs_assin';
-          const alvo = client.users.cache.get(destinatarioId) || (await client.users.fetch(destinatarioId).catch(() => null));
-
-          if (!alvo) {
-            return i.update({
-              embeds: [criarEmbed({ titulo: 'Destinatário ausente', descricao: 'Não achei o usuário. Recomece com `$cartasecreta`.', cor: 0xE67E80 })],
-              components: [],
-            });
-          }
-
-          const carta = criarEmbed({
-            titulo: '✉️ Uma carta misteriosa chegou...',
-            descricao: `**Para:** ${alvo.tag}\n\n> ${conteudo}`,
-            cor: THEME.corRoleta,
-            rodape: assinar ? `Assinado por ${autor.username} 🌙` : `${THEME.nome} entregou discretamente — de alguém que admira você sob a lua 🌙`,
-          });
-
-          try {
-            await alvo.send({ embeds: [carta] });
-            await autor
-              .send({
-                embeds: [
-                  criarEmbed({
-                    titulo: '✅ Carta enviada!',
-                    descricao: `**Para:** ${alvo.tag}\n**Modo:** ${assinar ? `✍️ Assinada por ${autor.username}` : '🕶️ Anônima'}\n\n**Conteúdo enviado:**\n> ${conteudo}`,
-                    cor: THEME.corSucesso,
-                  }),
-                ],
-              })
-              .catch(() => {});
-
-            await i.update({
-              embeds: [criarEmbed({ titulo: '✅ Enviada!', descricao: `Carta entregue para **${alvo.username}** ${assinar ? 'assinada' : 'anonimamente'}. Confira seu DM. 🌙`, cor: THEME.corSucesso })],
-              components: [],
-            });
-          } catch {
-            await i.update({
-              embeds: [criarEmbed({ titulo: 'Não consegui entregar', descricao: `${alvo.username} tem a DM fechada. A carta não foi enviada.`, cor: 0xE67E80 })],
-              components: [],
-            });
-          }
+        // 3️⃣ Escolha de autoria: anônimo segue direto; assinar pede o nome
+        if (i.customId === 'cs_anon') {
+          await entregar(i, false, null);
           coletor.stop();
+          return;
+        }
+
+        if (i.customId === 'cs_assin') {
+          await i.showModal(modalAutor());
+          try {
+            const submitted = await i.awaitModalSubmit({ filter: (m) => m.user.id === autor.id, time: 10 * 60 * 1000 });
+            const nomeAutor = (submitted.fields.getTextInputValue('cs_autor') || '').trim().slice(0, 80) || autor.username;
+            await entregar(i, true, nomeAutor);
+            coletor.stop();
+          } catch {
+            // modal expirou
+          }
+          return;
         }
       } catch (err) {
         console.error('Erro no fluxo cartasecreta:', err);
@@ -340,5 +331,54 @@ module.exports = {
         await dm.reactions.removeAll();
       } catch {}
     });
+
+    // Função de entrega reutilizável (anon / assinado com nome custom)
+    async function entregar(i, assinar, nomeAutor) {
+      const alvo = client.users.cache.get(destinatarioId) || (await client.users.fetch(destinatarioId).catch(() => null));
+
+      if (!alvo) {
+        return i.update({
+          embeds: [criarEmbed({ titulo: 'Destinatário ausente', descricao: 'Não achei o usuário. Recomece com `$cartasecreta`.', cor: 0xE67E80 })],
+          components: [],
+        });
+      }
+
+      const assinatura = assinar ? nomeAutor : `${THEME.nome} entregou discretamente — de alguém que admira você sob a lua 🌙`;
+
+      const carta = criarEmbed({
+        titulo: '✉️ Uma carta misteriosa chegou...',
+        descricao: `**Para:** ${alvo.tag}\n\n> ${conteudo}`,
+        cor: THEME.corRoleta,
+        rodape: assinatura,
+      });
+
+      try {
+        await alvo.send({ embeds: [carta] });
+        await autor
+          .send({
+            embeds: [
+              criarEmbed({
+                titulo: '✅ Carta enviada!',
+                descricao:
+                  `**Para:** ${alvo.tag}\n` +
+                  `**Modo:** ${assinar ? `✍️ Assinada por ${nomeAutor}` : '🕶️ Anônima'}\n\n` +
+                  `**Conteúdo enviado:**\n> ${conteudo}`,
+                cor: THEME.corSucesso,
+              }),
+            ],
+          })
+          .catch(() => {});
+
+        await i.update({
+          embeds: [criarEmbed({ titulo: '✅ Enviada!', descricao: `Carta entregue para **${alvo.username}** ${assinar ? 'assinada' : 'anonimamente'}. Confira seu DM. 🌙`, cor: THEME.corSucesso })],
+          components: [],
+        });
+      } catch {
+        await i.update({
+          embeds: [criarEmbed({ titulo: 'Não consegui entregar', descricao: `${alvo.username} tem a DM fechada. A carta não foi enviada.`, cor: 0xE67E80 })],
+          components: [],
+        });
+      }
+    }
   },
 };
