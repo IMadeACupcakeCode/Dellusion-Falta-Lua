@@ -81,15 +81,6 @@ module.exports = {
     const client = interaction.client;
     const msgOriginal = interaction.message; // mensagem `$cartasecreta ...` no canal
 
-    // 🔒 Privacidade: apaga a mensagem pública do comando imediatamente
-    if (msgOriginal && msgOriginal.deletable) {
-      try {
-        await msgOriginal.delete();
-      } catch {
-        // sem permissão / já sumiu — segue
-      }
-    }
-
     // ✨ Mensagem de "carregando" animada para não aparecer o "Demorando para responder"
     const pontos = ['·', '··', '···', '····'];
     let pi = 0;
@@ -117,6 +108,16 @@ module.exports = {
         })
         .catch(() => {});
     }, 600);
+
+    // 🔒 Privacidade: apaga a mensagem pública do comando DEPOIS de responder.
+    // Se apagássemos antes, a referência da resposta quebraria com "Unknown message".
+    if (msgOriginal && msgOriginal.deletable) {
+      try {
+        await msgOriginal.delete();
+      } catch {
+        // sem permissão / já sumiu — segue
+      }
+    }
 
     const membros = todosMembros(guild);
     if (!membros.length) {
@@ -309,7 +310,7 @@ module.exports = {
           try {
             const submitted = await i.awaitModalSubmit({ filter: (m) => m.user.id === autor.id, time: 10 * 60 * 1000 });
             const nomeAutor = (submitted.fields.getTextInputValue('cs_autor') || '').trim().slice(0, 80) || autor.username;
-            await entregar(i, true, nomeAutor);
+            await entregar(submitted, true, nomeAutor);
             coletor.stop();
           } catch {
             // modal expirou
