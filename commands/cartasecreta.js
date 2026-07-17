@@ -9,6 +9,8 @@ const {
 } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 const { clientCache } = require('../utils/cache');
+const { registrarCarta, obterCartas } = require('../utils/cartasStore');
+const { formatarDataAbsoluta } = require('../utils/tempo');
 
 const POR_PAGINA = 12;
 const EMOJI_ANT = '◀️';
@@ -37,6 +39,14 @@ function menuDestinatario(paginaMembros) {
       }))
     );
   return new ActionRowBuilder().addComponents(menu);
+}
+
+// Botões de navegação da lista de membros
+function navButtons(pagina, totalPaginas) {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('cs_ant').setLabel('◀️ Anterior').setStyle(ButtonStyle.Secondary).setDisabled(pagina <= 0),
+    new ButtonBuilder().setCustomId('cs_prox').setLabel('Próximo ▶️').setStyle(ButtonStyle.Primary).setDisabled(pagina >= totalPaginas - 1)
+  );
 }
 
 function modalConteudo() {
@@ -109,25 +119,13 @@ module.exports = {
         .catch(() => {});
     }, 600);
 
-    // 🔒 Privacidade: apaga a mensagem pública do comando DEPOIS de responder.
-    // Se apagássemos antes, a referência da resposta quebraria com "Unknown message".
-    if (msgOriginal && msgOriginal.deletable) {
-      try {
-        await msgOriginal.delete();
-      } catch {
-        // sem permissão / já sumiu — segue
-      }
-    }
-
     const membros = todosMembros(guild);
     if (!membros.length) {
-      // Tenta popular sob demanda se estiver vazio
       try {
         const fetched = await guild.members.fetch({ withPresences: false });
         membros.push(...Array.from(fetched.values()));
       } catch {}
     }
-
     clearInterval(loadingTimer);
 
     const total = membros.length;
@@ -146,13 +144,13 @@ module.exports = {
       const embed = criarEmbed({
         titulo: '✉️ Carta Secreta — Passo 1/3',
         descricao:
-          `**Escolha quem receberá a carta.** Reaja com ${EMOJI_ANT}/${EMOJI_PROX} para navegar, ou use o menu abaixo (sincronizado com esta lista).\n\n` +
-          linhas,
+          `**Escolha quem receberá a carta.** Use ◀️ ▶️ para navegar, ou o menu abaixo (sincronizado com esta lista).\n\n` + linhas,
         cor: THEME.corPrincipal,
         rodape: `Página ${pagina + 1}/${totalPaginas} • ${total} membros`,
       });
+      const comps = [navButtons(pagina, totalPaginas)];
       const row = menuDestinatario(fatia);
-      const comps = row ? [row] : [];
+      if (row) comps.push(row);
       return { embed, comps };
     }
 
@@ -194,50 +192,37 @@ module.exports = {
       } catch {}
     }
 
-    // Reações de navegação
-    try {
-      await dm.react(EMOJI_ANT);
-      await dm.react(EMOJI_PROX);
-    } catch {}
-
-    let reagindo = true;
-    const reactionCollector = dm.createReactionCollector({
-      time: 10 * 60 * 1000,
-      filter: (reaction, user) => user.id === autor.id && (reaction.emoji.name === EMOJI_ANT || reaction.emoji.name === EMOJI_PROX),
-    });
-
-    reactionCollector.on('collect', async (reaction) => {
-      if (!reagindo) return;
-      if (reaction.emoji.name === EMOJI_PROX) pagina = Math.min(totalPaginas - 1, pagina + 1);
-      else if (reaction.emoji.name === EMOJI_ANT) pagina = Math.max(0, pagina - 1);
-      const { embed, comps } = renderLista();
+    // 🔒 Privacidade: apaga a mensagem pública do comando DEPOIS de responder.
+    if (msgOriginal && msgOriginal.deletable) {
       try {
-        await dm.edit({ embeds: [embed], components: comps });
+        await msgOriginal.delete();
       } catch {}
-      // Remove a reação do autor para poder clicar de novo
-      try {
-        await reaction.users.remove(autor.id);
-      } catch {}
-    });
+    }
 
     const coletor = dm.createMessageComponentCollector({ time: 10 * 60 * 1000, filter: (i) => i.user.id === autor.id });
 
     coletor.on('collect', async (i) => {
       try {
+        // Navegação por botões
+        if (i.customId === 'cs_prox') {
+          pagina = Math.min(totalPaginas - 1, pagina + 1);
+          const { embed, comps } = renderLista();
+          return i.update({ embeds: [embed], components: comps });
+        }
+        if (i.customId === 'cs_ant') {
+          pagina = Math.max(0, pagina - 1);
+          const { embed, comps } = renderLista();
+          return i.update({ embeds: [embed], components: comps });
+        }
+
         // 1️⃣ Escolheu o destinatário (sincronizado com a lista visível)
         if (i.customId === 'cs_alvo') {
-          reagindo = false;
-          reactionCollector.stop();
-          try {
-            await dm.reactions.removeAll();
-          } catch {}
-
           destinatarioId = i.values[0];
           const alvo = client.users.cache.get(destinatarioId) || (await client.users.fetch(destinatarioId).catch(() => null));
           if (alvo && alvo.id === autor.id) {
             return i.update({
               embeds: [criarEmbed({ titulo: '🚫 Destinatário inválido', descricao: 'Você não pode enviar a carta para si mesmo. Escolha outra pessoa na lista.', cor: 0xE67E80 })],
-              components: [menuDestinatario(membros.slice(pagina * POR_PAGINA, pagina * POR_PAGINA + POR_PAGINA))],
+              components: [navButtons(pagina, totalPaginas), menuDestinatario(membros.slice(pagina * POR_PAGINA, pagina * POR_PAGINA + POR_PAGINA))].filter(Boolean),
             });
           }
           const nome = alvo ? alvo.username : destinatarioId;
@@ -260,14 +245,8 @@ module.exports = {
 
         // Trocar destinatário -> volta para a lista
         if (i.customId === 'cs_trocar') {
-          reagindo = true;
           const { embed, comps } = renderLista();
-          await i.update({ embeds: [embed], components: comps });
-          try {
-            await dm.react(EMOJI_ANT);
-            await dm.react(EMOJI_PROX);
-          } catch {}
-          return;
+          return i.update({ embeds: [embed], components: comps });
         }
 
         // 2️⃣ Abrir modal de conteúdo
@@ -304,7 +283,6 @@ module.exports = {
           coletor.stop();
           return;
         }
-
         if (i.customId === 'cs_assin') {
           await i.showModal(modalAutor());
           try {
@@ -320,17 +298,6 @@ module.exports = {
       } catch (err) {
         console.error('Erro no fluxo cartasecreta:', err);
       }
-    });
-
-    coletor.on('end', () => {
-      try {
-        reactionCollector.stop();
-      } catch {}
-    });
-    reactionCollector.on('end', async () => {
-      try {
-        await dm.reactions.removeAll();
-      } catch {}
     });
 
     // Função de entrega reutilizável (anon / assinado com nome custom)
@@ -355,25 +322,17 @@ module.exports = {
 
       try {
         await alvo.send({ embeds: [carta] });
-        await autor
-          .send({
-            embeds: [
-              criarEmbed({
-                titulo: '✅ Carta enviada!',
-                descricao:
-                  `**Para:** ${alvo.tag}\n` +
-                  `**Modo:** ${assinar ? `✍️ Assinada por ${nomeAutor}` : '🕶️ Anônima'}\n\n` +
-                  `**Conteúdo enviado:**\n> ${conteudo}`,
-                cor: THEME.corSucesso,
-              }),
-            ],
-          })
-          .catch(() => {});
 
-        await i.update({
-          embeds: [criarEmbed({ titulo: '✅ Enviada!', descricao: `Carta entregue para **${alvo.username}** ${assinar ? 'assinada' : 'anonimamente'}. Confira seu DM. 🌙`, cor: THEME.corSucesso })],
-          components: [],
+        // 📜 Registra na "cartas enviadas" do autor (rascunhos/outbox)
+        registrarCarta(autor.id, {
+          paraTag: alvo.tag,
+          autorExibido: assinar ? nomeAutor : null,
+          anonimo: !assinar,
+          conteudo,
         });
+
+        // Mostra o outbox (lista de cartas enviadas) em vez de sumir
+        await mostrarOutbox(i, autor);
       } catch {
         await i.update({
           embeds: [criarEmbed({ titulo: 'Não consegui entregar', descricao: `${alvo.username} tem a DM fechada. A carta não foi enviada.`, cor: 0xE67E80 })],
@@ -383,3 +342,89 @@ module.exports = {
     }
   },
 };
+
+// ── Outbox: "📜 Cartas enviadas" (rascunhos organizados) ──────────────────
+async function mostrarOutbox(i, autor) {
+  const cartas = obterCartas(autor.id);
+  let pag = 0;
+  const POR = 8;
+
+  function render() {
+    const total = cartas.length;
+    const paginas = Math.max(1, Math.ceil(total / POR));
+    pag = Math.min(Math.max(0, pag), paginas - 1);
+    const fatia = cartas.slice(pag * POR, pag * POR + POR);
+    const linhas = fatia.length
+      ? fatia
+          .map((c) => {
+            const quando = formatarDataAbsoluta(c.em);
+            const modo = c.anonimo ? '🕶️ Anônima' : `✍️ ${c.autorExibido}`;
+            const txt = c.conteudo.length > 80 ? c.conteudo.slice(0, 80) + '…' : c.conteudo;
+            return `• **Para:** ${c.paraTag}\n  _${modo} • ${quando}_\n  > ${txt}`;
+          })
+          .join('\n\n')
+      : 'Você ainda não enviou nenhuma carta. 🌙';
+
+    const embed = criarEmbed({
+      titulo: '📜 Cartas enviadas',
+      descricao: linhas,
+      cor: THEME.corPrincipal,
+      rodape: `Página ${pag + 1}/${paginas} • ${total} carta(s) — suas cartas ficam salvas aqui`,
+    });
+    const nav = new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setCustomId('out_ant').setLabel('◀️ Anterior').setStyle(ButtonStyle.Secondary).setDisabled(pag <= 0),
+      new ButtonBuilder().setCustomId('out_prox').setLabel('Próximo ▶️').setStyle(ButtonStyle.Primary).setDisabled(pag >= paginas - 1),
+      new ButtonBuilder().setCustomId('out_nova').setLabel('✉️ Nova carta').setStyle(ButtonStyle.Success).setEmoji('✉️')
+    );
+    return { embed, nav };
+  }
+
+  const { embed, nav } = render();
+  await i.update({ embeds: [embed], components: [nav] });
+
+  // Coletor próprio do outbox (reage com botões para navegar / nova carta)
+  const col = i.message.createMessageComponentCollector({ time: 10 * 60 * 1000, filter: (x) => x.user.id === autor.id });
+  col.on('collect', async (x) => {
+    try {
+      if (x.customId === 'out_prox') {
+        pag = Math.min(Math.ceil(cartas.length / POR) - 1, pag + 1);
+        const r = render();
+        return x.update({ embeds: [r.embed], components: [r.nav] });
+      }
+      if (x.customId === 'out_ant') {
+        pag = Math.max(0, pag - 1);
+        const r = render();
+        return x.update({ embeds: [r.embed], components: [r.nav] });
+      }
+      if (x.customId === 'out_nova') {
+        col.stop();
+        // Reinicia o fluxo de envio abrindo a lista de membros de novo
+        const membros = todosMembros(i.guild);
+        const total = membros.length;
+        const totalPaginas = Math.max(1, Math.ceil(total / POR_PAGINA));
+        let p2 = 0;
+        const fatia = membros.slice(0, POR_PAGINA);
+        const linhas = fatia.length
+          ? fatia.map((m, idx) => `${idx + 1}. ${m.user.bot ? '🤖' : '👤'} \`${m.user.username}\` — \`${m.user.id}\``).join('\n')
+          : 'Nenhum membro.';
+        const embed2 = criarEmbed({
+          titulo: '✉️ Carta Secreta — Passo 1/3',
+          descricao: `**Escolha quem receberá a carta.** Use ◀️ ▶️ para navegar, ou o menu abaixo.\n\n` + linhas,
+          cor: THEME.corPrincipal,
+          rodape: `Página 1/${totalPaginas} • ${total} membros`,
+        });
+        const comps = [navButtons(0, totalPaginas)];
+        const row = menuDestinatario(fatia);
+        if (row) comps.push(row);
+        return x.update({ embeds: [embed2], components: comps });
+      }
+    } catch (err) {
+      console.error('Erro no outbox:', err);
+    }
+  });
+  col.on('end', () => {
+    try {
+      i.message.edit({ components: [] }).catch(() => {});
+    } catch {}
+  });
+}
