@@ -332,7 +332,7 @@ module.exports = {
         });
 
         // Mostra o outbox (lista de cartas enviadas) em vez de sumir
-        await mostrarOutbox(i, autor);
+        await mostrarOutbox(i, autor, guild);
       } catch {
         await i.update({
           embeds: [criarEmbed({ titulo: 'Não consegui entregar', descricao: `${alvo.username} tem a DM fechada. A carta não foi enviada.`, cor: 0xE67E80 })],
@@ -344,7 +344,7 @@ module.exports = {
 };
 
 // ── Outbox: "📜 Cartas enviadas" (rascunhos organizados) ──────────────────
-async function mostrarOutbox(i, autor) {
+async function mostrarOutbox(i, autor, guild) {
   const cartas = obterCartas(autor.id);
   let pag = 0;
   const POR = 8;
@@ -399,7 +399,7 @@ async function mostrarOutbox(i, autor) {
       if (x.customId === 'out_nova') {
         col.stop();
         // Reinicia o fluxo de envio abrindo a lista de membros de novo
-        const membros = todosMembros(i.guild);
+        const membros = todosMembros(guild);
         const total = membros.length;
         const totalPaginas = Math.max(1, Math.ceil(total / POR_PAGINA));
         let p2 = 0;

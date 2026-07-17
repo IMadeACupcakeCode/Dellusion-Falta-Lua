@@ -2,6 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const { REST, Routes } = require('discord.js');
 
+// Carrega .env da raiz do projeto
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+
 // Mapa de comandos slash registráveis (apenas os que possuem SlashCommandBuilder)
 const comandos = new Map();
 
