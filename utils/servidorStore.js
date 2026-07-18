@@ -12,6 +12,7 @@ function configPadrao() {
     canaisBloqueados: [],
     anuncios: { geral: null, evento: null, regra: null, atualizacao: null, aviso: null },
     cargosStaff: [],
+    canalShutdown: null,
   };
 }
 
@@ -64,6 +65,7 @@ function obterConfig(guildId) {
   cfg.canaisBloqueados = cfg.canaisBloqueados || padrao.canaisBloqueados;
   cfg.anuncios = { ...padrao.anuncios, ...(cfg.anuncios || {}) };
   cfg.cargosStaff = cfg.cargosStaff || padrao.cargosStaff;
+  cfg.canalShutdown = cfg.canalShutdown || padrao.canalShutdown;
   return cfg;
 }
 

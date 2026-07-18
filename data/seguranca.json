@@ -1,7 +1,7 @@
 {
   "1515590554480545844": {
-    "atualizadoEm": 1784230090778,
-    "total": 141,
+    "atualizadoEm": 1784344503455,
+    "total": 142,
     "membros": [
       {
         "id": "1300155860483575839",
@@ -157,15 +157,6 @@
         "cargoAlto": "”🍇 ͎ᵎ  Bots! ⊰ 机器人"
       },
       {
-        "id": "1461112803820830740",
-        "tag": "say0ri0",
-        "nome": "say0ri0",
-        "bot": false,
-        "criadoEm": 1768426838594,
-        "entrouEm": 1783193846827,
-        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
-      },
-      {
         "id": "849710160259842161",
         "tag": "bela9361",
         "nome": "bela9361",
@@ -226,7 +217,7 @@
         "bot": false,
         "criadoEm": 1753485418269,
         "entrouEm": 1782087133273,
-        "cargoAlto": "”📃 ͎ᵎ Peach. ⊰ 颜色"
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
       },
       {
         "id": "1481730766248612021",
@@ -748,7 +739,7 @@
         "bot": false,
         "criadoEm": 1630524261146,
         "entrouEm": 1781936374607,
-        "cargoAlto": "━━━━━━୧🎹 ✦ Cargos Staff! ⊰ ━━━━━━"
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
       },
       {
         "id": "297153970613387264",
@@ -802,15 +793,6 @@
         "bot": false,
         "criadoEm": 1740340260970,
         "entrouEm": 1784208549846,
-        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
-      },
-      {
-        "id": "451479688116961290",
-        "tag": "deeadly",
-        "nome": "deeadly",
-        "bot": false,
-        "criadoEm": 1527711545734,
-        "entrouEm": 1782634582841,
         "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
       },
       {
@@ -929,6 +911,15 @@
         "criadoEm": 1783382759072,
         "entrouEm": 1783482464477,
         "cargoAlto": "━━━━━━୧🎹 ✦ Platéia ⊰━━━━━━"
+      },
+      {
+        "id": "1052952930732478604",
+        "tag": "souoluka_1607",
+        "nome": "souoluka_1607",
+        "bot": false,
+        "criadoEm": 1671113941606,
+        "entrouEm": 1784326027365,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
       },
       {
         "id": "1179558463496523816",
@@ -1255,6 +1246,15 @@
         "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
+        "id": "1215805503423250452",
+        "tag": "galbabylon",
+        "nome": "galbabylon",
+        "bot": false,
+        "criadoEm": 1709941020590,
+        "entrouEm": 1784325701208,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
         "id": "1491569930905321562",
         "tag": "discor_80316",
         "nome": "discor_80316",
@@ -1262,6 +1262,15 @@
         "criadoEm": 1775688383557,
         "entrouEm": 1781910555170,
         "cargoAlto": "━━━━━━୧🎹 ✦ Cargos Staff! ⊰ ━━━━━━"
+      },
+      {
+        "id": "1219248474084610098",
+        "tag": "fizz.s",
+        "nome": "fizz.s",
+        "bot": false,
+        "criadoEm": 1710761888763,
+        "entrouEm": 1784339082289,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
         "id": "735496915575111681",

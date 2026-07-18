@@ -88,6 +88,21 @@ module.exports = {
       return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 
+    if (sub === 'shutdown') {
+      const canal = interaction.options.getChannel('canal');
+      cfg.canalShutdown = canal?.id || null;
+      salvarConfig(guildId, cfg);
+      const descricao = canal
+        ? `Agora aviso o desligamento em ${canal}.`
+        : 'Removi o aviso de shutdown.';
+      const embed = criarEmbed({
+        titulo: 'Canal de shutdown definido',
+        descricao,
+        cor: THEME.corSucesso,
+      });
+      return interaction.reply({ embeds: [embed], ephemeral: true });
+    }
+
     if (sub === 'ver') {
       const anuncios = TIPOS_ANUNCIO.map((t) => {
         const id = cfg.anuncios[t];

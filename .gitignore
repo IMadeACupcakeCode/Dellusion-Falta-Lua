@@ -1,0 +1,8 @@
+# Outras pastas locais (não relacionadas ao bot)
+/.venv/
+/Bedrock/
+/Para Lores/
+/node_modules/
+/odysseus/
+/static/
+.DS_Store

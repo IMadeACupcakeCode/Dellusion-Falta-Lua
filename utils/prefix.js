@@ -616,6 +616,16 @@ async function handlePrefix(message, client) {
       return responder(message, criarEmbed({ titulo: 'Limpo', descricao: `Canal de **${tipo}** removido.`, cor: THEME.corSucesso }), true);
     }
 
+    if (sub === 'shutdown') {
+      const canalId = extrairCanal(message);
+      if (!canalId) {
+        return responder(message, criarEmbed({ titulo: 'Canal?', descricao: 'Marque um canal para eu avisar quando for desligada: `$configurar shutdown #canal`.', cor: 0xE67E80 }), true);
+      }
+      cfg.canalShutdown = canalId;
+      salvarConfig(guildId, cfg);
+      return responder(message, criarEmbed({ titulo: 'Pronto', descricao: `Agora aviso o desligamento em <#${canalId}>.`, cor: THEME.corSucesso }), true);
+    }
+
     return responder(
       message,
       criarEmbed({
@@ -651,6 +661,11 @@ async function handlePrefix(message, client) {
             cfg.canaisPermitidos.length > 0
               ? `Somente em: ${cfg.canaisPermitidos.map((id) => `<#${id}>`).join('  ·  ')}`
               : 'Em qualquer canal (exceto os bloqueados)',
+          inline: false,
+        },
+        {
+          name: '🔔 Aviso de desligamento',
+          value: cfg.canalShutdown ? `<#${cfg.canalShutdown}>` : '`nenhum definido`',
           inline: false,
         }
       )
