@@ -29,7 +29,7 @@ module.exports = {
     const coletor = resposta.createMessageComponentCollector({ time: 60000, filter: () => true });
     coletor.on('collect', async (i) => {
       if (i.customId === 'social_avatar') {
-        await i.reply({ content: user.displayAvatarURL({ size: 512 }), ephemeral: true });
+        await i.reply({ content: user.displayAvatarURL({ size: 512 }), flags: [MessageFlags.Ephemeral] });
       } else if (i.customId === 'social_abraco') {
         await i.reply({ content: `🤗 ${interaction.user} te abraça, ${user}!`, ephemeral: false });
       }

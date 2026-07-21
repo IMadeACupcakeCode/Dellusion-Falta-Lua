@@ -6,9 +6,9 @@ module.exports = {
   data: { name: 'membros', description: '👥 Painel completo: totais, bots, staff, entradas/saídas do dia' },
   async execute(interaction) {
     const guild = interaction.guild;
-    if (!guild) return interaction.reply({ embeds: [criarEmbed({ titulo: 'Só em servidores', descricao: 'Use em um servidor.', cor: 0xE67E80 })], ephemeral: true });
+    if (!guild) return interaction.reply({ embeds: [criarEmbed({ titulo: 'Só em servidores', descricao: 'Use em um servidor.', cor: 0xE67E80 })], flags: [MessageFlags.Ephemeral] });
     if (!isStaff(interaction.member)) {
-      return interaction.reply({ embeds: [criarEmbed({ titulo: 'Acesso negado', descricao: 'Somente staff pode usar este comando.', cor: 0xE67E80 })], ephemeral: true });
+      return interaction.reply({ embeds: [criarEmbed({ titulo: 'Acesso negado', descricao: 'Somente staff pode usar este comando.', cor: 0xE67E80 })], flags: [MessageFlags.Ephemeral] });
     }
 
     // Tenta carregar o máximo possível do servidor para contar membros e cargos corretamente.
@@ -77,6 +77,6 @@ module.exports = {
       if (c.value) embedFinal.addFields({ name: c.name, value: c.value, inline: true });
     });
 
-    await interaction.reply({ embeds: [embedFinal], ephemeral: true });
+    await interaction.reply({ embeds: [embedFinal], flags: [MessageFlags.Ephemeral] });
   },
 };

@@ -254,7 +254,7 @@ module.exports = {
     if (!isStaff(interaction.member)) {
       return interaction.reply({
         embeds: [criarEmbed({ titulo: 'Acesso negado', descricao: 'Somente staff pode usar este comando.', cor: 0xE67E80 })],
-        ephemeral: true,
+        flags: [MessageFlags.Ephemeral],
       });
     }
 
@@ -265,7 +265,7 @@ module.exports = {
     const reply = await interaction.reply({
       embeds: [mostrarManual()],
       components: buildAcoesRow(),
-      ephemeral: true,
+      flags: [MessageFlags.Ephemeral],
     });
 
     async function abrirBuscaManual(i) {
@@ -310,7 +310,7 @@ module.exports = {
             }
           }
           if (!m) {
-            return i.reply({ embeds: [criarEmbed({ titulo: 'Membro não encontrado', descricao: 'Não achei esse ID.', cor: 0xE67E80 })], ephemeral: true });
+            return i.reply({ embeds: [criarEmbed({ titulo: 'Membro não encontrado', descricao: 'Não achei esse ID.', cor: 0xE67E80 })], flags: [MessageFlags.Ephemeral] });
           }
           _ultimo.set(reply.id, m);
           return i.update({ embeds: [buildHistoricoEmbed(m)], components: buildHistoricoBotoes() });

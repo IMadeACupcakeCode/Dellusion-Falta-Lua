@@ -18,7 +18,7 @@ module.exports = {
           'Exemplo: `/roleta opcoes: pizza, sushi, hambúrguer`',
         cor: 0xE67E80,
       });
-      return interaction.reply({ embeds: [embedErro], ephemeral: true });
+      return interaction.reply({ embeds: [embedErro], flags: [MessageFlags.Ephemeral] });
     }
 
     const escolhida = opcoes[Math.floor(Math.random() * opcoes.length)];

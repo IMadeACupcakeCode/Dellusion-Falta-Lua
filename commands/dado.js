@@ -40,7 +40,7 @@ module.exports = {
           '`1d20` • `2d6+3` • `4d8-1`',
         cor: 0xE67E80,
       });
-      return interaction.reply({ embeds: [embedErro], ephemeral: true });
+      return interaction.reply({ embeds: [embedErro], flags: [MessageFlags.Ephemeral] });
     }
 
     const { quantidade, lados, modificador, rolagens, total } = resultado;

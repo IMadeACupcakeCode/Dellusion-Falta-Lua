@@ -13,6 +13,8 @@ function configPadrao() {
     anuncios: { geral: null, evento: null, regra: null, atualizacao: null, aviso: null },
     cargosStaff: [],
     canalShutdown: null,
+    categoriaTicket: null,
+    canalOnOff: null,
   };
 }
 
@@ -66,6 +68,8 @@ function obterConfig(guildId) {
   cfg.anuncios = { ...padrao.anuncios, ...(cfg.anuncios || {}) };
   cfg.cargosStaff = cfg.cargosStaff || padrao.cargosStaff;
   cfg.canalShutdown = cfg.canalShutdown || padrao.canalShutdown;
+  cfg.categoriaTicket = cfg.categoriaTicket || padrao.categoriaTicket;
+  cfg.canalOnOff = cfg.canalOnOff || padrao.canalOnOff;
   return cfg;
 }
 

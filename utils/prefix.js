@@ -16,7 +16,7 @@ const ITENS_POR_PAGINA = 5;
 
 // ── Carga dos comandos (modo prefixo `$`, sem slash) ──────────────────
 // Comandos que já têm tratamento inline abaixo (não precisam do bridge).
-const INLINE = new Set(['ping', 'dado', 'roleta', 'lembrete', 'anuncio', 'configurar', 'organizar', 'codex']);
+const INLINE = new Set(['ping', 'dado', 'roleta', 'lembrete', 'anuncio', 'configurar', 'organizar', 'codex', 'ticket', 'fechar']);
 
 // Assinaturas para converter os argumentos do `$mensagem` nas opções que
 // cada comando slash espera. Tipos: user, int, rest (resto da linha), token.
@@ -264,12 +264,19 @@ async function enviarConfiguracao(mensagem, guildId) {
     return `˖ **${t}**: ${id ? `<#${id}>` : '`não definido`'}`;
   }).join('\n');
 
+  const ticketCategoria = cfg.categoriaTicket
+    ? `<#${cfg.categoriaTicket}>`
+    : '`não definido`';
+
   const embed = criarEmbed({
     titulo: 'Configuração atual da lua',
     descricao:
       `**Canais permitidos:** ${mencionar(cfg.canaisPermitidos)}\n` +
       `**Canais proibidos:** ${mencionar(cfg.canaisBloqueados)}\n\n` +
-      `**Anúncios por tipo:**\n${anuncios}`,
+      `**Anúncios por tipo:**\n${anuncios}\n\n` +
+      `**🎪 Categoria de Tickets:** ${ticketCategoria}\n` +
+      `**🔌 Canal de shutdown:** ${cfg.canalShutdown ? `<#${cfg.canalShutdown}>` : '`não definido`'}\n` +
+      `**🔛 Canal on/off:** ${cfg.canalOnOff ? `<#${cfg.canalOnOff}>` : '`não definido`'}`,
     cor: THEME.corPrincipal,
   });
   return responder(mensagem, embed, true);
@@ -454,7 +461,7 @@ async function handlePrefix(message, client) {
           const ms = parseTempo(quando);
 
           if (!ms) {
-            return submitted.reply({ embeds: [criarEmbed({ titulo: 'Tempo inválido', descricao: 'Use formatos como `10m`, `1h30m`, `2d`, `13:40 02/12`, `2pm 21/08/2026`, `amanhã 14:00`.', cor: 0xE67E80 })], ephemeral: true });
+            return submitted.reply({ embeds: [criarEmbed({ titulo: 'Tempo inválido', descricao: 'Use formatos como `10m`, `1h30m`, `2d`, `13:40 02/12`, `2pm 21/08/2026`, `amanhã 14:00`.', cor: 0xE67E80 })], flags: [MessageFlags.Ephemeral] });
           }
 
           const id = crypto.randomBytes(3).toString('hex');
@@ -463,7 +470,7 @@ async function handlePrefix(message, client) {
           adicionarLembrete(lembrete);
           agendarLembrete(client, lembrete);
 
-          return submitted.reply({ embeds: [criarEmbed({ titulo: '🌙 Lembrete guardado', descricao: `⏰ **Quando:** ${formatarDataAbsoluta(disparaEm)} (em ${formatarDuracao(ms)})\n💬 **Mensagem:**\n> ${mensagem}\n\n**ID:** \`${id}\``, cor: THEME.corLembrete, rodape: `${THEME.nome} não vai esquecer, ${message.author.username}` })], ephemeral: true });
+          return submitted.reply({ embeds: [criarEmbed({ titulo: '🌙 Lembrete guardado', descricao: `⏰ **Quando:** ${formatarDataAbsoluta(disparaEm)} (em ${formatarDuracao(ms)})\n💬 **Mensagem:**\n> ${mensagem}\n\n**ID:** \`${id}\``, cor: THEME.corLembrete, rodape: `${THEME.nome} não vai esquecer, ${message.author.username}` })], flags: [MessageFlags.Ephemeral] });
         } catch {
           // Modal expirou
         }
@@ -626,16 +633,41 @@ async function handlePrefix(message, client) {
       return responder(message, criarEmbed({ titulo: 'Pronto', descricao: `Agora aviso o desligamento em <#${canalId}>.`, cor: THEME.corSucesso }), true);
     }
 
-    return responder(
-      message,
-      criarEmbed({
-        titulo: 'Subcomandos de $configurar',
-        descricao:
-          '`ver` · `permitir #canal` · `liberar #canal` · `proibir #canal` · `desproibir #canal` · `anuncio <tipo> #canal` · `limparanuncio <tipo>`',
-        cor: THEME.corPrincipal,
-      }),
-      true
-    );
+    if (sub === 'ticketcategoria') {
+      const canalId = extrairCanal(message);
+      if (!canalId) {
+        return responder(message, criarEmbed({ titulo: 'Categoria?', descricao: 'Marque uma categoria: `$configurar ticketcategoria #categoria`.', cor: 0xE67E80 }), true);
+      }
+      // Verifica se é uma categoria de fato
+      const canal = message.guild.channels.cache.get(canalId);
+      if (canal && canal.type !== 'GUILD_CATEGORY' && canal.type !== 4) {
+        return responder(message, criarEmbed({ titulo: 'Não é uma categoria', descricao: 'Isso **não é uma categoria**! Selecione uma categoria (pasta de canais), não um canal de texto.', cor: 0xE67E80 }), true);
+      }
+      cfg.categoriaTicket = canalId;
+      salvarConfig(guildId, cfg);
+      return responder(message, criarEmbed({ titulo: '🎪 Categoria de Tickets definida', descricao: `<#${canalId}> agora é a categoria dos tickets.`, cor: THEME.corSucesso }), true);
+    }
+
+    if (sub === 'off-on') {
+      const canalId = extrairCanal(message);
+      if (!canalId) {
+        return responder(message, criarEmbed({ titulo: 'Canal?', descricao: 'Marque um canal para eu avisar quando ficar online/offline: `$configurar off-on #canal`.', cor: 0xE67E80 }), true);
+      }
+      cfg.canalOnOff = canalId;
+      salvarConfig(guildId, cfg);
+      return responder(message, criarEmbed({ titulo: 'Pronto', descricao: `Agora aviso online/offline em <#${canalId}>.`, cor: THEME.corSucesso }), true);
+    }
+
+      return responder(
+        message,
+        criarEmbed({
+          titulo: 'Subcomandos de $configurar',
+          descricao:
+            '`ver` · `permitir #canal` · `liberar #canal` · `proibir #canal` · `desproibir #canal` · `anuncio <tipo> #canal` · `limparanuncio <tipo>` · `shutdown #canal` · `ticketcategoria #categoria` · `off-on #canal`',
+          cor: THEME.corPrincipal,
+        }),
+        true
+      );
   }
 
   // ── $organizar ──
@@ -672,6 +704,79 @@ async function handlePrefix(message, client) {
       .setFooter({ text: `${THEME.nome} organiza por aqui...` })
       .setTimestamp();
     return message.reply({ embeds: [embed] });
+  }
+
+  // ── $ticket ──
+  if (comando === 'ticket') {
+    const { enviarPainel, configurarTicket } = require('./ticketManager');
+    const { isStaff } = require('./perms');
+    const sub = (args[0] || '').toLowerCase();
+
+    if (sub === '') {
+      return enviarPainel(message, client);
+    }
+
+    if (!isStaff(message.member)) {
+      return responder(
+        message,
+        criarEmbed({ titulo: 'Sem permissão', descricao: 'Você precisa ser **staff** para configurar tickets.', cor: 0xE67E80 }),
+        true
+      );
+    }
+
+    return configurarTicket(message, args, client);
+  }
+
+  // ── $fechar ── (fecha o ticket do canal atual)
+  if (comando === 'fechar') {
+    if (message.channel.name && message.channel.name.startsWith('ticket-')) {
+      const { fecharTicket, criarEmbedTicketFechado } = require('./ticketManager');
+      const channel = message.channel;
+      try {
+        const topic = channel.topic;
+        let ticketInfo;
+        try {
+          ticketInfo = JSON.parse(topic);
+        } catch {
+          ticketInfo = { contador: 0, categoriaEmoji: '❓', categoriaNome: 'Desconhecido', usuarioTag: 'Desconhecido', staffTag: null };
+        }
+
+        const embedFechado = criarEmbedTicketFechado(ticketInfo);
+
+        await message.reply({
+          content: '🔒 Fechando o picadeiro... O canal será removido em **10 segundos**.',
+          embeds: [embedFechado],
+          files: [{
+            attachment: path.join(__dirname, '..', 'imagens', 'Ticket.png'),
+            name: 'Ticket.png',
+          }],
+        });
+
+        // Remove permissão do usuário primeiro
+        await channel.permissionOverwrites.edit(ticketInfo.userId, {
+          ViewChannel: false,
+        });
+
+        // Deleta o canal após 10 segundos
+        setTimeout(async () => {
+          try {
+            await channel.delete('Ticket fechado.');
+          } catch {
+            // canal já pode ter sido deletado
+          }
+        }, 10000);
+      } catch (erro) {
+        console.error('Erro ao fechar ticket via $fechar:', erro);
+        await message.reply('❌ Erro ao fechar o ticket.').catch(() => {});
+      }
+    } else {
+      return responder(
+        message,
+        criarEmbed({ titulo: 'Não é um ticket', descricao: 'Este comando só funciona em **canais de ticket**.', cor: 0xE67E80 }),
+        true
+      );
+    }
+    return;
   }
 
   // ── $ajuda / $help ── (mesmo resultado do $codex)

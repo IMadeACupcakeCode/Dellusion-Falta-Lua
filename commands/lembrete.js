@@ -34,7 +34,7 @@ module.exports = {
           descricao: `Não encontrei nenhum lembrete seu com o ID \`${id}\`.`,
           cor: 0xE67E80,
         });
-        return interaction.reply({ embeds: [embedErro], ephemeral: true });
+        return interaction.reply({ embeds: [embedErro], flags: [MessageFlags.Ephemeral] });
       }
 
       removerLembrete(id);
@@ -44,7 +44,7 @@ module.exports = {
         descricao: `O lembrete \`${id}\` foi apagado.`,
         cor: THEME.corLembrete,
       });
-      return interaction.reply({ embeds: [embed], ephemeral: true });
+      return interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
     }
   },
 };
@@ -96,7 +96,7 @@ async function abrirModalCriar(interaction, client) {
           '• `amanhã 14:00` • `hoje 18:30`',
         cor: 0xE67E80,
       });
-      return submitted.reply({ embeds: [embedErro], ephemeral: true });
+      return submitted.reply({ embeds: [embedErro], flags: [MessageFlags.Ephemeral] });
     }
 
     if (ms > 365 * 24 * 60 * 60 * 1000) {
@@ -105,7 +105,7 @@ async function abrirModalCriar(interaction, client) {
         descricao: 'O limite é de **1 ano** por lembrete.',
         cor: 0xE67E80,
       });
-      return submitted.reply({ embeds: [embedErro], ephemeral: true });
+      return submitted.reply({ embeds: [embedErro], flags: [MessageFlags.Ephemeral] });
     }
 
     const id = crypto.randomBytes(3).toString('hex');
@@ -235,7 +235,7 @@ async function mostrarLista(interaction, client, filtrosIniciais = {}) {
     embeds: [embed],
     components: [botoes(totalPaginas), menuFiltros()],
     fetchReply: true,
-    ephemeral: true,
+    flags: [MessageFlags.Ephemeral],
   });
 
   const coletor = resposta.createMessageComponentCollector({ time: 5 * 60 * 1000, filter: () => true });

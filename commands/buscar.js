@@ -151,7 +151,7 @@ module.exports = {
     if (!isStaff(interaction.member)) {
       return interaction.reply({
         embeds: [criarEmbed({ titulo: 'Acesso negado', descricao: 'Somente staff pode usar este comando.', cor: 0xE67E80 })],
-        ephemeral: true,
+        flags: [MessageFlags.Ephemeral],
       });
     }
 
@@ -175,10 +175,10 @@ module.exports = {
     if (!m) {
       return interaction.reply({
         embeds: [criarEmbed({ titulo: 'Membro não encontrado', descricao: 'Não achei esse ID.', cor: 0xE67E80 })],
-        ephemeral: true,
+        flags: [MessageFlags.Ephemeral],
       });
     }
 
-    await interaction.reply({ embeds: [buildMembroEmbed(m)], ephemeral: true });
+    await interaction.reply({ embeds: [buildMembroEmbed(m)], flags: [MessageFlags.Ephemeral] });
   },
 };

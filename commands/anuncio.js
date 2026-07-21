@@ -32,7 +32,7 @@ module.exports = {
           `Use \`$configurar anuncio ${tipo} #canal\` primeiro.`,
         cor: 0xE67E80,
       });
-      return interaction.reply({ embeds: [embedErro], ephemeral: true });
+      return interaction.reply({ embeds: [embedErro], flags: [MessageFlags.Ephemeral] });
     }
 
     let canal;
@@ -48,7 +48,7 @@ module.exports = {
         descricao: `O canal salvo para **${tipo}** sumiu ou não tenho acesso a ele.`,
         cor: 0xE67E80,
       });
-      return interaction.reply({ embeds: [embedErro], ephemeral: true });
+      return interaction.reply({ embeds: [embedErro], flags: [MessageFlags.Ephemeral] });
     }
 
     const rotulo = ROTULOS[tipo] || { titulo: 'Anúncio', emoji: '📢', cor: THEME.corPrincipal };
@@ -70,7 +70,7 @@ module.exports = {
         descricao: `Tentei mandar em <#${canalId}>, mas falhou: ${erro.message}`,
         cor: 0xE67E80,
       });
-      return interaction.reply({ embeds: [embedErro], ephemeral: true });
+      return interaction.reply({ embeds: [embedErro], flags: [MessageFlags.Ephemeral] });
     }
 
     const embedOk = criarEmbed({
@@ -78,6 +78,6 @@ module.exports = {
       descricao: `Seu anúncio do tipo **${tipo}** foi para ${canal}.`,
       cor: THEME.corSucesso,
     });
-    return interaction.reply({ embeds: [embedOk], ephemeral: true });
+    return interaction.reply({ embeds: [embedOk], flags: [MessageFlags.Ephemeral] });
   },
 };

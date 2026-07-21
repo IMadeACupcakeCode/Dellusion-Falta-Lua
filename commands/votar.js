@@ -133,7 +133,7 @@ module.exports = {
             cor: 0xE67E80,
           }),
         ],
-        ephemeral: true,
+        flags: [MessageFlags.Ephemeral],
       });
     }
 
@@ -151,7 +151,7 @@ module.exports = {
       const index = Number(buttonInteraction.customId.replace('votar_', ''));
       const userId = buttonInteraction.user.id;
       if (voters.has(userId)) {
-        return buttonInteraction.reply({ content: 'Você já votou nesta enquete. 🌙', ephemeral: true });
+        return buttonInteraction.reply({ content: 'Você já votou nesta enquete. 🌙', flags: [MessageFlags.Ephemeral] });
       }
 
       voters.add(userId);

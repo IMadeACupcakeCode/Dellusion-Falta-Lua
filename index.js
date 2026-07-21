@@ -1,6 +1,7 @@
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 const { Client, GatewayIntentBits, ActivityType, Partials } = require('discord.js');
+const { MessageFlags } = require('discord.js');
 const { THEME } = require('./utils/theme');
 const { reagendarTodosLembretes } = require('./utils/agendador');
 const { handlePrefix } = require('./utils/prefix');
@@ -13,6 +14,29 @@ async function avisarShutdown(client) {
     const { obterConfig } = require('./utils/servidorStore');
     const { THEME } = require('./utils/theme');
     const { criarEmbed } = require('./utils/theme');
+    const { removerEmbedTicketFixo } = require('./utils/fixedTicketEmbed');
+
+    // Remove o embed fixo de ticket antes de desligar
+    await removerEmbedTicketFixo(client);
+
+    // Aviso offline no canal configurado (canalOnOff)
+    for (const guild of client.guilds.cache.values()) {
+      const cfg = obterConfig(guild.id);
+      const canalOnOffId = cfg?.canalOnOff;
+      if (canalOnOffId) {
+        try {
+          const canal = await guild.channels.fetch(canalOnOffId).catch(() => null);
+          if (canal) {
+            const embedOff = criarEmbed({
+              titulo: '🔌 Falta Lua está offline!',
+              descricao: 'Estou sendo desligada. Até a próxima, pecadores... 🌙',
+              cor: 0xE67E80,
+            });
+            await canal.send({ embeds: [embedOff] });
+          }
+        } catch {}
+      }
+    }
 
     for (const guild of client.guilds.cache.values()) {
       const cfg = obterConfig(guild.id);
@@ -39,6 +63,28 @@ async function avisarShutdown(client) {
   }
 }
 
+async function avisarOnline(client) {
+  try {
+    const { obterConfig } = require('./utils/servidorStore');
+    const { criarEmbed } = require('./utils/theme');
+    for (const guild of client.guilds.cache.values()) {
+      const cfg = obterConfig(guild.id);
+      const canalId = cfg?.canalOnOff;
+      if (!canalId) continue;
+      try {
+        const canal = await guild.channels.fetch(canalId).catch(() => null);
+        if (!canal) continue;
+        const embed = criarEmbed({
+          titulo: '🌙 Falta Lua está online!',
+          descricao: 'Estou de volta! Os espetáculos recomeçaram. ✧',
+          cor: 0x2ECC71,
+        });
+        await canal.send({ embeds: [embed] });
+      } catch {}
+    }
+  } catch {}
+}
+
 if (!DISCORD_TOKEN) {
   console.error('✧ ⎯ ੭ DISCORD_TOKEN não encontrado no .env. Confira o arquivo .env.example.');
   process.exit(1);
@@ -63,6 +109,8 @@ if (intents.includes(GatewayIntentBits.GuildMembers)) partials.push(Partials.Gui
 
 const client = new Client({ intents, partials });
 
+const { enviarEmbedTicketFixo } = require('./utils/fixedTicketEmbed');
+
 client.once('ready', () => {
   console.log(`${THEME.iconeFooter} ${THEME.nome} está online como ${client.user.tag}`);
 
@@ -72,6 +120,12 @@ client.once('ready', () => {
   });
 
   reagendarTodosLembretes(client);
+
+  // Embed fixo de ticket — aparece online, some offline
+  enviarEmbedTicketFixo(client);
+
+  // Aviso online no canal configurado
+  avisarOnline(client);
 });
 
 client.on('messageCreate', (message) => {
@@ -83,6 +137,42 @@ client.on('messageReactionAdd', async (reaction, user) => {
     await handleReaction(reaction, user);
   } catch (error) {
     console.error('Erro ao processar reação de guerra:', error);
+  }
+});
+
+// ── Sistema de Tickets (interação com botões) ──
+client.on('interactionCreate', async (interaction) => {
+  if (!interaction.isButton()) return;
+
+  const customId = interaction.customId;
+  const { criarTicket, reivindicarTicket, fecharTicket } = require('./utils/ticketManager');
+
+  try {
+    // Botões do painel de tickets (categorias)
+    if (customId.startsWith('ticket_') && !['ticket_fechar', 'ticket_reivindicar'].includes(customId)) {
+      await criarTicket(interaction, client);
+      return;
+    }
+
+    // Botão de reivindicar
+    if (customId === 'ticket_reivindicar') {
+      await reivindicarTicket(interaction, client);
+      return;
+    }
+
+    // Botão de fechar
+    if (customId === 'ticket_fechar') {
+      await fecharTicket(interaction, client);
+      return;
+    }
+  } catch (error) {
+    console.error('Erro no interactionCreate (ticket):', error);
+    if (!interaction.replied && !interaction.deferred) {
+      await interaction.reply({
+        content: '❌ Ocorreu um erro ao processar sua ação.',
+        flags: [MessageFlags.Ephemeral],
+      }).catch(() => {});
+    }
   }
 });
 

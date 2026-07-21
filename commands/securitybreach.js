@@ -286,7 +286,7 @@ module.exports = {
     if (!isStaff(interaction.member)) {
       return interaction.reply({
         embeds: [criarEmbed({ titulo: 'Acesso negado', descricao: 'Somente staff pode usar este comando.', cor: 0xE67E80 })],
-        ephemeral: true,
+        flags: [MessageFlags.Ephemeral],
       });
     }
 
@@ -326,7 +326,7 @@ module.exports = {
     }
 
     const inicial = renderPainel();
-    const reply = await interaction.reply({ embeds: [inicial.embed], components: inicial.comps, ephemeral: true });
+    const reply = await interaction.reply({ embeds: [inicial.embed], components: inicial.comps, flags: [MessageFlags.Ephemeral] });
 
     const collector = reply.createMessageComponentCollector({
       time: 10 * 60 * 1000,
@@ -365,9 +365,9 @@ module.exports = {
             }
           }
           if (!m) {
-            return i.reply({ embeds: [criarEmbed({ titulo: 'Membro não encontrado', descricao: 'Não achei esse ID.', cor: 0xE67E80 })], ephemeral: true });
+            return i.reply({ embeds: [criarEmbed({ titulo: 'Membro não encontrado', descricao: 'Não achei esse ID.', cor: 0xE67E80 })], flags: [MessageFlags.Ephemeral] });
           }
-          return i.reply({ embeds: [buildMembroEmbed(m)], ephemeral: true });
+          return i.reply({ embeds: [buildMembroEmbed(m)], flags: [MessageFlags.Ephemeral] });
         }
 
         // Botão buscar -> modal
