@@ -6,7 +6,8 @@ const {
   TextInputBuilder,
   TextInputStyle,
   StringSelectMenuBuilder,
-  PermissionFlagsBits,
+   PermissionFlagsBits,
+   MessageFlags,
 } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 const { isStaff, STAFF_CARGO_IDS } = require('../utils/perms');

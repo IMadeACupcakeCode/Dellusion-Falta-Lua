@@ -1,4 +1,4 @@
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, MessageFlags } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 const { isStaff } = require('../utils/perms');
 

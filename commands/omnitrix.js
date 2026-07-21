@@ -6,9 +6,12 @@ const {
   TextInputBuilder,
   TextInputStyle,
   StringSelectMenuBuilder,
+  MessageFlags,
 } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 const { isStaff } = require('../utils/perms');
+
+const STAFF_KEYWORDS = /(staff|moderador|moderadora|moderador\(a\)|admin|administrador|adm|gerente|suporte)/i;
 const { obterHistorico, avaliarRisco, marcarSuspeito, registrarSuspensao, obterMarcacoes } = require('../utils/segurancaStore');
 const { clientCache, presenceMap } = require('../utils/cache');
 const { formatarDataAbsoluta } = require('../utils/tempo');
@@ -165,8 +168,7 @@ function buildHistoricoBotoes() {
 function buildAcoesRow() {
   return [
     new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId('omni_buscar_manual').setLabel('Buscar no manual').setEmoji('🔍').setStyle(ButtonStyle.Primary),
-      new ButtonBuilder().setCustomId('omni_membro').setLabel('Histórico de membro').setEmoji('👤').setStyle(ButtonStyle.Secondary)
+      new ButtonBuilder().setCustomId('omni_voltar').setLabel('Voltar ao manual').setEmoji('🔙').setStyle(ButtonStyle.Secondary)
     ),
   ];
 }
