@@ -32,9 +32,9 @@ module.exports = {
         const embedErro = criarEmbed({
           titulo: 'Lembrete não encontrado',
           descricao: `Não encontrei nenhum lembrete seu com o ID \`${id}\`.`,
-          cor: 0xE67E80,
+          cor: THEME.corErro,
         });
-        return interaction.reply({ embeds: [embedErro], flags: [MessageFlags.Ephemeral] });
+        return interaction.reply({ embeds: [embedErro], ephemeral: true });
       }
 
       removerLembrete(id);
@@ -44,7 +44,7 @@ module.exports = {
         descricao: `O lembrete \`${id}\` foi apagado.`,
         cor: THEME.corLembrete,
       });
-      return interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+      return interaction.reply({ embeds: [embed], ephemeral: true });
     }
   },
 };
@@ -94,18 +94,18 @@ async function abrirModalCriar(interaction, client) {
           '• `13:40 02/12` — hora e data curta\n' +
           '• `1h30m` • `10m` • `2d` — tempo relativo\n' +
           '• `amanhã 14:00` • `hoje 18:30`',
-        cor: 0xE67E80,
+        cor: THEME.corErro,
       });
-      return submitted.reply({ embeds: [embedErro], flags: [MessageFlags.Ephemeral] });
+      return submitted.reply({ embeds: [embedErro], ephemeral: true });
     }
 
     if (ms > 365 * 24 * 60 * 60 * 1000) {
       const embedErro = criarEmbed({
         titulo: '⏰ Tempo muito longo',
         descricao: 'O limite é de **1 ano** por lembrete.',
-        cor: 0xE67E80,
+        cor: THEME.corErro,
       });
-      return submitted.reply({ embeds: [embedErro], flags: [MessageFlags.Ephemeral] });
+      return submitted.reply({ embeds: [embedErro], ephemeral: true });
     }
 
     const id = crypto.randomBytes(3).toString('hex');
@@ -235,7 +235,7 @@ async function mostrarLista(interaction, client, filtrosIniciais = {}) {
     embeds: [embed],
     components: [botoes(totalPaginas), menuFiltros()],
     fetchReply: true,
-    flags: [MessageFlags.Ephemeral],
+    ephemeral: true,
   });
 
   const coletor = resposta.createMessageComponentCollector({ time: 5 * 60 * 1000, filter: () => true });

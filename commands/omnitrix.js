@@ -6,16 +6,13 @@ const {
   TextInputBuilder,
   TextInputStyle,
   StringSelectMenuBuilder,
-  MessageFlags,
 } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 const { isStaff } = require('../utils/perms');
-
-const STAFF_KEYWORDS = /(staff|moderador|moderadora|moderador\(a\)|admin|administrador|adm|gerente|suporte)/i;
 const { obterHistorico, avaliarRisco, marcarSuspeito, registrarSuspensao, obterMarcacoes } = require('../utils/segurancaStore');
-const { clientCache, presenceMap } = require('../utils/cache');
+const { clientCache } = require('../utils/cache');
 const { formatarDataAbsoluta } = require('../utils/tempo');
-const { isGuildStaff, presenceStatus, STATUS_EMOJI } = require('./securitybreach');
+const { isGuildStaff, presenceStatus, STATUS_EMOJI, buildMembroEmbed } = require('../utils/membroEmbed');
 
 // ── Conteúdo do manual (seções pesquisáveis) ───────────────────────────────
 const SECOES = [
@@ -108,7 +105,7 @@ function buildHistoricoEmbed(member) {
   const embed = criarEmbed({
     titulo: `🔍 Histórico de ${member.user.username}`,
     descricao: desc,
-    cor: hist.suspenso > 0 || risco.length ? 0xE67E80 : THEME.corPrincipal,
+    cor: hist.suspenso > 0 || risco.length ? THEME.corErro : THEME.corPrincipal,
   });
 
   embed.addFields({
@@ -255,8 +252,8 @@ module.exports = {
   async execute(interaction) {
     if (!isStaff(interaction.member)) {
       return interaction.reply({
-        embeds: [criarEmbed({ titulo: 'Acesso negado', descricao: 'Somente staff pode usar este comando.', cor: 0xE67E80 })],
-        flags: [MessageFlags.Ephemeral],
+        embeds: [criarEmbed({ titulo: 'Acesso negado', descricao: 'Somente staff pode usar este comando.', cor: THEME.corErro })],
+        ephemeral: true,
       });
     }
 
@@ -267,7 +264,7 @@ module.exports = {
     const reply = await interaction.reply({
       embeds: [mostrarManual()],
       components: buildAcoesRow(),
-      flags: [MessageFlags.Ephemeral],
+      ephemeral: true,
     });
 
     async function abrirBuscaManual(i) {
@@ -312,7 +309,7 @@ module.exports = {
             }
           }
           if (!m) {
-            return i.reply({ embeds: [criarEmbed({ titulo: 'Membro não encontrado', descricao: 'Não achei esse ID.', cor: 0xE67E80 })], flags: [MessageFlags.Ephemeral] });
+            return i.reply({ embeds: [criarEmbed({ titulo: 'Membro não encontrado', descricao: 'Não achei esse ID.', cor: THEME.corErro })], ephemeral: true });
           }
           _ultimo.set(reply.id, m);
           return i.update({ embeds: [buildHistoricoEmbed(m)], components: buildHistoricoBotoes() });

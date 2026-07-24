@@ -16,39 +16,39 @@ function renderizarPagina(indice) {
     const categorias = Object.values(CATEGORIAS)
       .map((c) => `${c.emoji} **${c.nome}**`)
       .join('   ');
-    const embed = new EmbedBuilder()
-      .setColor(THEME.corPrincipal)
-      .setTitle('📖 Livro da Lua')
-      .setDescription(AUTOR_COVER)
-      .addFields(
-        { name: '✦ Seções', value: categorias, inline: false },
-        {
-          name: '✦ Como folhear',
-          value:
-            '`⏮️` primeira · `◀️` anterior · `▶️` próxima · `⏭️` última\n' +
-            '`⤵️ menu` — escolha um comando e vá até ele\n' +
-            '`🔎 busca` — ache o comando mais parecido com o nome digitado',
-          inline: false,
-        }
-      )
-      .setFooter({ text: `Página 1/${TOTAL + 1} • ${THEME.nome}` })
-      .setTimestamp();
+    const embed = criarEmbed({
+      titulo: '📖 Livro da Lua',
+      descricao: AUTOR_COVER,
+      cor: THEME.corPrincipal,
+      rodape: `Página 1/${TOTAL + 1} • ${THEME.nome}`,
+    })
+    .addFields(
+      { name: '✦ Seções', value: categorias, inline: false },
+      {
+        name: '✦ Como folhear',
+        value:
+          '`⏮️` primeira · `◀️` anterior · `▶️` próxima · `⏭️` última\n' +
+          '`⤵️ menu` — escolha um comando e vá até ele\n' +
+          '`🔎 busca` — ache o comando mais parecido com o nome digitado',
+        inline: false,
+      }
+    );
     return embed;
   }
 
   const cmd = COMANDOS[indice - 1];
   const cat = CATEGORIAS[cmd.categoria];
-  const embed = new EmbedBuilder()
-    .setColor(cat.cor)
-    .setTitle(`${cmd.emoji} ${cmd.nome}`)
-    .setDescription(cmd.descricao)
-    .addFields(
-      { name: '📚 Seção', value: `${cat.emoji} ${cat.nome}`, inline: true },
-      { name: '⌨️ Como usar', value: cmd.uso, inline: false },
-      { name: '✨ Exemplo', value: cmd.exemplo, inline: false }
-    )
-    .setFooter({ text: `Página ${indice + 1}/${TOTAL + 1} • ${THEME.nome}` })
-    .setTimestamp();
+  const embed = criarEmbed({
+    titulo: `${cmd.emoji} ${cmd.nome}`,
+    descricao: cmd.descricao,
+    cor: cat.cor,
+    rodape: `Página ${indice + 1}/${TOTAL + 1} • ${THEME.nome}`,
+  })
+  .addFields(
+    { name: '📚 Seção', value: `${cat.emoji} ${cat.nome}`, inline: true },
+    { name: '⌨️ Como usar', value: cmd.uso, inline: false },
+    { name: '✨ Exemplo', value: cmd.exemplo, inline: false }
+  );
   return embed;
 }
 

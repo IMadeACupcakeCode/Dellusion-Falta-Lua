@@ -20,7 +20,7 @@ module.exports = {
             cor: THEME.corPrincipal,
           }),
         ],
-        flags: [MessageFlags.Ephemeral],
+        ephemeral: true,
       });
     }
 
@@ -43,7 +43,7 @@ module.exports = {
           rodape: `${THEME.nome} registra tudo sob a lua...`,
         }),
       ],
-      flags: [MessageFlags.Ephemeral],
+      ephemeral: true,
     });
   },
 };

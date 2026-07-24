@@ -10,8 +10,10 @@ module.exports = {
         `**Latência da API:** \`${ping}ms\`\n` +
         `**Servidores:** \`${client.guilds.cache.size}\`\n` +
         `**Usuários visíveis:** \`${client.users.cache.size}\`\n` +
-        `**Status:** 🌙 online e sussurrando`,
+        `${THEME.div.linha}\n` +
+        `**Status:** 🌙 online e sussurrando sob a lua`,
       cor: THEME.corSucesso,
+      rodape: `${THEME.nome} vigia silenciosamente...`,
     });
     await interaction.reply({ embeds: [embed] });
   },

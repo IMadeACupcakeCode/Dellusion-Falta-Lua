@@ -1,4 +1,3 @@
-const { EmbedBuilder } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 const { obterConfig, TIPOS_ANUNCIO } = require('../utils/servidorStore');
 
@@ -30,32 +29,31 @@ module.exports = {
       return `˖ **${t}** → ${id ? `<#${id}>` : '`sem canal`'}`;
     }).join('\n');
 
-    const embedPainel = new EmbedBuilder()
-      .setColor(THEME.corPrincipal)
-      .setTitle(`${THEME.iconeFooter} Painel de Organização — ${guild.name}`)
-      .setDescription(
+    const embedPainel = criarEmbed({
+      titulo: `Painel de Organização — ${guild.name}`,
+      descricao:
         'Aqui está como a **Falta Lua** mantém este servidor organizado. ' +
-          'Use `$configurar` para ajustar os canais e `$anuncio` para enviar avisos classificados.'
-      )
-      .addFields(
-        { name: '✦ Centro de comandos', value: camposComandos.map((c) => `**${c.name}**`).join('   '), inline: false },
-        ...camposComandos,
-        {
-          name: '📍 Roteamento de anúncios',
-          value: roteamento,
-          inline: false,
-        },
-        {
-          name: '🗣️ Onde a bot fala',
-          value:
-            cfg.canaisPermitidos.length > 0
-              ? `Somente em: ${cfg.canaisPermitidos.map((id) => `<#${id}>`).join('  ·  ')}`
-              : 'Em qualquer canal (exceto os bloqueados)',
-          inline: false,
-        }
-      )
-      .setFooter({ text: `${THEME.nome} organiza por aqui...` })
-      .setTimestamp();
+        'Use `$configurar` para ajustar os canais e `$anuncio` para enviar avisos classificados.',
+      cor: THEME.corPrincipal,
+      rodape: `${THEME.nome} organiza por aqui...`,
+    })
+    .addFields(
+      { name: '✦ Centro de comandos', value: camposComandos.map((c) => `**${c.name}**`).join('   '), inline: false },
+      ...camposComandos,
+      {
+        name: '📍 Roteamento de anúncios',
+        value: roteamento,
+        inline: false,
+      },
+      {
+        name: '🗣️ Onde a bot fala',
+        value:
+          cfg.canaisPermitidos.length > 0
+            ? `Somente em: ${cfg.canaisPermitidos.map((id) => `<#${id}>`).join('  ·  ')}`
+            : 'Em qualquer canal (exceto os bloqueados)',
+        inline: false,
+      }
+    );
 
     return interaction.reply({ embeds: [embedPainel] });
   },

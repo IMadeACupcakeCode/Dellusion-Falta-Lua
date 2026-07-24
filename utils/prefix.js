@@ -16,7 +16,7 @@ const ITENS_POR_PAGINA = 5;
 
 // ── Carga dos comandos (modo prefixo `$`, sem slash) ──────────────────
 // Comandos que já têm tratamento inline abaixo (não precisam do bridge).
-const INLINE = new Set(['ping', 'dado', 'roleta', 'lembrete', 'anuncio', 'configurar', 'organizar', 'codex', 'ticket', 'fechar']);
+const INLINE = new Set(['ping', 'dado', 'roleta', 'lembrete', 'anuncio', 'configurar', 'organizar', 'codex', 'ticket', 'fechar', 'say', 'falar']);
 
 // Assinaturas para converter os argumentos do `$mensagem` nas opções que
 // cada comando slash espera. Tipos: user, int, rest (resto da linha), token.
@@ -227,7 +227,7 @@ async function responderCodex(mensagem, termo) {
     } else {
       return responder(
         mensagem,
-        criarEmbed({ titulo: 'Comando não encontrado', descricao: `Nada parecido com \`${termo}\`. Tente \`$codex\` e use o menu.`, cor: 0xE67E80 }),
+        criarEmbed({ titulo: 'Comando não encontrado', descricao: `Nada parecido com \`${termo}\`. Tente \`$codex\` e use o menu.`, cor: THEME.corErro }),
         true
       );
     }
@@ -306,7 +306,7 @@ async function handlePrefix(message, client) {
         const embed = criarEmbed({
           titulo: 'Silêncio sob a lua',
           descricao: motivos[checagem.motivo] || 'Não falo aqui.',
-          cor: 0xE67E80,
+          cor: THEME.corErro,
         });
         return responder(message, embed, true);
       }
@@ -333,7 +333,7 @@ async function handlePrefix(message, client) {
         criarEmbed({
           titulo: 'Notação inválida',
           descricao: 'Use `NdM` ou `NdM±X`, ex: `$dado 1d20`, `$dado 2d6+3`.',
-          cor: 0xE67E80,
+          cor: THEME.corErro,
         }),
         true
       );
@@ -361,7 +361,7 @@ async function handlePrefix(message, client) {
         criarEmbed({
           titulo: 'Opções insuficientes',
           descricao: 'Preciso de **pelo menos duas opções** separadas por vírgula. Ex: `$roleta pizza, sushi, hambúrguer`',
-          cor: 0xE67E80,
+          cor: THEME.corErro,
         }),
         true
       );
@@ -391,7 +391,7 @@ async function handlePrefix(message, client) {
       if (!alvo) {
         return responder(
           message,
-          criarEmbed({ titulo: 'Lembrete não encontrado', descricao: `Não encontrei \`${id}\` seu.`, cor: 0xE67E80 }),
+          criarEmbed({ titulo: 'Lembrete não encontrado', descricao: `Não encontrei \`${id}\` seu.`, cor: THEME.corErro }),
           true
         );
       }
@@ -461,7 +461,7 @@ async function handlePrefix(message, client) {
           const ms = parseTempo(quando);
 
           if (!ms) {
-            return submitted.reply({ embeds: [criarEmbed({ titulo: 'Tempo inválido', descricao: 'Use formatos como `10m`, `1h30m`, `2d`, `13:40 02/12`, `2pm 21/08/2026`, `amanhã 14:00`.', cor: 0xE67E80 })], flags: [MessageFlags.Ephemeral] });
+            return submitted.reply({ embeds: [criarEmbed({ titulo: 'Tempo inválido', descricao: 'Use formatos como `10m`, `1h30m`, `2d`, `13:40 02/12`, `2pm 21/08/2026`, `amanhã 14:00`.', cor: THEME.corErro })], ephemeral: true });
           }
 
           const id = crypto.randomBytes(3).toString('hex');
@@ -470,7 +470,7 @@ async function handlePrefix(message, client) {
           adicionarLembrete(lembrete);
           agendarLembrete(client, lembrete);
 
-          return submitted.reply({ embeds: [criarEmbed({ titulo: '🌙 Lembrete guardado', descricao: `⏰ **Quando:** ${formatarDataAbsoluta(disparaEm)} (em ${formatarDuracao(ms)})\n💬 **Mensagem:**\n> ${mensagem}\n\n**ID:** \`${id}\``, cor: THEME.corLembrete, rodape: `${THEME.nome} não vai esquecer, ${message.author.username}` })], flags: [MessageFlags.Ephemeral] });
+          return submitted.reply({ embeds: [criarEmbed({ titulo: '🌙 Lembrete guardado', descricao: `⏰ **Quando:** ${formatarDataAbsoluta(disparaEm)} (em ${formatarDuracao(ms)})\n💬 **Mensagem:**\n> ${mensagem}\n\n**ID:** \`${id}\``, cor: THEME.corLembrete, rodape: `${THEME.nome} não vai esquecer, ${message.author.username}` })], ephemeral: true });
         } catch {
           // Modal expirou
         }
@@ -494,7 +494,7 @@ async function handlePrefix(message, client) {
         criarEmbed({
           titulo: 'Uso incorreto',
           descricao: `Use: \`$anuncio <tipo> <mensagem>\`. Tipos: ${TIPOS_ANUNCIO.join(', ')}.`,
-          cor: 0xE67E80,
+          cor: THEME.corErro,
         }),
         true
       );
@@ -507,7 +507,7 @@ async function handlePrefix(message, client) {
         criarEmbed({
           titulo: 'Nenhum canal configurado',
           descricao: `Não há canal para anúncios do tipo **${tipo}**. Use \`$configurar anuncio ${tipo} #canal\`.`,
-          cor: 0xE67E80,
+          cor: THEME.corErro,
         }),
         true
       );
@@ -521,7 +521,7 @@ async function handlePrefix(message, client) {
     if (!canal) {
       return responder(
         message,
-        criarEmbed({ titulo: 'Canal não encontrado', descricao: 'O canal salvo sumiu ou não tenho acesso.', cor: 0xE67E80 }),
+        criarEmbed({ titulo: 'Canal não encontrado', descricao: 'O canal salvo sumiu ou não tenho acesso.', cor: THEME.corErro }),
         true
       );
     }
@@ -530,7 +530,7 @@ async function handlePrefix(message, client) {
       evento: { titulo: 'Evento Lunar', emoji: '🎉', cor: 0xC9B8F2 },
       regra: { titulo: 'Regra do Servidor', emoji: '📜', cor: 0xA895E0 },
       atualizacao: { titulo: 'Atualização', emoji: '✨', cor: THEME.corRoleta },
-      aviso: { titulo: 'Aviso Importante', emoji: '⚠️', cor: 0xE67E80 },
+      aviso: { titulo: 'Aviso Importante', emoji: '⚠️', cor: THEME.corErro },
     };
     const rotulo = rotulos[tipo] || { titulo: 'Anúncio', emoji: '📢', cor: THEME.corPrincipal };
     const embed = criarEmbed({
@@ -544,7 +544,7 @@ async function handlePrefix(message, client) {
     } catch (erro) {
       return responder(
         message,
-        criarEmbed({ titulo: 'Não consegui enviar', descricao: `Falhou: ${erro.message}`, cor: 0xE67E80 }),
+        criarEmbed({ titulo: 'Não consegui enviar', descricao: `Falhou: ${erro.message}`, cor: THEME.corErro }),
         true
       );
     }
@@ -561,7 +561,7 @@ async function handlePrefix(message, client) {
     if (!isStaff(message.member)) {
       return responder(
         message,
-        criarEmbed({ titulo: 'Sem permissão', descricao: 'Você precisa de **Gerir Servidor** ou de um cargo de staff para usar isso.', cor: 0xE67E80 }),
+        criarEmbed({ titulo: 'Sem permissão', descricao: 'Você precisa de **Gerir Servidor** ou de um cargo de staff para usar isso.', cor: THEME.corErro }),
         true
       );
     }
@@ -570,7 +570,7 @@ async function handlePrefix(message, client) {
 
     if (sub === 'permitir' || sub === 'liberar') {
       const canalId = extrairCanal(message);
-      if (!canalId) return responder(message, criarEmbed({ titulo: 'Canal?', descricao: 'Marque um canal: `$configurar permitir #canal`.', cor: 0xE67E80 }), true);
+      if (!canalId) return responder(message, criarEmbed({ titulo: 'Canal?', descricao: 'Marque um canal: `$configurar permitir #canal`.', cor: THEME.corErro }), true);
       if (sub === 'permitir') {
         if (!cfg.canaisPermitidos.includes(canalId)) cfg.canaisPermitidos.push(canalId);
       } else {
@@ -583,7 +583,7 @@ async function handlePrefix(message, client) {
 
     if (sub === 'proibir' || sub === 'desproibir') {
       const canalId = extrairCanal(message);
-      if (!canalId) return responder(message, criarEmbed({ titulo: 'Canal?', descricao: 'Marque um canal: `$configurar proibir #canal`.', cor: 0xE67E80 }), true);
+      if (!canalId) return responder(message, criarEmbed({ titulo: 'Canal?', descricao: 'Marque um canal: `$configurar proibir #canal`.', cor: THEME.corErro }), true);
       if (sub === 'proibir') {
         if (!cfg.canaisBloqueados.includes(canalId)) cfg.canaisBloqueados.push(canalId);
       } else {
@@ -600,7 +600,7 @@ async function handlePrefix(message, client) {
       if (!TIPOS_ANUNCIO.includes(tipo) || !canalId) {
         return responder(
           message,
-          criarEmbed({ titulo: 'Uso incorreto', descricao: 'Use: `$configurar anuncio <tipo> #canal`.', cor: 0xE67E80 }),
+          criarEmbed({ titulo: 'Uso incorreto', descricao: 'Use: `$configurar anuncio <tipo> #canal`.', cor: THEME.corErro }),
           true
         );
       }
@@ -616,7 +616,7 @@ async function handlePrefix(message, client) {
     if (sub === 'limparanuncio') {
       const tipo = (args[1] || '').toLowerCase();
       if (!TIPOS_ANUNCIO.includes(tipo)) {
-        return responder(message, criarEmbed({ titulo: 'Tipo?', descricao: `Tipos: ${TIPOS_ANUNCIO.join(', ')}.`, cor: 0xE67E80 }), true);
+        return responder(message, criarEmbed({ titulo: 'Tipo?', descricao: `Tipos: ${TIPOS_ANUNCIO.join(', ')}.`, cor: THEME.corErro }), true);
       }
       cfg.anuncios[tipo] = null;
       salvarConfig(guildId, cfg);
@@ -626,7 +626,7 @@ async function handlePrefix(message, client) {
     if (sub === 'shutdown') {
       const canalId = extrairCanal(message);
       if (!canalId) {
-        return responder(message, criarEmbed({ titulo: 'Canal?', descricao: 'Marque um canal para eu avisar quando for desligada: `$configurar shutdown #canal`.', cor: 0xE67E80 }), true);
+        return responder(message, criarEmbed({ titulo: 'Canal?', descricao: 'Marque um canal para eu avisar quando for desligada: `$configurar shutdown #canal`.', cor: THEME.corErro }), true);
       }
       cfg.canalShutdown = canalId;
       salvarConfig(guildId, cfg);
@@ -636,12 +636,12 @@ async function handlePrefix(message, client) {
     if (sub === 'ticketcategoria') {
       const canalId = extrairCanal(message);
       if (!canalId) {
-        return responder(message, criarEmbed({ titulo: 'Categoria?', descricao: 'Marque uma categoria: `$configurar ticketcategoria #categoria`.', cor: 0xE67E80 }), true);
+        return responder(message, criarEmbed({ titulo: 'Categoria?', descricao: 'Marque uma categoria: `$configurar ticketcategoria #categoria`.', cor: THEME.corErro }), true);
       }
       // Verifica se é uma categoria de fato
       const canal = message.guild.channels.cache.get(canalId);
       if (canal && canal.type !== 'GUILD_CATEGORY' && canal.type !== 4) {
-        return responder(message, criarEmbed({ titulo: 'Não é uma categoria', descricao: 'Isso **não é uma categoria**! Selecione uma categoria (pasta de canais), não um canal de texto.', cor: 0xE67E80 }), true);
+        return responder(message, criarEmbed({ titulo: 'Não é uma categoria', descricao: 'Isso **não é uma categoria**! Selecione uma categoria (pasta de canais), não um canal de texto.', cor: THEME.corErro }), true);
       }
       cfg.categoriaTicket = canalId;
       salvarConfig(guildId, cfg);
@@ -651,7 +651,7 @@ async function handlePrefix(message, client) {
     if (sub === 'off-on') {
       const canalId = extrairCanal(message);
       if (!canalId) {
-        return responder(message, criarEmbed({ titulo: 'Canal?', descricao: 'Marque um canal para eu avisar quando ficar online/offline: `$configurar off-on #canal`.', cor: 0xE67E80 }), true);
+        return responder(message, criarEmbed({ titulo: 'Canal?', descricao: 'Marque um canal para eu avisar quando ficar online/offline: `$configurar off-on #canal`.', cor: THEME.corErro }), true);
       }
       cfg.canalOnOff = canalId;
       salvarConfig(guildId, cfg);
@@ -708,7 +708,7 @@ async function handlePrefix(message, client) {
 
   // ── $ticket ──
   if (comando === 'ticket') {
-    const { enviarPainel, configurarTicket } = require('./ticketManager');
+    const { enviarPainel, configurarTicket, enviarPainelConvidar, convidarUsuario } = require('./ticketManager');
     const { isStaff } = require('./perms');
     const sub = (args[0] || '').toLowerCase();
 
@@ -716,10 +716,29 @@ async function handlePrefix(message, client) {
       return enviarPainel(message, client);
     }
 
+    if (sub === 'remove') {
+      const { enviarPainelRemover, removerUsuario } = require('./ticketManager');
+      const userId = args[1]?.replace(/[<@!]/g, '') || '';
+      if (!userId) {
+        // Sem usuário → abre painel interativo
+        return enviarPainelRemover(message, client);
+      }
+      return removerUsuario(message, userId);
+    }
+
+    if (sub === 'invite') {
+      const userId = args[1]?.replace(/[<@!]/g, '') || '';
+      if (!userId) {
+        // Sem argumento → abre painel interativo
+        return enviarPainelConvidar(message, client);
+      }
+      return convidarUsuario(message, userId);
+    }
+
     if (!isStaff(message.member)) {
       return responder(
         message,
-        criarEmbed({ titulo: 'Sem permissão', descricao: 'Você precisa ser **staff** para configurar tickets.', cor: 0xE67E80 }),
+        criarEmbed({ titulo: 'Sem permissão', descricao: 'Você precisa ser **staff** para configurar tickets.', cor: THEME.corErro }),
         true
       );
     }
@@ -730,7 +749,8 @@ async function handlePrefix(message, client) {
   // ── $fechar ── (fecha o ticket do canal atual)
   if (comando === 'fechar') {
     if (message.channel.name && message.channel.name.startsWith('ticket-')) {
-      const { fecharTicket, criarEmbedTicketFechado } = require('./ticketManager');
+      const { criarEmbedConfirmarFechamento, criarBotoesConfirmarFechamento, criarEmbedTicketFechado } = require('./ticketManager');
+      const { ActionRowBuilder } = require('discord.js');
       const channel = message.channel;
       try {
         const topic = channel.topic;
@@ -741,30 +761,63 @@ async function handlePrefix(message, client) {
           ticketInfo = { contador: 0, categoriaEmoji: '❓', categoriaNome: 'Desconhecido', usuarioTag: 'Desconhecido', staffTag: null };
         }
 
-        const embedFechado = criarEmbedTicketFechado(ticketInfo);
-
-        await message.reply({
-          content: '🔒 Fechando o picadeiro... O canal será removido em **10 segundos**.',
-          embeds: [embedFechado],
-          files: [{
-            attachment: path.join(__dirname, '..', 'imagens', 'Ticket.png'),
-            name: 'Ticket.png',
-          }],
+        const embedConfirma = criarEmbedConfirmarFechamento(ticketInfo);
+        const reply = await message.reply({
+          embeds: [embedConfirma],
+          components: [criarBotoesConfirmarFechamento()],
+          fetchReply: true,
         });
 
-        // Remove permissão do usuário primeiro
-        await channel.permissionOverwrites.edit(ticketInfo.userId, {
-          ViewChannel: false,
+        // Coletor de botões — reusa os mesmos handlers do index.js
+        const coletor = reply.createMessageComponentCollector({
+          time: 60_000,
+          filter: (i) => i.user.id === message.author.id,
         });
 
-        // Deleta o canal após 10 segundos
-        setTimeout(async () => {
-          try {
-            await channel.delete('Ticket fechado.');
-          } catch {
-            // canal já pode ter sido deletado
+        coletor.on('collect', async (i) => {
+          if (i.customId === 'ticket_fechar_confirmar') {
+            const { executarFechamento } = require('./ticketManager');
+            coletor.stop();
+            await executarFechamento(i, null);
+          } else if (i.customId === 'ticket_fechar_motivo') {
+            const { ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
+            const modal = new ModalBuilder()
+              .setCustomId('ticket_fechar_motivo_modal')
+              .setTitle('📝 Motivo do Fechamento');
+            modal.addComponents(
+              new ActionRowBuilder().addComponents(
+                new TextInputBuilder()
+                  .setCustomId('ticket_fechar_motivo_texto')
+                  .setLabel('📝 Motivo')
+                  .setStyle(TextInputStyle.Short)
+                  .setPlaceholder('Ex: Resolvido, duplicado, sem resposta...')
+                  .setMaxLength(200)
+                  .setRequired(true),
+              ),
+            );
+            await i.showModal(modal);
+
+            try {
+              const submitted = await i.awaitModalSubmit({
+                filter: (m) => m.user.id === message.author.id,
+                time: 120_000,
+              });
+              const motivo = submitted.fields.getTextInputValue('ticket_fechar_motivo_texto');
+              const { executarFechamento } = require('./ticketManager');
+              coletor.stop();
+              await executarFechamento(submitted, motivo);
+            } catch {}
+          } else if (i.customId === 'ticket_fechar_cancelar') {
+            coletor.stop();
+            await i.update({ content: '✅ Fechamento cancelado.', components: [], embeds: [] });
           }
-        }, 10000);
+        });
+
+        coletor.on('end', async () => {
+          try {
+            await reply.edit({ components: [] });
+          } catch {}
+        });
       } catch (erro) {
         console.error('Erro ao fechar ticket via $fechar:', erro);
         await message.reply('❌ Erro ao fechar o ticket.').catch(() => {});
@@ -772,11 +825,17 @@ async function handlePrefix(message, client) {
     } else {
       return responder(
         message,
-        criarEmbed({ titulo: 'Não é um ticket', descricao: 'Este comando só funciona em **canais de ticket**.', cor: 0xE67E80 }),
+        criarEmbed({ titulo: 'Não é um ticket', descricao: 'Este comando só funciona em **canais de ticket**.', cor: THEME.corErro }),
         true
       );
     }
     return;
+  }
+
+  // ── $say / $falar ──
+  if (comando === 'say' || comando === 'falar') {
+    const { falarDireto } = require('./sayManager');
+    return falarDireto(message, args);
   }
 
   // ── $ajuda / $help ── (mesmo resultado do $codex)
@@ -793,7 +852,7 @@ async function handlePrefix(message, client) {
         criarEmbed({
           titulo: 'Faltam argumentos',
           descricao: USO_PADRAO[comando] || 'Verifique os argumentos deste comando.',
-          cor: 0xE67E80,
+          cor: THEME.corErro,
         }),
         true
       );
@@ -805,7 +864,7 @@ async function handlePrefix(message, client) {
       console.error(`✧ ⎯ ੭ Erro ao executar $${comando}:`, erro);
       await responder(
         message,
-        criarEmbed({ titulo: 'Algo se perdeu no caminho', descricao: 'Tive um problema ao executar esse comando. Tente novamente.', cor: 0xE67E80 }),
+        criarEmbed({ titulo: 'Algo se perdeu no caminho', descricao: 'Tive um problema ao executar esse comando. Tente novamente.', cor: THEME.corErro }),
         true
       ).catch(() => {});
     }

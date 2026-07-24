@@ -1,7 +1,7 @@
 {
   "1515590554480545844": {
-    "atualizadoEm": 1784661023567,
-    "total": 158,
+    "atualizadoEm": 1784906244748,
+    "total": 203,
     "membros": [
       {
         "id": "1300155860483575839",
@@ -22,13 +22,22 @@
         "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
+        "id": "822843275843993600",
+        "tag": "nadinha_non",
+        "nome": "nadinha_non",
+        "bot": false,
+        "criadoEm": 1616251524650,
+        "entrouEm": 1784736781773,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
         "id": "1058992221921214574",
         "tag": "gohaba",
         "nome": "gohaba",
         "bot": false,
         "criadoEm": 1672553820830,
         "entrouEm": 1783787946869,
-        "cargoAlto": "”🌺 ͎ᵎ Marionettes. ⊰ 房屋"
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
       },
       {
         "id": "731658308301357097",
@@ -40,13 +49,49 @@
         "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
+        "id": "615670489662095446",
+        "tag": "24wz",
+        "nome": "24wz",
+        "bot": false,
+        "criadoEm": 1566857683340,
+        "entrouEm": 1784713133179,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
+        "id": "650343852938625024",
+        "tag": "ninguem9621",
+        "nome": "ninguem9621",
+        "bot": false,
+        "criadoEm": 1575124457345,
+        "entrouEm": 1784844198591,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
+        "id": "1111772478163914773",
+        "tag": ".m._p",
+        "nome": ".m._p",
+        "bot": false,
+        "criadoEm": 1685137614528,
+        "entrouEm": 1784825632735,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
+        "id": "1449911694057934919",
+        "tag": "miguelitopt16.",
+        "nome": "miguelitopt16.",
+        "bot": false,
+        "criadoEm": 1765756285920,
+        "entrouEm": 1784740845010,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
         "id": "1239028785400254488",
         "tag": "nightmare_stalker22",
         "nome": "nightmare_stalker22",
         "bot": false,
         "criadoEm": 1715477882481,
         "entrouEm": 1783218528367,
-        "cargoAlto": "”🌺 ͎ᵎ Entidades. ⊰ 房屋"
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
       },
       {
         "id": "1526031019403378788",
@@ -64,15 +109,15 @@
         "bot": false,
         "criadoEm": 1651231074244,
         "entrouEm": 1783089298396,
-        "cargoAlto": "”🌺 ͎ᵎ Marionettes. ⊰ 房屋"
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
-        "id": "435863725497384961",
-        "tag": "snowklr",
-        "nome": "snowklr",
+        "id": "433398661129437206",
+        "tag": "lucici.",
+        "nome": "lucici.",
         "bot": false,
-        "criadoEm": 1523988410115,
-        "entrouEm": 1784651929244,
+        "criadoEm": 1523400692971,
+        "entrouEm": 1784671874373,
         "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
       },
       {
@@ -85,13 +130,22 @@
         "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
+        "id": "1293039041343787028",
+        "tag": "jp9119",
+        "nome": "jp9119",
+        "bot": false,
+        "criadoEm": 1728354930960,
+        "entrouEm": 1784828101292,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
+      },
+      {
         "id": "387009744977526795",
         "tag": "dnpc002",
         "nome": "dnpc002",
         "bot": false,
         "criadoEm": 1512340713496,
         "entrouEm": 1783219388565,
-        "cargoAlto": "”🌺 ͎ᵎ Entidades. ⊰ 房屋"
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
       },
       {
         "id": "1139771360894271679",
@@ -109,7 +163,7 @@
         "bot": false,
         "criadoEm": 1675090531040,
         "entrouEm": 1783132632916,
-        "cargoAlto": "”🌺 ͎ᵎ Marionettes. ⊰ 房屋"
+        "cargoAlto": "”📃 ͎ᵎ Blood. ⊰ 颜色"
       },
       {
         "id": "1412117167507509410",
@@ -145,7 +199,7 @@
         "bot": false,
         "criadoEm": 1633037428733,
         "entrouEm": 1782092109082,
-        "cargoAlto": "”🌺 ͎ᵎ Marionettes. ⊰ 房屋"
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
       },
       {
         "id": "1318010858223177769",
@@ -157,13 +211,22 @@
         "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
+        "id": "1092292179961061387",
+        "tag": "riyuth",
+        "nome": "riyuth",
+        "bot": false,
+        "criadoEm": 1680493149510,
+        "entrouEm": 1784668187837,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
+      },
+      {
         "id": "1182006575196536956",
         "tag": "lucyababa",
         "nome": "lucyababa",
         "bot": false,
         "criadoEm": 1701882728147,
         "entrouEm": 1782076729294,
-        "cargoAlto": "━━━━━━୧🎹 ✦ Cargos Staff! ⊰ ━━━━━━"
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
         "id": "1241263646156525618",
@@ -193,12 +256,12 @@
         "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
       },
       {
-        "id": "849710160259842161",
-        "tag": "bela9361",
-        "nome": "bela9361",
+        "id": "1148855689167511552",
+        "tag": "felipezx13",
+        "nome": "felipezx13",
         "bot": false,
-        "criadoEm": 1622657089057,
-        "entrouEm": 1782834729604,
+        "criadoEm": 1693978941004,
+        "entrouEm": 1784875756377,
         "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
@@ -244,7 +307,16 @@
         "bot": false,
         "criadoEm": 1557261079743,
         "entrouEm": 1783650399537,
-        "cargoAlto": "”🌺 ͎ᵎ Marionettes. ⊰ 房屋"
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
+      },
+      {
+        "id": "480779617939095552",
+        "tag": "koda_drag",
+        "nome": "koda_drag",
+        "bot": false,
+        "criadoEm": 1534697193370,
+        "entrouEm": 1784726818107,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
       },
       {
         "id": "1398443944785875109",
@@ -253,7 +325,7 @@
         "bot": false,
         "criadoEm": 1753485418269,
         "entrouEm": 1782087133273,
-        "cargoAlto": "”🌺 ͎ᵎ Marionettes. ⊰ 房屋"
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
       },
       {
         "id": "1481730766248612021",
@@ -274,6 +346,24 @@
         "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
+        "id": "905272087164375041",
+        "tag": "_minemoon",
+        "nome": "_minemoon",
+        "bot": false,
+        "criadoEm": 1635904084722,
+        "entrouEm": 1784707434400,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
+        "id": "1294698611447173153",
+        "tag": "yukkomg",
+        "nome": "yukkomg",
+        "bot": false,
+        "criadoEm": 1728750603306,
+        "entrouEm": 1784783536009,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
         "id": "818549918909071402",
         "tag": "skyextremo",
         "nome": "skyextremo",
@@ -289,24 +379,6 @@
         "bot": false,
         "criadoEm": 1530755948220,
         "entrouEm": 1784100150246,
-        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
-      },
-      {
-        "id": "867132621665337414",
-        "tag": "velwine",
-        "nome": "velwine",
-        "bot": false,
-        "criadoEm": 1626810927550,
-        "entrouEm": 1784652179946,
-        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
-      },
-      {
-        "id": "750707925948825671",
-        "tag": "bcgamerrmyt",
-        "nome": "bcgamerrmyt",
-        "bot": false,
-        "criadoEm": 1599053117025,
-        "entrouEm": 1784642846566,
         "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
@@ -352,7 +424,7 @@
         "bot": false,
         "criadoEm": 1623528112055,
         "entrouEm": 1782090743270,
-        "cargoAlto": "”🌺 ͎ᵎ Marionettes. ⊰ 房屋"
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
       },
       {
         "id": "1105562272643952692",
@@ -370,7 +442,16 @@
         "bot": false,
         "criadoEm": 1772515223204,
         "entrouEm": 1782850844186,
-        "cargoAlto": "”🌺 ͎ᵎ Marionettes. ⊰ 房屋"
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
+      },
+      {
+        "id": "597253793205190656",
+        "tag": "tatsulk",
+        "nome": "tatsulk",
+        "bot": false,
+        "criadoEm": 1562466800739,
+        "entrouEm": 1784741834287,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
         "id": "909096232675315722",
@@ -388,7 +469,7 @@
         "bot": false,
         "criadoEm": 1561561794943,
         "entrouEm": 1783756501976,
-        "cargoAlto": "”🌺 ͎ᵎ Marionettes. ⊰ 房屋"
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
         "id": "687755919957950485",
@@ -409,12 +490,30 @@
         "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
+        "id": "1444872360804225065",
+        "tag": "hashy8696",
+        "nome": "hashy8696",
+        "bot": false,
+        "criadoEm": 1764554815246,
+        "entrouEm": 1784840583235,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
         "id": "1320414182503481357",
         "tag": "pewpew__69_49608",
         "nome": "pewpew__69_49608",
         "bot": false,
         "criadoEm": 1734881673218,
         "entrouEm": 1783101611259,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
+        "id": "924274641932013599",
+        "tag": "0100.1001",
+        "nome": "0100.1001",
+        "bot": false,
+        "criadoEm": 1640434646829,
+        "entrouEm": 1784662986075,
         "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
@@ -427,13 +526,58 @@
         "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
       },
       {
+        "id": "1498398775251701811",
+        "tag": "melane0438",
+        "nome": "melane0438",
+        "bot": false,
+        "criadoEm": 1777316506923,
+        "entrouEm": 1784888347535,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
+        "id": "1203801350375477301",
+        "tag": "miko_gohaba",
+        "nome": "miko_gohaba",
+        "bot": false,
+        "criadoEm": 1707079007477,
+        "entrouEm": 1784761700083,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
+        "id": "730542502674956378",
+        "tag": "dust5554",
+        "nome": "dust5554",
+        "bot": false,
+        "criadoEm": 1594245305461,
+        "entrouEm": 1784758952924,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
+        "id": "1207798139440865385",
+        "tag": "junepix",
+        "nome": "junepix",
+        "bot": false,
+        "criadoEm": 1708031916247,
+        "entrouEm": 1784667379896,
+        "cargoAlto": "”📃 ͎ᵎ Peach. ⊰ 颜色"
+      },
+      {
         "id": "567037762092662817",
         "tag": "artpt12",
         "nome": "artpt12",
         "bot": false,
         "criadoEm": 1555262737535,
         "entrouEm": 1782340485559,
-        "cargoAlto": "”🌺 ͎ᵎ Marionettes. ⊰ 房屋"
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
+        "id": "1471521642332160153",
+        "tag": "ischk29",
+        "nome": "ischk29",
+        "bot": false,
+        "criadoEm": 1770908499082,
+        "entrouEm": 1784662489150,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
       },
       {
         "id": "1523810478093107324",
@@ -460,7 +604,16 @@
         "bot": false,
         "criadoEm": 1629735126980,
         "entrouEm": 1782067420653,
-        "cargoAlto": "”🌺 ͎ᵎ Marionettes. ⊰ 房屋"
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
+      },
+      {
+        "id": "1358528003273003304",
+        "tag": "eatamanitamuscaria",
+        "nome": "eatamanitamuscaria",
+        "bot": false,
+        "criadoEm": 1743968716210,
+        "entrouEm": 1784727688848,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
         "id": "1146582146614579211",
@@ -487,7 +640,7 @@
         "bot": false,
         "criadoEm": 1612651332889,
         "entrouEm": 1784173677788,
-        "cargoAlto": "”🌺 ͎ᵎ Marionettes. ⊰ 房屋"
+        "cargoAlto": "”🍇 ͎ᵎ  Bots! ⊰ 机器人"
       },
       {
         "id": "972908342970306600",
@@ -535,6 +688,15 @@
         "cargoAlto": "━━━━━━୧🎹 ✦ Cargos Staff! ⊰ ━━━━━━"
       },
       {
+        "id": "242056641862828036",
+        "tag": "kubbo.",
+        "nome": "kubbo.",
+        "bot": false,
+        "criadoEm": 1477781200615,
+        "entrouEm": 1784750543178,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
         "id": "1520640139691429918",
         "tag": "cookiesey",
         "nome": "cookiesey",
@@ -562,6 +724,15 @@
         "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
+        "id": "1023683452236738641",
+        "tag": "chicobent",
+        "nome": "chicobent",
+        "bot": false,
+        "criadoEm": 1664135554132,
+        "entrouEm": 1784856361678,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
         "id": "1189967904461029476",
         "tag": "whitezin0987",
         "nome": "whitezin0987",
@@ -569,6 +740,15 @@
         "criadoEm": 1703780856958,
         "entrouEm": 1784069042711,
         "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
+        "id": "948961531633234010",
+        "tag": "mintsky._m",
+        "nome": "mintsky._m",
+        "bot": false,
+        "criadoEm": 1646320459994,
+        "entrouEm": 1784661875056,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
       },
       {
         "id": "1316877525451804706",
@@ -586,7 +766,7 @@
         "bot": false,
         "criadoEm": 1522986962627,
         "entrouEm": 1784160804778,
-        "cargoAlto": "”🌺 ͎ᵎ Marionettes. ⊰ 房屋"
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
       },
       {
         "id": "985291192545726524",
@@ -595,7 +775,7 @@
         "bot": false,
         "criadoEm": 1654982126128,
         "entrouEm": 1782077956688,
-        "cargoAlto": "”🌺 ͎ᵎ Marionettes. ⊰ 房屋"
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
       },
       {
         "id": "1482593487932096574",
@@ -688,6 +868,15 @@
         "cargoAlto": "━━━━━━୧🎹 ✦ Cargos Staff! ⊰ ━━━━━━"
       },
       {
+        "id": "1437927656183304316",
+        "tag": "asteccalps_56191",
+        "nome": "asteccalps_56191",
+        "bot": false,
+        "criadoEm": 1762899068638,
+        "entrouEm": 1784727276620,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
+      },
+      {
         "id": "501488845825638400",
         "tag": "zerozimshiu",
         "nome": "zerozimshiu",
@@ -730,7 +919,7 @@
         "bot": false,
         "criadoEm": 1781639594341,
         "entrouEm": 1781639792161,
-        "cargoAlto": "”🌺 ͎ᵎ Entidades. ⊰ 房屋"
+        "cargoAlto": "”📃 ͎ᵎ Candycane. ⊰ 颜色"
       },
       {
         "id": "932612161895825461",
@@ -748,7 +937,7 @@
         "bot": false,
         "criadoEm": 1648817996548,
         "entrouEm": 1782365874783,
-        "cargoAlto": "”🌺 ͎ᵎ Marionettes. ⊰ 房屋"
+        "cargoAlto": "”📃 ͎ᵎ Blood. ⊰ 颜色"
       },
       {
         "id": "1490141779154964542",
@@ -784,7 +973,7 @@
         "bot": false,
         "criadoEm": 1645633971490,
         "entrouEm": 1782092188847,
-        "cargoAlto": "”🌺 ͎ᵎ Marionettes. ⊰ 房屋"
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
       },
       {
         "id": "1016518611373936681",
@@ -802,7 +991,7 @@
         "bot": false,
         "criadoEm": 1697497167143,
         "entrouEm": 1782084602726,
-        "cargoAlto": "”🌺 ͎ᵎ Marionettes. ⊰ 房屋"
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
       },
       {
         "id": "869282245414899782",
@@ -821,6 +1010,24 @@
         "criadoEm": 1490917427448,
         "entrouEm": 1781474056179,
         "cargoAlto": "”🍇 ͎ᵎ  Bots! ⊰ 机器人"
+      },
+      {
+        "id": "404408521447178241",
+        "tag": "mesquits",
+        "nome": "mesquits",
+        "bot": false,
+        "criadoEm": 1516488905060,
+        "entrouEm": 1784845419772,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
+        "id": "776172604041330739",
+        "tag": "larajins2",
+        "nome": "larajins2",
+        "bot": false,
+        "criadoEm": 1605124369393,
+        "entrouEm": 1784816427971,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
         "id": "1295509711298367539",
@@ -850,6 +1057,24 @@
         "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
+        "id": "1194846151229313054",
+        "tag": "bernn._a",
+        "nome": "bernn._a",
+        "bot": false,
+        "criadoEm": 1704943921621,
+        "entrouEm": 1784662381812,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
+        "id": "644184091490779154",
+        "tag": "extremlyghae",
+        "nome": "extremlyghae",
+        "bot": false,
+        "criadoEm": 1573655855773,
+        "entrouEm": 1784668338244,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
+      },
+      {
         "id": "410138706490425344",
         "tag": "Embed Generator#5905",
         "nome": "Embed Generator",
@@ -865,7 +1090,25 @@
         "bot": false,
         "criadoEm": 1740340260970,
         "entrouEm": 1784208549846,
-        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
+        "cargoAlto": "”🍇 ͎ᵎ  Bots! ⊰ 机器人"
+      },
+      {
+        "id": "1220792310938337373",
+        "tag": "noyk__",
+        "nome": "noyk__",
+        "bot": false,
+        "criadoEm": 1711129968152,
+        "entrouEm": 1784766485171,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
+        "id": "712412836860657764",
+        "tag": "pessoa_humana_.",
+        "nome": "pessoa_humana_.",
+        "bot": false,
+        "criadoEm": 1589922856298,
+        "entrouEm": 1784811284195,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
         "id": "1509320781207961722",
@@ -931,6 +1174,24 @@
         "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
       },
       {
+        "id": "1242595758340046870",
+        "tag": "snxc_s",
+        "nome": "snxc_s",
+        "bot": false,
+        "criadoEm": 1716328315101,
+        "entrouEm": 1784781217186,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
+        "id": "700818620854566972",
+        "tag": "barayashi",
+        "nome": "barayashi",
+        "bot": false,
+        "criadoEm": 1587158579792,
+        "entrouEm": 1784671850015,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
         "id": "413716893300555786",
         "tag": "sayuinin",
         "nome": "sayuinin",
@@ -964,6 +1225,15 @@
         "bot": false,
         "criadoEm": 1781488489781,
         "entrouEm": 1784077477526,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
+        "id": "1083136712546451497",
+        "tag": "job008",
+        "nome": "job008",
+        "bot": false,
+        "criadoEm": 1678310315978,
+        "entrouEm": 1784851075301,
         "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
@@ -1018,7 +1288,25 @@
         "bot": false,
         "criadoEm": 1784602931225,
         "entrouEm": 1784607461728,
-        "cargoAlto": "”🌺 ͎ᵎ Entidades. ⊰ 房屋"
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
+        "id": "1429228240563601499",
+        "tag": "lunayu__22838",
+        "nome": "lunayu__22838",
+        "bot": false,
+        "criadoEm": 1760824966327,
+        "entrouEm": 1784822675642,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
+        "id": "721514548229832757",
+        "tag": "falaphelzzz",
+        "nome": "falaphelzzz",
+        "bot": false,
+        "criadoEm": 1592092873390,
+        "entrouEm": 1784772878755,
+        "cargoAlto": "”📃 ͎ᵎ Peach. ⊰ 颜色"
       },
       {
         "id": "1081652171948441750",
@@ -1048,6 +1336,15 @@
         "cargoAlto": "━━━━━━୧🎹 ✦ Platéia ⊰━━━━━━"
       },
       {
+        "id": "335944890443890689",
+        "tag": "toukinha.",
+        "nome": "toukinha.",
+        "bot": false,
+        "criadoEm": 1500165903436,
+        "entrouEm": 1784720688344,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
+      },
+      {
         "id": "848999704423039027",
         "tag": "0leonardo0.",
         "nome": "0leonardo0.",
@@ -1055,6 +1352,15 @@
         "criadoEm": 1622487703186,
         "entrouEm": 1783556753675,
         "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
+      },
+      {
+        "id": "1058500329806778459",
+        "tag": "ograndeballer",
+        "nome": "ograndeballer",
+        "bot": false,
+        "criadoEm": 1672436544611,
+        "entrouEm": 1784821754868,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
         "id": "710034409214181396",
@@ -1093,12 +1399,12 @@
         "cargoAlto": "”🍇 ͎ᵎ  Bots! ⊰ 机器人"
       },
       {
-        "id": "1468467662085423342",
-        "tag": "tnbabnt",
-        "nome": "tnbabnt",
+        "id": "1428135514292355202",
+        "tag": "fogofogo0949",
+        "nome": "fogofogo0949",
         "bot": false,
-        "criadoEm": 1770180373451,
-        "entrouEm": 1782857432613,
+        "criadoEm": 1760564440082,
+        "entrouEm": 1784663596403,
         "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
@@ -1127,6 +1433,15 @@
         "criadoEm": 1598366495559,
         "entrouEm": 1782862193659,
         "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
+        "id": "1524897397036155133",
+        "tag": "humm_thy",
+        "nome": "humm_thy",
+        "bot": false,
+        "criadoEm": 1783634270677,
+        "entrouEm": 1784674737929,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
       },
       {
         "id": "894310661734142002",
@@ -1174,6 +1489,15 @@
         "cargoAlto": "━━━━━━୧🎹 ✦ Cargos Staff! ⊰ ━━━━━━"
       },
       {
+        "id": "800813443728015461",
+        "tag": "gajj_vas",
+        "nome": "gajj_vas",
+        "bot": false,
+        "criadoEm": 1610999203379,
+        "entrouEm": 1784840396858,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
         "id": "1517109121998913572",
         "tag": "michaelthomas_21839_42192",
         "nome": "michaelthomas_21839_42192",
@@ -1207,7 +1531,7 @@
         "bot": false,
         "criadoEm": 1722452433951,
         "entrouEm": 1782235755116,
-        "cargoAlto": "”🌺 ͎ᵎ Marionettes. ⊰ 房屋"
+        "cargoAlto": "”📃 ͎ᵎ Blood. ⊰ 颜色"
       },
       {
         "id": "461662869600206848",
@@ -1219,13 +1543,22 @@
         "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
+        "id": "1054844942847049859",
+        "tag": "otavio_fps",
+        "nome": "otavio_fps",
+        "bot": false,
+        "criadoEm": 1671565032446,
+        "entrouEm": 1784857857239,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
         "id": "435243867948843018",
         "tag": "mey_saki",
         "nome": "mey_saki",
         "bot": false,
         "criadoEm": 1523840624559,
         "entrouEm": 1782067330257,
-        "cargoAlto": "”🌺 ͎ᵎ Marionettes. ⊰ 房屋"
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
       },
       {
         "id": "612431950002651167",
@@ -1234,6 +1567,15 @@
         "bot": false,
         "criadoEm": 1566085555316,
         "entrouEm": 1783747082165,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
+        "id": "1007332858655952936",
+        "tag": "rehlx01",
+        "nome": "rehlx01",
+        "bot": false,
+        "criadoEm": 1660237268843,
+        "entrouEm": 1784820580027,
         "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
@@ -1291,6 +1633,24 @@
         "cargoAlto": "”🍇 ͎ᵎ  Bots! ⊰ 机器人"
       },
       {
+        "id": "1500575622366236775",
+        "tag": "imrkzo",
+        "nome": "imrkzo",
+        "bot": false,
+        "criadoEm": 1777835507719,
+        "entrouEm": 1784705095298,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
+        "id": "1522792269361713235",
+        "tag": "3f89",
+        "nome": "3f89",
+        "bot": false,
+        "criadoEm": 1783132369128,
+        "entrouEm": 1784746886559,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
+      },
+      {
         "id": "709545814204088370",
         "tag": "maycaozq",
         "nome": "maycaozq",
@@ -1318,13 +1678,40 @@
         "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
+        "id": "602999782390104095",
+        "tag": "rapannater",
+        "nome": "rapannater",
+        "bot": false,
+        "criadoEm": 1563836751316,
+        "entrouEm": 1784773094692,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
+        "id": "719521582925611028",
+        "tag": "sr.snoozy",
+        "nome": "sr.snoozy",
+        "bot": false,
+        "criadoEm": 1591617713434,
+        "entrouEm": 1784672579468,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
+      },
+      {
         "id": "740663750238928928",
         "tag": "opa.0000",
         "nome": "opa.0000",
         "bot": false,
         "criadoEm": 1596658398924,
         "entrouEm": 1782065674304,
-        "cargoAlto": "”🌺 ͎ᵎ Marionettes. ⊰ 房屋"
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
+        "id": "699394505417293834",
+        "tag": "hyicaro",
+        "nome": "hyicaro",
+        "bot": false,
+        "criadoEm": 1586819044213,
+        "entrouEm": 1784780547184,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
         "id": "798019095261216790",
@@ -1399,6 +1786,33 @@
         "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       },
       {
+        "id": "372888757369831429",
+        "tag": "midlehair",
+        "nome": "midlehair",
+        "bot": false,
+        "criadoEm": 1508974007695,
+        "entrouEm": 1784666117389,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
+        "id": "737799620725440584",
+        "tag": "m3eew.n3bula",
+        "nome": "m3eew.n3bula",
+        "bot": false,
+        "criadoEm": 1595975537235,
+        "entrouEm": 1784824931769,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
+      },
+      {
+        "id": "1076268002586132550",
+        "tag": "nhayaha",
+        "nome": "nhayaha",
+        "bot": false,
+        "criadoEm": 1676672687909,
+        "entrouEm": 1784737983575,
+        "cargoAlto": "━━━━━━୧🎹 ✦ Cores! ⊰ ━━━━━━"
+      },
+      {
         "id": "1491569930905321562",
         "tag": "discor_80316",
         "nome": "discor_80316",
@@ -1414,15 +1828,6 @@
         "bot": false,
         "criadoEm": 1710761888763,
         "entrouEm": 1784339082289,
-        "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
-      },
-      {
-        "id": "735496915575111681",
-        "tag": "alogabbe",
-        "nome": "alogabbe",
-        "bot": false,
-        "criadoEm": 1595426529545,
-        "entrouEm": 1782086345408,
         "cargoAlto": "━━━━━━୧🎹 ✦ Sobre Mim! ⊰━━━━━━"
       }
     ]

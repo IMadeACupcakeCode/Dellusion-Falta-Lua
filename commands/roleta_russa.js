@@ -9,7 +9,7 @@ module.exports = {
       descricao: sobreviveu
         ? 'A câmara estava vazia. **Você sobreviveu!** 🌙'
         : 'A câmara estava carregada. **Você não sobreviveu...** desta vez. 🌑',
-      cor: sobreviveu ? THEME.corSucesso : 0xE67E80,
+      cor: sobreviveu ? THEME.corSucesso : THEME.corErro,
       rodape: `${THEME.nome} girou o tambor para ${interaction.user.username}`,
     });
     await interaction.reply({ embeds: [embed] });

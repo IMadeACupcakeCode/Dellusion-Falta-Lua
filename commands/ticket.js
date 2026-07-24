@@ -1,6 +1,7 @@
-const { ChannelType } = require('discord.js');
+const { ChannelType, PermissionFlagsBits } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 const { enviarPainel, configurarTicket } = require('../utils/ticketManager');
+const { obterConfig, salvarConfig } = require('../utils/ticketStore');
 
 module.exports = {
   data: {
@@ -19,6 +20,8 @@ module.exports = {
           { name: '👥 Adicionar Staff', value: 'staff_add' },
           { name: '👥 Remover Staff', value: 'staff_remove' },
           { name: '👁️ Ver Config', value: 'ver' },
+          { name: '📬 Convidar Usuário', value: 'invite' },
+          { name: '🚫 Remover Usuário', value: 'remove' }
         ],
       },
       {
@@ -42,6 +45,12 @@ module.exports = {
           { name: '❓ Outro', value: 'outro' },
         ],
       },
+      {
+        name: 'user',
+        description: 'Usuário para convidar ao ticket',
+        type: 6,
+        required: false,
+      },
     ],
   },
 
@@ -49,9 +58,9 @@ module.exports = {
     const acao = interaction.options.getString('acao');
     const alvo = interaction.options.get('canal_ou_cargo')?.value;
     const tipo = interaction.options.getString('tipo');
+    const user = interaction.options.getUser('user');
     const guildId = interaction.guildId;
 
-    const { obterConfig, salvarConfig } = require('../utils/ticketStore');
     const cfg = obterConfig(guildId);
 
     if (acao === 'enviar') {
@@ -73,7 +82,6 @@ module.exports = {
     if (acao === 'config') {
       if (!alvo) return interaction.reply({ content: '❌ Especifique uma categoria!', ephemeral: true });
 
-      const { ChannelType } = require('discord.js');
       const canal = interaction.guild.channels.cache.get(alvo);
       if (!canal || canal.type !== ChannelType.GuildCategory) {
         return interaction.reply({ content: '❌ Isso não é uma categoria válida.', ephemeral: true });
@@ -93,9 +101,8 @@ module.exports = {
         });
       }
 
-      const { ChannelType, CATEGORIA_POR_VALOR } = require('../utils/ticketManager');
+      const { CATEGORIA_POR_VALOR } = require('../utils/ticketManager');
       const canal = interaction.guild.channels.cache.get(alvo);
-
       if (!canal || canal.type !== ChannelType.GuildCategory) {
         return interaction.reply({ content: '❌ Isso não é uma categoria válida.', ephemeral: true });
       }
@@ -130,8 +137,69 @@ module.exports = {
       return interaction.reply({ content: `✅ Cargo removido da staff.`, ephemeral: false });
     }
 
+    if (acao === 'remove') {
+      if (!user) {
+        const { removerInterativo } = require('../utils/ticketManager');
+        return removerInterativo(interaction, client);
+      }
+
+      const ticketChannel = interaction.channel;
+
+      if (ticketChannel.type !== ChannelType.GuildText) {
+        return interaction.reply({ content: '❌ Este comando só pode ser usado em canais de texto.', ephemeral: true });
+      }
+
+      if (!ticketChannel.topic) {
+        return interaction.reply({ content: '❌ Este canal não parece ser um ticket válido.', ephemeral: true });
+      }
+
+      let ticketInfo;
+      try {
+        ticketInfo = JSON.parse(ticketChannel.topic);
+      } catch {
+        return interaction.reply({ content: '❌ Erro ao ler informações do ticket.', ephemeral: true });
+      }
+
+      if (!ticketInfo.userId && !ticketInfo.contador) {
+        return interaction.reply({ content: '❌ Este canal não é um ticket válido.', ephemeral: true });
+      }
+
+      // Não permite remover o dono original
+      if (user.id === ticketInfo.userId) {
+        return interaction.reply({ content: '❌ Não é possível remover o **dono do ticket**.', ephemeral: true });
+      }
+
+      // Verifica se tem permissão
+      const overwrite = ticketChannel.permissionOverwrites.cache?.get(user.id);
+      const hasAccess = overwrite?.allow?.has(PermissionFlagsBits.ViewChannel);
+
+      if (!hasAccess) {
+        return interaction.reply({ content: `❌ ${user} não tem acesso a este ticket.`, ephemeral: true });
+      }
+
+      try {
+        await ticketChannel.permissionOverwrites.edit(user.id, {
+          ViewChannel: false,
+          SendMessages: false,
+          ReadMessageHistory: false,
+        });
+      } catch (err) {
+        return interaction.reply({ content: `❌ Erro ao remover: ${err.message}`, ephemeral: true });
+      }
+
+      await interaction.reply(`🚫 ${user} foi removido do ticket.`);
+
+      // Tenta DM
+      try {
+        await user.send(`🚫 Você foi removido do ticket **#${String(ticketInfo.contador).padStart(4, '0')}** no servidor **${interaction.guild.name}**.`);
+      } catch {
+        // DM fechada
+      }
+      return;
+    }
+
     if (acao === 'ver') {
-      const { EmbedBuilder, CATEGORIAS, CATEGORIAS_POR_ID } = require('../utils/ticketManager');
+      const { CATEGORIAS, CATEGORIAS_POR_ID } = require('../utils/ticketManager');
       const categoriaPadrao = cfg.categoriaId ? interaction.guild.channels.cache.get(cfg.categoriaId) : null;
       const cargos = cfg.cargosStaff.map((id) => {
         const role = interaction.guild.roles.cache.get(id);
@@ -144,21 +212,84 @@ module.exports = {
         return `${cat.emoji} **${cat.nome}:** ${canal ? canal.name : '`Não definida`'}`;
       }).join('\n');
 
-      const embed = new EmbedBuilder()
-        .setColor(0xD4A017)
-        .setTitle('🎪 Configuração dos Tickets 🎪')
-        .setDescription([
+      const embed = criarEmbed({
+        titulo: '🎪 Configuração dos Tickets 🎪',
+        descricao: [
           `**📂 Categoria padrão:** ${categoriaPadrao ? categoriaPadrao.name : '`Não definida`'}`,
           '',
           linhas,
           '',
           `**👥 Cargos Staff:** ${cargos}`,
           `**🔢 Tickets criados:** ${cfg.contador || 0}`,
-        ].join('\n'))
-        .setFooter({ text: '✧ ⎯ ੭ Falta Lua' })
-        .setTimestamp();
+        ].join('\n'),
+        cor: THEME.corPrincipal,
+        rodape: '✧ ⎯ ੭ Falta Lua',
+        semTimestamp: false,
+      });
 
       return interaction.reply({ embeds: [embed], ephemeral: false });
     }
-  },
+
+    if (acao === 'invite') {
+      // Se não especificou usuário, abre painel interativo
+      if (!user) {
+        const { convidarInterativo } = require('../utils/ticketManager');
+        return convidarInterativo(interaction, client);
+      }
+
+      // Usa o canal onde o comando foi executado (deve ser um canal de ticket)
+      const ticketChannel = interaction.channel;
+
+      // Verifica se é um canal de texto
+      if (ticketChannel.type !== ChannelType.GuildText) {
+        return interaction.reply({ content: '❌ Este comando só pode ser usado em canais de texto.', ephemeral: true });
+      }
+
+      // Verifica se o canal é realmente um ticket (tem topic com informações)
+      if (!ticketChannel.topic) {
+        return interaction.reply({ content: '❌ Este canal não parece ser um ticket válido.', ephemeral: true });
+      }
+
+      let ticketInfo;
+      try {
+        ticketInfo = JSON.parse(ticketChannel.topic);
+      } catch (error) {
+        return interaction.reply({ content: '❌ Erro ao ler informações do ticket.', ephemeral: true });
+      }
+
+      // Verifica se tem as propriedades de um ticket
+      if (!ticketInfo.userId && !ticketInfo.contador) {
+        return interaction.reply({ content: '❌ Este canal não é um ticket válido.', ephemeral: true });
+      }
+
+      // Concede permissão de visualização ao usuário
+      try {
+        await ticketChannel.permissionOverwrites.create(user.id, {
+          ViewChannel: true,
+          SendMessages: true,
+          ReadMessageHistory: true
+        });
+      } catch (err) {
+        // Se já existir, tenta editar
+        const existingOverwrite = ticketChannel.permissionOverwrites.cache?.get(user.id);
+        if (existingOverwrite) {
+          await existingOverwrite.edit({
+            ViewChannel: true,
+            SendMessages: true,
+            ReadMessageHistory: true
+          });
+        }
+      }
+
+      await interaction.reply(`✅ ${user} foi convidado para visualizar o ticket.`);
+      
+      // Tenta enviar DM para o usuário convidado
+      try {
+        await user.send(`📬 Você foi convidado para visualizar um ticket no servidor **${interaction.guild.name}**. Canal: ${ticketChannel}`);
+      } catch (error) {
+        // Se não conseguir enviar DM, apenas loga
+        console.log(`Não foi possível enviar DM para ${user.tag}:`, error.message);
+      }
+    }
+  }
 };

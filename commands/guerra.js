@@ -296,16 +296,16 @@ module.exports = {
       try {
         const result = await registerChallenge(msg, opponent.id, 60000);
         if (result === '❌') {
-          await msg.edit({ embeds: [criarEmbed({ titulo: 'Desafio recusado', descricao: `${opponent} recusou o desafio.`, cor: 0xE67E80 })], components: [] });
+          await msg.edit({ embeds: [criarEmbed({ titulo: 'Desafio recusado', descricao: `${opponent} recusou o desafio.`, cor: THEME.corErro })], components: [] });
           return;
         }
         accepted = result === '✅';
       } catch (e) {
-        await msg.edit({ embeds: [criarEmbed({ titulo: 'Desafio expirado', descricao: 'Ninguém respondeu ao desafio.', cor: 0xE67E80 })] });
+        await msg.edit({ embeds: [criarEmbed({ titulo: 'Desafio expirado', descricao: 'Ninguém respondeu ao desafio.', cor: THEME.corErro })] });
         return;
       }
       if (!accepted) {
-        await msg.edit({ embeds: [criarEmbed({ titulo: 'Desafio recusado', descricao: `${opponent} recusou o desafio.`, cor: 0xE67E80 })], components: [] });
+        await msg.edit({ embeds: [criarEmbed({ titulo: 'Desafio recusado', descricao: `${opponent} recusou o desafio.`, cor: THEME.corErro })], components: [] });
         return;
       }
     } else {
@@ -436,7 +436,7 @@ module.exports = {
           choice = reaction ? reaction.emoji.name : null;
         }
       } catch (e) {
-        await battleMsg.edit({ embeds: [renderStatusEmbed('Ação perdida!'), criarEmbed({ titulo: 'Tempo esgotado', descricao: `${actor.user} não reagiu a tempo.`, cor: 0xE67E80 })] });
+        await battleMsg.edit({ embeds: [renderStatusEmbed('Ação perdida!'), criarEmbed({ titulo: 'Tempo esgotado', descricao: `${actor.user} não reagiu a tempo.`, cor: THEME.corErro })] });
         await sleep(TRANSITION_DELAY);
       }
 
@@ -448,7 +448,7 @@ module.exports = {
           await sleep(ACTION_DELAY);
         } else if (choice === REACT_SPECIAL && actor.weapons.length) {
           if (actor.points < 3) {
-            await battleMsg.edit({ embeds: [renderStatusEmbed(`${actor.user.username} não tem pontos!`), criarEmbed({ titulo: 'Pontos insuficientes', descricao: `${actor.user.username} precisa de 3 pontos para o Especial (tem ${actor.points}). Perdeu a vez.`, cor: 0xE67E80 })] });
+            await battleMsg.edit({ embeds: [renderStatusEmbed(`${actor.user.username} não tem pontos!`), criarEmbed({ titulo: 'Pontos insuficientes', descricao: `${actor.user.username} precisa de 3 pontos para o Especial (tem ${actor.points}). Perdeu a vez.`, cor: THEME.corErro })] });
             await sleep(TRANSITION_DELAY);
           } else {
             actor.points -= 3;
@@ -477,7 +477,7 @@ module.exports = {
           const idx = EMOJI_NUM.indexOf(choice);
           const atk = options[idx];
           if (actor.points < atk.cost) {
-            await battleMsg.edit({ embeds: [renderStatusEmbed(`${actor.user.username} não tem pontos!`), criarEmbed({ titulo: 'Pontos insuficientes', descricao: `${actor.user.username} precisava de ${atk.cost} ponto(s) (tem ${actor.points}). Perdeu a vez.`, cor: 0xE67E80 })] });
+            await battleMsg.edit({ embeds: [renderStatusEmbed(`${actor.user.username} não tem pontos!`), criarEmbed({ titulo: 'Pontos insuficientes', descricao: `${actor.user.username} precisava de ${atk.cost} ponto(s) (tem ${actor.points}). Perdeu a vez.`, cor: THEME.corErro })] });
             await sleep(TRANSITION_DELAY);
           } else {
             actor.points -= atk.cost;
@@ -515,11 +515,11 @@ module.exports = {
             await sleep(ACTION_DELAY);
           }
         } else {
-          await battleMsg.edit({ embeds: [renderStatusEmbed('Ação perdida!'), criarEmbed({ titulo: 'Tempo esgotado', descricao: `${actor.user} não executou ação, perdeu a vez.`, cor: 0xE67E80 })] });
+          await battleMsg.edit({ embeds: [renderStatusEmbed('Ação perdida!'), criarEmbed({ titulo: 'Tempo esgotado', descricao: `${actor.user} não executou ação, perdeu a vez.`, cor: THEME.corErro })] });
           await sleep(TRANSITION_DELAY);
         }
       } catch (e) {
-        await battleMsg.edit({ embeds: [renderStatusEmbed('Ação perdida!'), criarEmbed({ titulo: 'Tempo esgotado', descricao: `${actor.user} não reagiu a tempo.`, cor: 0xE67E80 })] });
+        await battleMsg.edit({ embeds: [renderStatusEmbed('Ação perdida!'), criarEmbed({ titulo: 'Tempo esgotado', descricao: `${actor.user} não reagiu a tempo.`, cor: THEME.corErro })] });
         await sleep(TRANSITION_DELAY);
       }
 

@@ -1,4 +1,5 @@
 const { PermissionFlagsBits } = require('discord.js');
+
 const { criarEmbed, THEME } = require('../utils/theme');
 const { obterConfig, TIPOS_ANUNCIO } = require('../utils/servidorStore');
 
@@ -8,7 +9,7 @@ const ROTULOS = {
   evento: { titulo: 'Evento Lunar', emoji: '🎉', cor: 0xC9B8F2 },
   regra: { titulo: 'Regra do Servidor', emoji: '📜', cor: 0xA895E0 },
   atualizacao: { titulo: 'Atualização', emoji: '✨', cor: THEME.corRoleta },
-  aviso: { titulo: 'Aviso Importante', emoji: '⚠️', cor: 0xE67E80 },
+  aviso: { titulo: 'Aviso Importante', emoji: '⚠️', cor: THEME.corErro },
 };
 
 module.exports = {
@@ -30,9 +31,9 @@ module.exports = {
         descricao:
           `Não há um canal definido para anúncios do tipo **${tipo}**.\n` +
           `Use \`$configurar anuncio ${tipo} #canal\` primeiro.`,
-        cor: 0xE67E80,
+        cor: THEME.corErro,
       });
-      return interaction.reply({ embeds: [embedErro], flags: [MessageFlags.Ephemeral] });
+      return interaction.reply({ embeds: [embedErro], ephemeral: true });
     }
 
     let canal;
@@ -46,9 +47,9 @@ module.exports = {
       const embedErro = criarEmbed({
         titulo: 'Canal não encontrado',
         descricao: `O canal salvo para **${tipo}** sumiu ou não tenho acesso a ele.`,
-        cor: 0xE67E80,
+        cor: THEME.corErro,
       });
-      return interaction.reply({ embeds: [embedErro], flags: [MessageFlags.Ephemeral] });
+      return interaction.reply({ embeds: [embedErro], ephemeral: true });
     }
 
     const rotulo = ROTULOS[tipo] || { titulo: 'Anúncio', emoji: '📢', cor: THEME.corPrincipal };
@@ -68,9 +69,9 @@ module.exports = {
       const embedErro = criarEmbed({
         titulo: 'Não consegui enviar',
         descricao: `Tentei mandar em <#${canalId}>, mas falhou: ${erro.message}`,
-        cor: 0xE67E80,
+        cor: THEME.corErro,
       });
-      return interaction.reply({ embeds: [embedErro], flags: [MessageFlags.Ephemeral] });
+      return interaction.reply({ embeds: [embedErro], ephemeral: true });
     }
 
     const embedOk = criarEmbed({
@@ -78,6 +79,6 @@ module.exports = {
       descricao: `Seu anúncio do tipo **${tipo}** foi para ${canal}.`,
       cor: THEME.corSucesso,
     });
-    return interaction.reply({ embeds: [embedOk], flags: [MessageFlags.Ephemeral] });
+    return interaction.reply({ embeds: [embedOk], ephemeral: true });
   },
 };

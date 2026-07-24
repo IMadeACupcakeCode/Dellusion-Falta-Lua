@@ -2,7 +2,9 @@
 
 Bot de Discord com lembretes, rolagem de dados, roleta de escolhas **e um sistema completo de tickets com tema de circo**, todo estilizado com a identidade visual `✧ ⎯ ੭`.
 
-> ⚠️ **Todos os comandos usam o prefixo `$`.** Não há comandos slash (`/`).
+> ⚠️ **Comandos podem usar o prefixo `$` ou o slash `/`.** A maioria dos comandos funciona nos dois modos.
+>
+> 👉 Consulte o **[HOW_TO_USE.md](HOW_TO_USE.md)** para um guia completo e detalhado de todos os comandos.
 
 ## 🎪 Sistema de Tickets
 

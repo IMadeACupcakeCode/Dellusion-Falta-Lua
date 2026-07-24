@@ -8,9 +8,9 @@ function caraOuCoroa() {
 function embedMoeda(resultado, autor) {
   return criarEmbed({
     titulo: '🪙 A moeda girou...',
-    descricao: `**${resultado}**! ${resultado === 'Cara' ? '🙂' : '🌙'}`,
+    descricao: `**${resultado}**! ${resultado === 'Cara' ? '🙂' : '🌙'}\n\n${THEME.div.linha}`,
     cor: THEME.corRoleta,
-    rodape: `Jogado por ${autor}`,
+    rodape: `${THEME.nome} jogou a sorte ao ar para ${autor}`,
   });
 }
 

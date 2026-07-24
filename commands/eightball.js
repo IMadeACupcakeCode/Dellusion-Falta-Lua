@@ -23,9 +23,9 @@ function embed8(pergunta, autor) {
   const resposta = RESPOSTAS[Math.floor(Math.random() * RESPOSTAS.length)];
   return criarEmbed({
     titulo: '🔮 A bola mágica responde',
-    descricao: `> ${pergunta}\n\n**${resposta}**`,
+    descricao: `> ${pergunta}\n\n${THEME.div.linha}\n\n**${resposta}**`,
     cor: THEME.corPrincipal,
-    rodape: `Consultado por ${autor}`,
+    rodape: `${THEME.nome} consultou os oráculos para ${autor}`,
   });
 }
 

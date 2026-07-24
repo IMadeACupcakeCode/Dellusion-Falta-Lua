@@ -14,7 +14,7 @@ module.exports = {
       });
       await interaction.reply({ embeds: [embed] });
     } catch (erro) {
-      await interaction.reply({ embeds: [criarEmbed({ titulo: 'Erro', descricao: erro.message, cor: 0xE67E80 })], flags: [MessageFlags.Ephemeral] });
+      await interaction.reply({ embeds: [criarEmbed({ titulo: 'Erro', descricao: erro.message, cor: THEME.corErro })], ephemeral: true });
     }
   },
 };

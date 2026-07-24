@@ -1,4 +1,5 @@
 ﻿const { ActionRowBuilder, ButtonStyle } = require('discord.js');
+
 const { criarEmbed, THEME } = require('../utils/theme');
 const { botao } = require('../utils/ui');
 const { parseTempo, formatarDuracao, formatarDataAbsoluta } = require('../utils/tempo');
@@ -130,10 +131,10 @@ module.exports = {
               '`$votar Qual jogo jogar? | Minecraft, Valorant, Genshin | 1h`\n' +
               '`$votar Qual tema? | Claro, Escuro | amanhã 18:00`\n\n' +
               'O tempo é opcional e aceita `s`, `m`, `h`, `d`, `hoje 20:00`, `amanhã 14:00`, `25/12/2026 18:00`, etc.',
-            cor: 0xE67E80,
+            cor: THEME.corErro,
           }),
         ],
-        flags: [MessageFlags.Ephemeral],
+        ephemeral: true,
       });
     }
 
@@ -151,7 +152,7 @@ module.exports = {
       const index = Number(buttonInteraction.customId.replace('votar_', ''));
       const userId = buttonInteraction.user.id;
       if (voters.has(userId)) {
-        return buttonInteraction.reply({ content: 'Você já votou nesta enquete. 🌙', flags: [MessageFlags.Ephemeral] });
+        return buttonInteraction.reply({ content: 'Você já votou nesta enquete. 🌙', ephemeral: true });
       }
 
       voters.add(userId);

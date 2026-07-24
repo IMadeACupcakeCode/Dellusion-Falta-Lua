@@ -167,7 +167,7 @@ module.exports = {
               criarEmbed({
                 titulo: 'Não consegui abrir o privado',
                 descricao: `${autor}, sua DM está fechada. Abra as mensagens diretas para usar a carta secreta.`,
-                cor: 0xE67E80,
+                cor: THEME.corErro,
               }),
             ],
           })
@@ -221,7 +221,7 @@ module.exports = {
           const alvo = client.users.cache.get(destinatarioId) || (await client.users.fetch(destinatarioId).catch(() => null));
           if (alvo && alvo.id === autor.id) {
             return i.update({
-              embeds: [criarEmbed({ titulo: '🚫 Destinatário inválido', descricao: 'Você não pode enviar a carta para si mesmo. Escolha outra pessoa na lista.', cor: 0xE67E80 })],
+              embeds: [criarEmbed({ titulo: '🚫 Destinatário inválido', descricao: 'Você não pode enviar a carta para si mesmo. Escolha outra pessoa na lista.', cor: THEME.corErro })],
               components: [navButtons(pagina, totalPaginas), menuDestinatario(membros.slice(pagina * POR_PAGINA, pagina * POR_PAGINA + POR_PAGINA))].filter(Boolean),
             });
           }
@@ -306,7 +306,7 @@ module.exports = {
 
       if (!alvo) {
         return i.update({
-          embeds: [criarEmbed({ titulo: 'Destinatário ausente', descricao: 'Não achei o usuário. Recomece com `$cartasecreta`.', cor: 0xE67E80 })],
+          embeds: [criarEmbed({ titulo: 'Destinatário ausente', descricao: 'Não achei o usuário. Recomece com `$cartasecreta`.', cor: THEME.corErro })],
           components: [],
         });
       }
@@ -335,7 +335,7 @@ module.exports = {
         await mostrarOutbox(i, autor, guild);
       } catch {
         await i.update({
-          embeds: [criarEmbed({ titulo: 'Não consegui entregar', descricao: `${alvo.username} tem a DM fechada. A carta não foi enviada.`, cor: 0xE67E80 })],
+          embeds: [criarEmbed({ titulo: 'Não consegui entregar', descricao: `${alvo.username} tem a DM fechada. A carta não foi enviada.`, cor: THEME.corErro })],
           components: [],
         });
       }

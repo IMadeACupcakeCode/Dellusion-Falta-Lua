@@ -1,8 +1,9 @@
 const { SlashCommandBuilder } = require('discord.js');
+
 const { criarEmbed, THEME } = require('../utils/theme');
 const { isStaff } = require('../utils/perms');
 const { clientCache } = require('../utils/cache');
-const { buildMembroEmbed } = require('./securitybreach');
+const { buildMembroEmbed, isGuildStaff } = require('../utils/membroEmbed');
 
 // ── Cache de fallback simples (evita fetch repetido na mesma sessão) ──────
 const fallbackCache = new Map(); // guildId -> { members: Map, timestamp }
@@ -150,8 +151,8 @@ module.exports = {
   async execute(interaction) {
     if (!isStaff(interaction.member)) {
       return interaction.reply({
-        embeds: [criarEmbed({ titulo: 'Acesso negado', descricao: 'Somente staff pode usar este comando.', cor: 0xE67E80 })],
-        flags: [MessageFlags.Ephemeral],
+        embeds: [criarEmbed({ titulo: 'Acesso negado', descricao: 'Somente staff pode usar este comando.', cor: THEME.corErro })],
+        ephemeral: true,
       });
     }
 
@@ -174,11 +175,11 @@ module.exports = {
 
     if (!m) {
       return interaction.reply({
-        embeds: [criarEmbed({ titulo: 'Membro não encontrado', descricao: 'Não achei esse ID.', cor: 0xE67E80 })],
-        flags: [MessageFlags.Ephemeral],
+        embeds: [criarEmbed({ titulo: 'Membro não encontrado', descricao: 'Não achei esse ID.', cor: THEME.corErro })],
+        ephemeral: true,
       });
     }
 
-    await interaction.reply({ embeds: [buildMembroEmbed(m)], flags: [MessageFlags.Ephemeral] });
+    await interaction.reply({ embeds: [buildMembroEmbed(m)], ephemeral: true });
   },
 };

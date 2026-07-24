@@ -1,4 +1,4 @@
-const { EmbedBuilder, MessageFlags } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 const { isStaff } = require('../utils/perms');
 
@@ -6,9 +6,9 @@ module.exports = {
   data: { name: 'membros', description: '👥 Painel completo: totais, bots, staff, entradas/saídas do dia' },
   async execute(interaction) {
     const guild = interaction.guild;
-    if (!guild) return interaction.reply({ embeds: [criarEmbed({ titulo: 'Só em servidores', descricao: 'Use em um servidor.', cor: 0xE67E80 })], flags: [MessageFlags.Ephemeral] });
+    if (!guild) return interaction.reply({ embeds: [criarEmbed({ titulo: 'Só em servidores', descricao: 'Use em um servidor.', cor: THEME.corErro })], ephemeral: true });
     if (!isStaff(interaction.member)) {
-      return interaction.reply({ embeds: [criarEmbed({ titulo: 'Acesso negado', descricao: 'Somente staff pode usar este comando.', cor: 0xE67E80 })], flags: [MessageFlags.Ephemeral] });
+      return interaction.reply({ embeds: [criarEmbed({ titulo: 'Acesso negado', descricao: 'Somente staff pode usar este comando.', cor: THEME.corErro })], ephemeral: true });
     }
 
     // Tenta carregar o máximo possível do servidor para contar membros e cargos corretamente.
@@ -51,32 +51,28 @@ module.exports = {
       return arr.slice(0, limite).join(', ') + (arr.length > limite ? ` +${arr.length - limite}` : '') || 'Nenhum';
     }
 
-    const embed = criarEmbed({
-      titulo: `👥 Painel de membros — ${guild.name}`,
-      descricao:
-        `**Total:** \`${total}\`\n` +
-        `**Humanos:** \`${humanos}\`\n` +
-        `**Bots:** \`${bots.length}\`\n` +
-        `**Staff:** \`${staff.length}\`\n\n` +
-        `**Hoje:** +${entradasHoje} entradas • ${saidasHoje} saídas`,
-      cor: THEME.corPrincipal,
-    });
-
     const campos = [];
     grupos.forEach((tags, cargo) => {
       campos.push({ name: cargo, value: listar(tags), inline: true });
     });
 
-    const embedFinal = new EmbedBuilder()
-      .setColor(embed.data.color)
-      .setTitle(embed.data.title)
-      .setDescription(embed.data.description)
-      .setFooter(embed.data.footer);
+    const descricao =
+      `**Total:** \`${total}\`\n` +
+      `**Humanos:** \`${humanos}\`\n` +
+      `**Bots:** \`${bots.length}\`\n` +
+      `**Staff:** \`${staff.length}\`\n\n` +
+      `**Hoje:** +${entradasHoje} entradas • ${saidasHoje} saídas`;
+
+    const embedFinal = criarEmbed({
+      titulo: `👥 Painel de membros — ${guild.name}`,
+      descricao,
+      cor: THEME.corPrincipal,
+    });
 
     campos.forEach((c) => {
       if (c.value) embedFinal.addFields({ name: c.name, value: c.value, inline: true });
     });
 
-    await interaction.reply({ embeds: [embedFinal], flags: [MessageFlags.Ephemeral] });
+    await interaction.reply({ embeds: [embedFinal], ephemeral: true });
   },
 };

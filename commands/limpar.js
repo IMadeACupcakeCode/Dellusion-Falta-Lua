@@ -13,7 +13,7 @@ module.exports = {
     const embed = criarEmbed({
       titulo: '🧹 Confirmar limpeza',
       descricao: `Vou apagar **${qtd}** mensagens deste canal. Confirma?`,
-      cor: 0xE67E80,
+      cor: THEME.corErro,
     });
     const resposta = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
     const coletor = resposta.createMessageComponentCollector({ time: 30000, filter: (i) => i.user.id === interaction.user.id });
@@ -45,7 +45,7 @@ module.exports = {
           const texto = erro && erro.code === 10008
             ? 'A mensagem de confirmação sumiu. Tente novamente.'
             : erro.message;
-          await i.update({ embeds: [criarEmbed({ titulo: 'Erro', descricao: texto, cor: 0xE67E80 })], components: [] });
+          await i.update({ embeds: [criarEmbed({ titulo: 'Erro', descricao: texto, cor: THEME.corErro })], components: [] });
         } catch {
           // Silêncio — não conseguimos nem responder o erro
         }

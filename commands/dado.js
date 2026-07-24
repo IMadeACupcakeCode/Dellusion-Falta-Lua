@@ -38,9 +38,9 @@ module.exports = {
           `Não consegui interpretar **\`${notacao}\`**.\n\n` +
           'Use o formato `NdM` ou `NdM±X`, por exemplo:\n' +
           '`1d20` • `2d6+3` • `4d8-1`',
-        cor: 0xE67E80,
+        cor: THEME.corErro,
       });
-      return interaction.reply({ embeds: [embedErro], flags: [MessageFlags.Ephemeral] });
+      return interaction.reply({ embeds: [embedErro], ephemeral: true });
     }
 
     const { quantidade, lados, modificador, rolagens, total } = resultado;

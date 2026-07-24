@@ -1,4 +1,4 @@
-const { PermissionFlagsBits, ChannelType, MessageFlags } = require('discord.js');
+const { PermissionFlagsBits, ChannelType } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
 const { obterConfig, salvarConfig, TIPOS_ANUNCIO } = require('../utils/servidorStore');
 
@@ -24,7 +24,7 @@ module.exports = {
         descricao: `Agora falo em ${canal}.`,
         cor: THEME.corSucesso,
       });
-      return interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+      return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 
     if (sub === 'proibir') {
@@ -34,9 +34,9 @@ module.exports = {
       const embed = criarEmbed({
         titulo: 'Canal proibido',
         descricao: `Parei de falar em ${canal}.`,
-        cor: 0xE67E80,
+        cor: THEME.corErro,
       });
-      return interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+      return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 
     if (sub === 'liberar') {
@@ -48,7 +48,7 @@ module.exports = {
         descricao: `Removi ${canal} dos permitidos.`,
         cor: THEME.corSucesso,
       });
-      return interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+      return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 
     if (sub === 'desproibir') {
@@ -60,7 +60,7 @@ module.exports = {
         descricao: `Liberei ${canal} para eu falar.`,
         cor: THEME.corSucesso,
       });
-      return interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+      return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 
     if (sub === 'anuncio') {
@@ -73,7 +73,7 @@ module.exports = {
         descricao: `Anúncios do tipo **${tipo}** serão enviados em ${canal}.`,
         cor: THEME.corSucesso,
       });
-      return interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+      return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 
     if (sub === 'limparanuncio') {
@@ -85,7 +85,7 @@ module.exports = {
         descricao: `Não há mais canal definido para anúncios do tipo **${tipo}**.`,
         cor: THEME.corSucesso,
       });
-      return interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+      return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 
     if (sub === 'shutdown') {
@@ -100,7 +100,7 @@ module.exports = {
         descricao,
         cor: THEME.corSucesso,
       });
-      return interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+      return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 
     if (sub === 'ticketcategoria') {
@@ -108,7 +108,7 @@ module.exports = {
       if (canal && canal.type !== ChannelType.GuildCategory) {
         return interaction.reply({
           content: '❌ Isso **não é uma categoria**! Selecione uma categoria (pasta de canais), não um canal de texto.',
-          flags: [MessageFlags.Ephemeral],
+          ephemeral: true,
         });
       }
       const categoriaId = canal?.id || null;
@@ -122,7 +122,7 @@ module.exports = {
         descricao,
         cor: THEME.corSucesso,
       });
-      return interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+      return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 
     if (sub === 'off-on') {
@@ -137,7 +137,7 @@ module.exports = {
         descricao,
         cor: THEME.corSucesso,
       });
-      return interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+      return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 
     if (sub === 'ver') {
@@ -163,7 +163,7 @@ module.exports = {
         descricao,
         cor: THEME.corPrincipal,
       });
-      return interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+      return interaction.reply({ embeds: [embed], ephemeral: true });
     }
   },
 };

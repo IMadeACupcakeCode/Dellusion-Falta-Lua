@@ -16,7 +16,7 @@ module.exports = {
       titulo: '🤗 Um abraço chegou!',
       descricao: `**${interaction.user}** ${frase}\n\n> ${alvo}, você recebeu um abraço!`,
       cor: THEME.corRoleta,
-      rodape: `${THEME.nome}分发 amor`,
+      rodape: `${THEME.nome} 分发 amor ✧\n"O abraço que aquece a alma sob a lua"`,
     });
     await interaction.reply({ embeds: [embed] });
   },

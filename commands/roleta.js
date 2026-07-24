@@ -16,9 +16,9 @@ module.exports = {
         descricao:
           'Preciso de **pelo menos duas opções**, separadas por vírgula.\n\n' +
           'Exemplo: `/roleta opcoes: pizza, sushi, hambúrguer`',
-        cor: 0xE67E80,
+        cor: THEME.corErro,
       });
-      return interaction.reply({ embeds: [embedErro], flags: [MessageFlags.Ephemeral] });
+      return interaction.reply({ embeds: [embedErro], ephemeral: true });
     }
 
     const escolhida = opcoes[Math.floor(Math.random() * opcoes.length)];

@@ -7,7 +7,7 @@ module.exports = {
   async execute(interaction) {
     const user = interaction.options.getUser('usuario') || interaction.user;
     const member = interaction.guild?.members.cache.get(user.id);
-    const cargo = member?.roles.highest ? member.roles.highcast?.name || member.roles.highest.name : '—';
+    const cargo = member?.roles.highest?.name || '—';
 
     const embed = criarEmbed({
       titulo: `👤 ${user.username}`,
@@ -29,7 +29,7 @@ module.exports = {
     const coletor = resposta.createMessageComponentCollector({ time: 60000, filter: () => true });
     coletor.on('collect', async (i) => {
       if (i.customId === 'social_avatar') {
-        await i.reply({ content: user.displayAvatarURL({ size: 512 }), flags: [MessageFlags.Ephemeral] });
+        await i.reply({ content: user.displayAvatarURL({ size: 512 }), ephemeral: true });
       } else if (i.customId === 'social_abraco') {
         await i.reply({ content: `🤗 ${interaction.user} te abraça, ${user}!`, ephemeral: false });
       }
