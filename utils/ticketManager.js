@@ -559,6 +559,9 @@ async function fecharTicket(interaction, client) {
 // ── Executa o fechamento (com motivo opcional) ──
 async function executarFechamento(interaction, motivo = null) {
   try {
+    // Reconhece a interação imediatamente para evitar UnknownInteraction (10062)
+    await interaction.deferUpdate();
+
     const topic = interaction.channel.topic;
     let ticketInfo;
     try {
@@ -586,7 +589,7 @@ async function executarFechamento(interaction, motivo = null) {
     });
 
     // Responde ao usuário
-    await interaction.update({
+    await interaction.editReply({
       content: motivo
         ? `🔒 **Fechando ticket** — Motivo: \`${motivo}\`\nO canal será removido em **10 segundos**.`
         : '🔒 **Fechando ticket**... O canal será removido em **10 segundos**.',

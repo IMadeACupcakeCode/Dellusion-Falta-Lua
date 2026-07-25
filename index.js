@@ -111,7 +111,27 @@ const client = new Client({ intents, partials });
 const { enviarEmbedTicketFixo } = require('./utils/fixedTicketEmbed');
 
 client.once('ready', () => {
-  console.log(`${THEME.iconeFooter} ${THEME.nome} está online como ${client.user.tag}`);
+  const banner = [
+    '',
+    `${'='.repeat(58)}`,
+    `${' '.repeat(15)}🎪  FALTA LUA  🌙`,
+    `${'='.repeat(58)}`,
+    '',
+    '  ███████╗ █████╗ ██╗  ████████╗ █████╗     ██╗     ██╗   ██╗ █████╗ ',
+    '  ██╔════╝██╔══██╗██║  ╚══██╔══╝██╔══██╗    ██║     ██║   ██║██╔══██╗',
+    '  █████╗  ███████║██║     ██║   ███████║    ██║     ██║   ██║███████║',
+    '  ██╔══╝  ██╔══██║██║     ██║   ██╔══██║    ██║     ██║   ██║██╔══██║',
+    '  ██║     ██║  ██║███████╗██║   ██║  ██║    ███████╗╚██████╔╝██║  ██║',
+    '  ╚═╝     ╚═╝  ╚═╝╚══════╝╚═╝   ╚═╝  ╚═╝    ╚══════╝ ╚═════╝ ╚═╝  ╚═╝',
+    '',
+    `  ✧ ⎯ ੭  ${THEME.nome}`,
+    `  🌙  Estou online como ${client.user.tag}`,
+    `  🎪  Servindo ${client.guilds.cache.size} servidor(es)`,
+    '',
+    `${'─'.repeat(58)}`,
+    '',
+  ].join('\n');
+  console.log(banner);
 
   client.user.setPresence({
     activities: [{ name: 'os sussurros da lua ✧', type: ActivityType.Watching }],
@@ -442,6 +462,233 @@ client.on('interactionCreate', async (interaction) => {
     }
   }
 });
+// ── Sistema de Jogo da Forca ──
+client.on('interactionCreate', async (interaction) => {
+  if (!interaction.isButton() && !interaction.isStringSelectMenu() && !interaction.isModalSubmit()) return;
+  if (!interaction.customId?.startsWith('forca_')) return;
+
+  // Se já foi respondida (pelo collector do $forca no prefix), ignora
+  if (interaction.replied || interaction.deferred) return;
+
+  try {
+    const forca = require('./utils/forcaManager');
+
+    // ── Ranking ──
+    if (interaction.isButton() && interaction.customId.startsWith('forca_rank_')) {
+      const tipo = interaction.customId.replace('forca_rank_', '');
+      const embed = forca.criarEmbedRanking(tipo);
+      return interaction.update({ embeds: [embed], components: [forca.criarBotoesRanking()] });
+    }
+
+    // ── Regras ──
+    if (interaction.isButton() && interaction.customId === 'forca_ver_regras') {
+      const embed = forca.criarEmbedRegras();
+      const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+      return interaction.update({
+        embeds: [embed],
+        components: [new ActionRowBuilder().addComponents(
+          new ButtonBuilder().setCustomId('forca_voltar').setLabel('◀ Voltar').setStyle(ButtonStyle.Secondary),
+        )],
+      });
+    }
+
+    // ── Voltar / Cancelar ──
+    if (interaction.isButton() && (interaction.customId === 'forca_cancelar')) {
+      return interaction.update({ content: '✅ Cancelado.', embeds: [], components: [] });
+    }
+    if (interaction.isButton() && interaction.customId === 'forca_voltar') {
+      const { criarSelectModo, criarSelectDificuldade } = forca;
+      const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+      const embed = forca.criarEmbedJogo
+        ? null
+        : require('./utils/theme').criarEmbed({
+            titulo: '🎪 Jogo da Forca',
+            descricao: '```╔══════════════════════════════╗\n║    🎪 JOGO DA FORCA         ║\n╚══════════════════════════════╝```\n\nBem-vindo ao espetáculo de palavras! 🎭\n\nEscolha o **modo de jogo** e a **dificuldade**\npara começar.',
+            cor: 0xD4A017,
+            rodape: '🎪 Jogo da Forca • Chat.exe',
+          });
+      return interaction.update({
+        embeds: [embed],
+        components: [
+          new ActionRowBuilder().addComponents(criarSelectModo()),
+          new ActionRowBuilder().addComponents(criarSelectDificuldade()),
+          new ActionRowBuilder().addComponents(
+            new ButtonBuilder().setCustomId('forca_comecar').setLabel('✅ Começar').setStyle(ButtonStyle.Success),
+            new ButtonBuilder().setCustomId('forca_ver_regras').setLabel('📖 Regras').setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder().setCustomId('forca_cancelar').setLabel('✖️ Cancelar').setStyle(ButtonStyle.Danger),
+          ),
+        ],
+      });
+    }
+
+    // ── Começar ──
+    if (interaction.isButton() && interaction.customId === 'forca_comecar') {
+      const sessao = forca.JOGOS.get(interaction.user.id) || forca.JOGOS.get(interaction.message?.id);
+      if (!sessao || !sessao.modo || !sessao.dificuldade) {
+        return interaction.reply({ content: '❌ Selecione um modo e uma dificuldade primeiro!', ephemeral: true });
+      }
+
+      const { modo, dificuldade } = sessao;
+
+      // Salva a config no user.id para o $forca vs usar depois
+      forca.JOGOS.set(interaction.user.id, { modo, dificuldade });
+
+      // Remove da mensagem
+      forca.JOGOS.delete(interaction.message?.id);
+
+      // Inicia o jogo imediatamente para QUALQUER modo (solo)
+      // Para jogar com amigos, usar $forca vs @user
+      await interaction.deferUpdate();
+      await forca.iniciarJogo(interaction, { dificuldade, modo });
+      return;
+    }
+
+    // ── Select modo ──
+    if (interaction.isStringSelectMenu() && interaction.customId === 'forca_select_modo') {
+      const modo = interaction.values[0];
+      const chave = interaction.user.id;
+      const dados = forca.JOGOS.get(chave) || forca.JOGOS.get(interaction.message?.id) || {};
+      dados.modo = modo;
+      forca.JOGOS.set(interaction.message?.id || chave, dados);
+      return interaction.deferUpdate();
+    }
+
+    // ── Select dificuldade ──
+    if (interaction.isStringSelectMenu() && interaction.customId === 'forca_select_dificuldade') {
+      const dif = interaction.values[0];
+      const chave = interaction.user.id;
+      const dados = forca.JOGOS.get(chave) || forca.JOGOS.get(interaction.message?.id) || {};
+      dados.dificuldade = dif;
+      forca.JOGOS.set(interaction.message?.id || chave, dados);
+      return interaction.deferUpdate();
+    }
+
+    // ── Botão Tentar Letra ──
+    if (interaction.isButton() && interaction.customId === 'forca_letra') {
+      await forca.abrirModalLetra(interaction);
+      return;
+    }
+
+    // ── Modal de letra ──
+    if (interaction.isModalSubmit() && interaction.customId === 'forca_modal_letra') {
+      await forca.processarModalLetra(interaction);
+      return;
+    }
+
+    // ── Palpite ──
+    if (interaction.isButton() && interaction.customId === 'forca_palpite') {
+      await forca.abrirModalPalpite(interaction);
+      return;
+    }
+    if (interaction.isModalSubmit() && interaction.customId === 'forca_modal_palpite') {
+      await forca.processarPalpite(interaction);
+      return;
+    }
+
+    // ── Revelar ──
+    if (interaction.isButton() && interaction.customId === 'forca_revelar') {
+      await forca.revelarPalavra(interaction);
+      return;
+    }
+
+    // ── Desistir ──
+    if (interaction.isButton() && interaction.customId === 'forca_desistir') {
+      await forca.desistir(interaction);
+      return;
+    }
+
+    // ── Próxima Rodada (competitivo) ──
+    if (interaction.isButton() && interaction.customId === 'forca_proxima_rodada') {
+      await forca.proximaRodada(interaction);
+      return;
+    }
+
+    // ── Encerrar Partida (competitivo) ──
+    if (interaction.isButton() && interaction.customId === 'forca_encerrar_partida') {
+      await forca.encerrarPartida(interaction);
+      return;
+    }
+
+    // ── Próxima Palavra (cooperativo) ──
+    if (interaction.isButton() && interaction.customId === 'forca_proxima_palavra') {
+      await forca.proximaPalavraCoop(interaction);
+      return;
+    }
+
+    // ── Encerrar Coop ──
+    if (interaction.isButton() && interaction.customId === 'forca_encerrar_coop') {
+      await forca.encerrarPartida(interaction);
+      return;
+    }
+
+    // ── Convite ──
+    if (interaction.isButton() && interaction.customId === 'forca_convite_aceitar') {
+      const JOGOS = forca.JOGOS;
+      const msgId = interaction.message?.id;
+      const sessao = JOGOS.get(msgId);
+      if (!sessao || !sessao.dono) {
+        return interaction.reply({ content: '❌ Convite expirado.', ephemeral: true });
+      }
+      if (!sessao.aceitos) sessao.aceitos = [];
+      if (sessao.aceitos.includes(interaction.user.id)) {
+        return interaction.reply({ content: '✅ Você já aceitou o convite!', ephemeral: true });
+      }
+      sessao.aceitos.push(interaction.user.id);
+
+      const total = sessao.convidados.length + 1; // + dono
+      if (sessao.aceitos.length >= total) {
+        // Todos aceitaram!
+        await interaction.update({
+          content: '✅ **Todos aceitaram!** 🎪 Preparando o picadeiro...',
+          components: [],
+          embeds: [],
+        });
+        const criando = await interaction.channel.send('🎪 **Armando o picadeiro...**');
+        JOGOS.delete(msgId);
+        await forca.iniciarJogo(
+          {
+            ...interaction,
+            editReply: (o) => criando.edit(o),
+            channel: interaction.channel,
+            channelId: interaction.channelId,
+          },
+          {
+            dificuldade: sessao.dificuldade,
+            modo: sessao.modo,
+            jogadores: [sessao.dono, ...sessao.convidados].map(u => ({ id: u.id, tag: u.tag, pontos: 0 })),
+          }
+        );
+      } else {
+        await interaction.reply({
+          content: `✅ **${interaction.user.tag}** aceitou! (${sessao.aceitos.length}/${total})`,
+          ephemeral: true,
+        });
+      }
+      return;
+    }
+
+    if (interaction.isButton() && interaction.customId === 'forca_convite_recusar') {
+      const sessao = forca.JOGOS.get(interaction.message?.id);
+      if (sessao) {
+        forca.JOGOS.delete(interaction.message?.id);
+        await interaction.update({
+          content: `❌ **${interaction.user.tag}** recusou o convite. Partida cancelada.`,
+          components: [],
+          embeds: [],
+        });
+      }
+      return;
+    }
+  } catch (error) {
+    console.error('Erro no interactionCreate (forca):', error);
+    if (!interaction.replied && !interaction.deferred) {
+      await interaction.reply({
+        content: '❌ Ocorreu um erro no jogo da forca.',
+        ephemeral: true,
+      }).catch(() => {});
+    }
+  }
+});
 
 // ── Cache de presença e membros (alimenta $securitybreach em tempo real) ──
 // Só faz sentido se as intents privilegiadas estiverem ativas.
@@ -490,17 +737,37 @@ if (intents.includes(GatewayIntentBits.GuildMembers) && intents.includes(Gateway
   );
 }
 
+function bannerShutdown() {
+  return [
+    '',
+    '  ███████╗ █████╗ ██╗  ████████╗ █████╗     ██╗     ██╗   ██╗ █████╗ ',
+    '  ██╔════╝██╔══██╗██║  ╚══██╔══╝██╔══██╗    ██║     ██║   ██║██╔══██╗',
+    '  █████╗  ███████║██║     ██║   ███████║    ██║     ██║   ██║███████║',
+    '  ██╔══╝  ██╔══██║██║     ██║   ██╔══██║    ██║     ██║   ██║██╔══██║',
+    '  ██║     ██║  ██║███████╗██║   ██║  ██║    ███████╗╚██████╔╝██║  ██║',
+    '  ╚═╝     ╚═╝  ╚═╝╚══════╝╚═╝   ╚═╝  ╚═╝    ╚══════╝ ╚═════╝ ╚═╝  ╚═╝',
+    '',
+    `  ✧ ⎯ ੭  ${THEME.nome}`,
+    '  🌙  Desligando... até a próxima, pecadores...',
+    '',
+    `${'─'.repeat(58)}`,
+    '',
+  ].join('\n');
+}
+
 process.on('SIGINT', async () => {
-  console.log('\n✧ ⎯ ੭ Recebido SIGINT, avisando servidores...');
+  console.log(bannerShutdown());
+  console.log(`  🔌 Avisando servidores...`);
   await avisarShutdown(client);
-  console.log('✧ ⎯ ੭ Avisos enviados. Desligando...');
+  console.log(`  ✅ Avisos enviados. Saindo...`);
   process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
-  console.log('\n✧ ⎯ ੭ Recebido SIGTERM, avisando servidores...');
+  console.log(bannerShutdown());
+  console.log(`  🔌 Avisando servidores...`);
   await avisarShutdown(client);
-  console.log('✧ ⎯ ੭ Avisos enviados. Desligando...');
+  console.log(`  ✅ Avisos enviados. Saindo...`);
   process.exit(0);
 });
 

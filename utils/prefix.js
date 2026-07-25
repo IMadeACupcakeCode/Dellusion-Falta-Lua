@@ -16,7 +16,7 @@ const ITENS_POR_PAGINA = 5;
 
 // ── Carga dos comandos (modo prefixo `$`, sem slash) ──────────────────
 // Comandos que já têm tratamento inline abaixo (não precisam do bridge).
-const INLINE = new Set(['ping', 'dado', 'roleta', 'lembrete', 'anuncio', 'configurar', 'organizar', 'codex', 'ticket', 'fechar', 'say', 'falar']);
+const INLINE = new Set(['ping', 'dado', 'roleta', 'lembrete', 'anuncio', 'configurar', 'organizar', 'codex', 'ticket', 'fechar', 'say', 'falar', 'forca']);
 
 // Assinaturas para converter os argumentos do `$mensagem` nas opções que
 // cada comando slash espera. Tipos: user, int, rest (resto da linha), token.
@@ -829,6 +829,140 @@ async function handlePrefix(message, client) {
         true
       );
     }
+    return;
+  }
+
+  // ── $forca ──
+  if (comando === 'forca') {
+    const sub = (args[0] || '').toLowerCase();
+    const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+
+    // ── $forca ranking ──
+    if (sub === 'ranking' || sub === 'rank') {
+      const { criarEmbedRanking, criarBotoesRanking } = require('./forcaManager');
+      const embed = criarEmbedRanking('total');
+      return message.reply({ embeds: [embed], components: [criarBotoesRanking()] });
+    }
+
+    // ── $forca vs @jogador ──
+    if (sub === 'vs' || sub === 'cop') {
+      const convidados = message.mentions.members.filter(m => !m.user.bot);
+      if (convidados.size === 0) {
+        return message.reply('❌ Marque quem deseja convidar: `$forca vs @usuario1 @usuario2`');
+      }
+
+      const { JOGOS, DIFICULDADES } = require('./forcaManager');
+      const config = JOGOS.get(message.author.id);
+      const dificuldade = config?.dificuldade || 'normal';
+      const modo = config?.modo || 'competitivo';
+      const nomes = convidados.map(m => m.user.tag).join(', ');
+      const difNome = DIFICULDADES.find(d => d.id === dificuldade)?.nome || 'Normal';
+
+      const embedConvite = criarEmbed({
+        titulo: '🎪 Convite para Jogo da Forca!',
+        descricao: [
+          '```╔══════════════════════════════╗',
+          '║        🎪 CONVITE            ║',
+          '╚══════════════════════════════╝```',
+          '',
+          `👤 **Anfitrião:** ${message.author.tag}`,
+          `👥 **Convidados:** ${nomes}`,
+          `🎮 **Modo:** ${modo === 'competitivo' ? '⚔️ Competitivo' : '🤝 Cooperativo'}`,
+          `📊 **Dificuldade:** ${difNome}`,
+          '',
+          '─ ⋅ ⋅ ⋅ ──── ⋅ ⋅ ⋅ ──── ⋅ ⋅ ⋅ ─',
+          '',
+          'Deseja aceitar o convite?',
+          'Ambos precisam aceitar para começar!',
+        ].join('\n'),
+        cor: 0x3498DB,
+        rodape: '🎪 Jogo da Forca • Convite • Chat.exe',
+      });
+
+      const conviteMsg = await message.reply({
+        content: convidados.map(m => `${m}`).join(' '),
+        embeds: [embedConvite],
+        components: [
+          new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+              .setCustomId('forca_convite_aceitar')
+              .setLabel('✅ Aceitar')
+              .setStyle(ButtonStyle.Success),
+            new ButtonBuilder()
+              .setCustomId('forca_convite_recusar')
+              .setLabel('❌ Recusar')
+              .setStyle(ButtonStyle.Danger),
+          ),
+        ],
+        fetchReply: true,
+      });
+
+      // Salva dados do convite (index.js vai processar os cliques)
+      JOGOS.set(conviteMsg.id, {
+        dono: { id: message.author.id, tag: message.author.tag },
+        convidados: convidados.map(m => ({ id: m.id, tag: m.user.tag })),
+        dificuldade,
+        modo,
+        aceitos: [],
+      });
+
+      setTimeout(() => {
+        const s = JOGOS.get(conviteMsg.id);
+        if (s && (!s.aceitos || s.aceitos.length < (s.convidados.length + 1))) {
+          JOGOS.delete(conviteMsg.id);
+          conviteMsg.edit({ content: '⏰ **Tempo esgotado.** Convite cancelado.', components: [] }).catch(() => {});
+        }
+      }, 120_000);
+
+      return;
+    }
+
+    // ── $forca (sem subcomando) — painel normal ──
+    const { criarSelectModo, criarSelectDificuldade } = require('./forcaManager');
+    const embed = criarEmbed({
+      titulo: '🎪 Jogo da Forca',
+      descricao: [
+        '```╔══════════════════════════════╗',
+        '║    🎪 JOGO DA FORCA         ║',
+        '╚══════════════════════════════╝```',
+        '',
+        'Bem-vindo ao espetáculo de palavras! 🎭',
+        '',
+        'Escolha o **modo de jogo** e a **dificuldade**.',
+        '',
+        '💡 **Subcomandos:**',
+        '`$forca ranking` — Ver rankings',
+        '`$forca vs @user` — Convidar para partida',
+      ].join('\n'),
+      cor: 0xD4A017,
+      rodape: '🎪 Jogo da Forca • Chat.exe',
+    });
+
+    const reply = await message.reply({
+      embeds: [embed],
+      components: [
+        new ActionRowBuilder().addComponents(criarSelectModo()),
+        new ActionRowBuilder().addComponents(criarSelectDificuldade()),
+        new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setCustomId('forca_comecar')
+            .setLabel('✅ Começar')
+            .setStyle(ButtonStyle.Success),
+          new ButtonBuilder()
+            .setCustomId('forca_ver_regras')
+            .setLabel('📖 Regras')
+            .setStyle(ButtonStyle.Secondary),
+          new ButtonBuilder()
+            .setCustomId('forca_cancelar')
+            .setLabel('✖️ Cancelar')
+            .setStyle(ButtonStyle.Danger),
+        ),
+      ],
+      fetchReply: true,
+    });
+
+    const { JOGOS } = require('./forcaManager');
+    JOGOS.set(reply.id, { userId: message.author.id });
     return;
   }
 

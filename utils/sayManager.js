@@ -71,6 +71,11 @@ function criarBotoesFalar() {
 // ══════════════════════════════════════════════════════════════
 
 async function falarDireto(message, args) {
+  // Verifica permissão de admin
+  if (!message.member?.permissions?.has('Administrator')) {
+    return message.reply('❌ Apenas **administradores** podem usar o comando `$say`.');
+  }
+
   if (!args.length) {
     return enviarPainelFalar(message);
   }
@@ -132,6 +137,11 @@ async function falarDireto(message, args) {
 // ══════════════════════════════════════════════════════════════
 
 async function enviarPainelFalar(message) {
+  // Verifica permissão de admin
+  if (!message.member?.permissions?.has('Administrator')) {
+    return message.reply('❌ Apenas **administradores** podem usar o comando `$say`.');
+  }
+
   const embed = criarEmbedFalar();
   const reply = await message.reply({
     embeds: [embed],
