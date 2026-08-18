@@ -145,6 +145,15 @@ client.once('ready', () => {
 
   // Aviso online no canal configurado
   avisarOnline(client);
+
+  // ── Slash commands (se o registro falhar, o $prevalece e nada quebra) ──
+  try {
+    const slash = require('./utils/slash');
+    slash.carregar();
+    slash.registrar();
+  } catch (erroSlash) {
+    console.error('✧ ⎯ ੭ Não consegui registrar slash commands:', erroSlash);
+  }
 });
 
 client.on('messageCreate', (message) => {
@@ -383,6 +392,13 @@ client.on('interactionCreate', async (interaction) => {
       }).catch(() => {});
     }
   }
+});
+
+// ── Slash commands (/transmitir e outros registrados com SlashCommandBuilder) ──
+client.on('interactionCreate', async (interaction) => {
+  if (!interaction.isChatInputCommand() && !interaction.isAutocomplete()) return;
+  const slash = require('./utils/slash');
+  await slash.tratar(interaction);
 });
 
 // ── Sistema de Fala ($say) ──

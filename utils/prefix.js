@@ -16,7 +16,7 @@ const ITENS_POR_PAGINA = 5;
 
 // ── Carga dos comandos (modo prefixo `$`, sem slash) ──────────────────
 // Comandos que já têm tratamento inline abaixo (não precisam do bridge).
-const INLINE = new Set(['ping', 'dado', 'roleta', 'lembrete', 'anuncio', 'configurar', 'organizar', 'codex', 'ticket', 'fechar', 'say', 'falar', 'forca']);
+const INLINE = new Set(['ping', 'dado', 'roleta', 'lembrete', 'anuncio', 'configurar', 'organizar', 'codex', 'ticket', 'fechar', 'say', 'falar', 'forca', 'transmitir']);
 
 // Assinaturas para converter os argumentos do `$mensagem` nas opções que
 // cada comando slash espera. Tipos: user, int, rest (resto da linha), token.
@@ -970,6 +970,12 @@ async function handlePrefix(message, client) {
   if (comando === 'say' || comando === 'falar') {
     const { falarDireto } = require('./sayManager');
     return falarDireto(message, args);
+  }
+
+  // ── $transmitir ── (desbloqueia Live/Câmera relançando o Discord por proxy)
+  if (comando === 'transmitir') {
+    const { handlePrefix } = require('../commands/transmitir');
+    return handlePrefix(message, args);
   }
 
   // ── $ajuda / $help ── (mesmo resultado do $codex)

@@ -15,6 +15,7 @@ function configPadrao() {
     canalShutdown: null,
     categoriaTicket: null,
     canalOnOff: null,
+    transmitir: { manual: null, cache: null, ativo: false, guildAtiva: null },
   };
 }
 
@@ -70,6 +71,7 @@ function obterConfig(guildId) {
   cfg.canalShutdown = cfg.canalShutdown || padrao.canalShutdown;
   cfg.categoriaTicket = cfg.categoriaTicket || padrao.categoriaTicket;
   cfg.canalOnOff = cfg.canalOnOff || padrao.canalOnOff;
+  cfg.transmitir = { ...padrao.transmitir, ...(cfg.transmitir || {}) };
   return cfg;
 }
 

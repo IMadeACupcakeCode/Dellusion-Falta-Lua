@@ -597,10 +597,14 @@ async function executarFechamento(interaction, motivo = null) {
       components: [],
     });
 
-    // Remove permissão do usuário primeiro
-    await interaction.channel.permissionOverwrites.edit(ticketInfo.userId, {
-      ViewChannel: false,
-    });
+    // Remove permissão do usuário primeiro (se ainda existir)
+    try {
+      await interaction.channel.permissionOverwrites.edit(ticketInfo.userId, {
+        ViewChannel: false,
+      });
+    } catch {
+      // Overwrite já pode ter sido removida (usuário saiu do servidor, etc.)
+    }
 
     // Deleta o canal após 10 segundos
     setTimeout(async () => {

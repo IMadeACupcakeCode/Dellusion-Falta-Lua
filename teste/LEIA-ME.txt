@@ -1,0 +1,93 @@
+DISCORD VIA PROXY - COMO USAR
+==============================
+
+O que tem nesta pasta
+----------------------
+- Discord (Proxy).lnk       -> abre o Discord roteando so o trafego dele por um proxy SOCKS5
+- Discord (Proxy HTTP).lnk  -> mesma coisa, mas pra proxy do tipo HTTP em vez de SOCKS5
+- LEIA-ME.txt                -> este arquivo
+
+Os dois atalhos NAO mexem no resto do PC. So o processo do Discord.exe
+usa o proxy; navegador, outros apps, etc. continuam na sua conexao normal.
+O atalho original do Discord (menu iniciar / desktop) continua intacto
+e funciona sem proxy, como sempre.
+
+
+PASSO 1 - Conseguir um proxy confiavel
+----------------------------------------
+Use um provedor PAGO que venda proxy/VPN explicitamente (residencial ou
+datacenter, com escolha de pais). NAO use listas de "proxy gratis"
+publicas (tipo proxifly ou similares) para uso real - elas sao lentas
+(testamos: ~2 segundos de latencia, inviavel pra call/screen share),
+instaveis (caem em minutos) e o IP costuma ja estar bloqueado pelos
+sistemas de antifraude do Discord/Cloudflare.
+
+Anote do seu provedor:
+  - Endereco IP ou hostname
+  - Porta
+  - Protocolo (SOCKS5 ou HTTP)
+  - Usuario/senha, se pedir (ver observacao no Passo 2)
+
+
+PASSO 2 - Editar o atalho
+---------------------------
+1. Clique com o botao direito no atalho certo (SOCKS5 ou HTTP, conforme
+   seu provedor) -> Propriedades
+2. No campo "Destino", vai ter algo assim:
+
+   "C:\Users\luis1\AppData\Local\Discord\Update.exe" --processStart Discord.exe --process-start-args="--proxy-server=socks5://PLACEHOLDER_IP:PLACEHOLDER_PORT --force-webrtc-ip-handling-policy=disable_non_proxied_udp"
+
+3. Troque PLACEHOLDER_IP:PLACEHOLDER_PORT pelo IP:porta reais do seu
+   provedor. Exemplo:
+
+   --proxy-server=socks5://45.32.10.20:1080
+
+4. Clique em OK pra salvar.
+
+Sobre usuario/senha: o Chromium (motor do Discord) nao aceita
+usuario:senha embutido na URL do --proxy-server para SOCKS5 de forma
+confiavel. Se seu provedor pedir autenticacao, prefira um plano com
+autenticacao por IP (voce cadastra seu IP publico no painel do
+provedor e ele libera sem pedir senha). Pra proxy HTTP com auth,
+o Chromium as vezes mostra um popup de login na primeira conexao.
+
+
+PASSO 3 - Usar
+---------------
+1. Feche o Discord por completo (clique direito no icone dele na
+   bandeja do sistema, perto do relogio, e escolha Sair/Quit -
+   so fechar a janela normalmente deixa ele minimizado rodando
+   em segundo plano com a config antiga)
+2. Abra pelo atalho editado (Discord (Proxy).lnk ou o HTTP)
+3. O Discord deve abrir normalmente, so que com o trafego saindo
+   pelo proxy
+
+
+PASSO 4 - Conferir se esta funcionando
+-----------------------------------------
+Antes de confiar no atalho, teste se o proxy responde e qual IP ele
+reporta. No terminal (PowerShell ou Git Bash):
+
+   curl -x socks5://IP:PORTA https://ifconfig.me
+
+Isso deve devolver o IP do proxy, nao o seu IP real. Se der timeout
+ou erro de conexao, o proxy esta morto ou bloqueando aquele destino -
+tente outro.
+
+
+LIMITACAO IMPORTANTE (leia antes de usar em call/screen share)
+------------------------------------------------------------------
+O --proxy-server cobre bem chamadas de API e a conexao do gateway
+(HTTPS/WebSocket) - e isso que decide se uma feature/regiao esta
+liberada pra sua conta. Mas o STREAM de audio/video em si (Go Live,
+chamadas de voz) usa WebRTC sobre UDP, que tem caminho de rede
+proprio via ICE. Mesmo com o proxy configurado, essa parte pode
+vazar seu IP real e ignorar o proxy - e o classico "WebRTC leak"
+que tambem acontece em navegador comum atras de VPN.
+
+A flag --force-webrtc-ip-handling-policy=disable_non_proxied_udp
+(ja incluida nos atalhos) tenta forcar isso a passar pelo proxy
+tambem, mas se o proxy nao suportar bem relay de UDP (SOCKS5 UDP
+ASSOCIATE), a chamada pode falhar ou ficar instavel. Teste ligando
+pra si mesmo em outro dispositivo/conta antes de depender disso
+numa call de verdade.
