@@ -181,6 +181,22 @@ const COMANDOS = [
     exemplo: 'Envia o painel de tickets. Use os botões para criar, reivindicar ou fechar.',
   },
   {
+    nome: 'stream',
+    categoria: 'admin',
+    emoji: '📺',
+    descricao: 'Relé de voz: entra no canal, fala "Estou a funcionar" e retransmite o áudio de quem fala (escolhe janela/monitor/desktop).',
+    uso: '$stream  •  $stream ajuda',
+    exemplo: 'Entra na chamada, avisa por voz e retransmite o áudio dos outros (ignorando a própria voz e a de bots).',
+  },
+  {
+    nome: 'tela',
+    categoria: 'admin',
+    emoji: '🖥️',
+    descricao: 'Sala de Tela: link público do compartilhamento de tela via Activity do Discord, com health check e guia do portal.',
+    uso: '$tela  •  $tela ajuda',
+    exemplo: 'Mostra o endereço público, o estado do servidor e o passo a passo de configuração no portal.',
+  },
+  {
     nome: 'fechar',
     categoria: 'admin',
     emoji: '🔒',

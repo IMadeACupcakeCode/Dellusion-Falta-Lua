@@ -95,6 +95,7 @@ const intents = [
   GatewayIntentBits.GuildMessages,
   GatewayIntentBits.GuildMessageReactions,
   GatewayIntentBits.MessageContent,
+  GatewayIntentBits.GuildVoiceStates,
 ];
 
 // Privileged intents (GuildMembers, GuildPresences) require explicit enablement
@@ -165,6 +166,20 @@ client.on('messageReactionAdd', async (reaction, user) => {
     await handleReaction(reaction, user);
   } catch (error) {
     console.error('Erro ao processar reação de guerra:', error);
+  }
+});
+
+// ── Falta Lua Stream — limpeza na mudança de canal de voz ──
+client.on('voiceStateUpdate', async (antigo, novo) => {
+  try {
+    const { pararStream } = require('./utils/streamRelay');
+    // Se a Falta Lua saiu do canal de voz (tinha canal, agora não tem), e havia
+    // stream ativo na guild, para (evita "stream órfão").
+    if (novo.id === client.user.id && antigo.channelId && !novo.channelId) {
+      await pararStream(novo.guild.id);
+    }
+  } catch (erro) {
+    console.error('Erro no voiceStateUpdate (Falta Lua Stream):', erro);
   }
 });
 
@@ -394,7 +409,7 @@ client.on('interactionCreate', async (interaction) => {
   }
 });
 
-// ── Slash commands (/transmitir e outros registrados com SlashCommandBuilder) ──
+// ── Slash commands (registrados com SlashCommandBuilder) ──
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand() && !interaction.isAutocomplete()) return;
   const slash = require('./utils/slash');

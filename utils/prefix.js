@@ -16,7 +16,7 @@ const ITENS_POR_PAGINA = 5;
 
 // ── Carga dos comandos (modo prefixo `$`, sem slash) ──────────────────
 // Comandos que já têm tratamento inline abaixo (não precisam do bridge).
-const INLINE = new Set(['ping', 'dado', 'roleta', 'lembrete', 'anuncio', 'configurar', 'organizar', 'codex', 'ticket', 'fechar', 'say', 'falar', 'forca', 'transmitir']);
+const INLINE = new Set(['ping', 'dado', 'roleta', 'lembrete', 'anuncio', 'configurar', 'organizar', 'codex', 'ticket', 'fechar', 'say', 'falar', 'forca']);
 
 // Assinaturas para converter os argumentos do `$mensagem` nas opções que
 // cada comando slash espera. Tipos: user, int, rest (resto da linha), token.
@@ -39,6 +39,8 @@ const SIGNATURES = {
   ship: [{ name: 'usuario1', user: true }, { name: 'usuario2', user: true }],
   social: [{ name: 'usuario', user: true, optional: true }],
   status: [],
+  stream: [],
+  tela: [],
   votar: 'especial',
 };
 
@@ -972,10 +974,11 @@ async function handlePrefix(message, client) {
     return falarDireto(message, args);
   }
 
-  // ── $transmitir ── (desbloqueia Live/Câmera relançando o Discord por proxy)
-  if (comando === 'transmitir') {
-    const { handlePrefix } = require('../commands/transmitir');
-    return handlePrefix(message, args);
+  // ── $stream ajuda / $tela ajuda — guia para os membros ──
+  const GUIA = { stream: '../commands/stream', tela: '../commands/tela' };
+  if (GUIA[comando] && ['ajuda', 'help', 'como'].includes((args[0] || '').toLowerCase())) {
+    const { enviarAjudaMembros } = require(GUIA[comando]);
+    return enviarAjudaMembros(message);
   }
 
   // ── $ajuda / $help ── (mesmo resultado do $codex)
