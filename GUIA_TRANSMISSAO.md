@@ -94,9 +94,14 @@ endereço público (túnel) e liga o servidor. Ele grava `PUBLIC_ORIGIN` no `.en
 
 ## ⚙️ Notas de arquitetura
 
-- **Uma cópia por bot**: Mila Cake e Falta Lua têm **instâncias independentes** de
-  `discord-screen/`, com `.env` e Client ID próprios. O comando `$tela` de cada bot
-  lê o `.env` **da sua própria** `discord-screen/` e serve os membros dela.
+- **Sala compartilhada**: a Sala de Tela da Mila é a instância do servidor. O
+  Falta Lua lê automaticamente o `.env` dela, usando o mesmo `PUBLIC_ORIGIN`,
+  porta e Client ID. Assim, abrir a Activity pela Mila também funciona para o
+  Falta Lua com o mesmo Target no portal do Discord.
+- Inicie apenas `npm run screen:fast` na pasta da Mila Cake. Não inicie a cópia
+  do Falta Lua ao mesmo tempo na porta `3001`.
+- Se a Mila estiver em outro computador ou caminho, defina `MILA_SCREEN_ENV` no
+  ambiente do Falta Lua apontando para o `.env` compartilhado.
 - **Automatização idêntica à Mila**: `npm run start:fast` configura → builda →
   sobe o túnel → grava o endereço → liga o servidor. O `$tela` se conecta ao app
   (`/api/health`) para mostrar estado em tempo real.

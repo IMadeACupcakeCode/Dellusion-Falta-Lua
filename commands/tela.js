@@ -1,4 +1,4 @@
-// ✧ ⎯ ੭ Falta Lua Tela — comando de Compartilhamento de Tela (Sala de Tela)
+// ⋆｡°✩ Mila Tela — comando de Compartilhamento de Tela (Sala de Tela)
 //
 // Este comando é o ATALHO do bot para o sistema de compartilhamento de tela
 // que vem junto: `discord-screen/`. Não é um relé de voz (isso é o $stream) —
@@ -6,7 +6,7 @@
 //
 // ── Como funciona para quem usa ─────────────────────────────────────────
 // 1. A pessoa entra num canal de voz.
-// 2. Abre a Falta Lua em "Sala da call" OU o link público (fora do Discord).
+// 2. Abre a Mila em "Sala da call" OU o link público (fora do Discord).
 // 3. Clica em "Compartilhar tela" e escolhe Chrome/Edge num DESKTOP.
 //
 // ── O que este painel mostra ───────────────────────────────────────────
@@ -15,10 +15,18 @@
 // • O que ainda falta configurar no portal do Discord, quando faltar.
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { criarEmbed, THEME } = require('../utils/theme');
-const { estadoTela, verificarServidor } = require('../utils/telaStore');
+const { estadoTela, verificarDiagnostico } = require('../utils/telaStore');
 
-/** Monta o estado atual da Sala de Tela de forma legível. */
-function renderizarEstado({ verbo = '' }) {
+const ATIVO = '●';
+
+/**
+ * Monta o estado atual da Sala de Tela de forma legível.
+ *
+ * `diag` é o resultado opcional de `verificarDiagnostico()`. Quando presente,
+ * o embed distingue "servidor no ar" de "endereço público velho" — o caso que
+ * vira "Credenciais Falhas" / "Redirect_uri Invalid" na atividade.
+ */
+function renderizarEstado({ verbo = '', diag = null }) {
   const est = estadoTela();
   const linhas = [];
 
@@ -62,16 +70,69 @@ function renderizarEstado({ verbo = '' }) {
     `💡 Quem está fora do Discord pode abrir esse link e criar uma **sala** própria.`
   );
 
-  // Verificação dos componentes que precisam estar no portal do Discord.
-  if (est.clientId) {
-    linhas.push(`🆔 **Client ID:** \`${est.clientId}\``);
+  // Diagnóstico de saúde, quando disponível (verbo de atualização).
+  if (diag) {
+    const localOk = diag.local === 'ok';
+    const pubOk = diag.publico === 'ok';
+
     linhas.push('');
-    linhas.push(
-      '🧩 **Estado da configuração no portal do Discord:** (reveja em `⚙️ Ajuda do portal`)'
-    );
-  } else {
-    linhas.push('', '⚠️ **Client ID** não encontrado no `.env` do app.');
+    if (diag.tudo) {
+      linhas.push(`✅ **Servidor no ar** — endereço público respondendo.`);
+    } else if (localOk && !pubOk) {
+      return {
+        cor: THEME.corSecundario,
+        titulo: '⚠️ Endereço público desatualizado',
+        descricao: [
+          `${verbo}O servidor local está **rodando**, mas o endereço público **não respondeu**.`,
+          '',
+          'O túnel muda a cada reinício — o portal aponta para um endereço antigo.',
+          '',
+          '**Cole no portal do Discord:**',
+          '',
+          '**1. Activities → URL Mappings → Target:**',
+          '```',
+          est.origem.replace(/^https?:\/\//, ''),
+          '```',
+          '',
+          '**2. OAuth2 → Redirects → Redirect:**',
+          '```',
+          `${est.origem}/auth/callback`,
+          '```',
+          '',
+          'Depois feche e reabra a atividade no servidor.',
+          '',
+          '> Para o endereço **nunca** mudar: `npm run tunel:criar` na pasta',
+          '> `discord-screen/` (precisa de domínio na Cloudflare).',
+        ].join('\n'),
+      };
+    } else if (!localOk && !pubOk) {
+      return {
+        cor: THEME.corErro,
+        titulo: '📡 Sala de Tela offline',
+        descricao: [
+          `${verbo}O servidor da Sala de Tela **não respondeu** (nem local nem público).`,
+          '',
+          'Na pasta `discord-screen/`, rode `npm run start:fast`.',
+          'Depois rode `$tela` de novo.',
+        ].join('\n'),
+      };
+    }
   }
+
+  // Redirect e Target — SEMPRE visíveis, para copiar e colar no portal.
+  const redirect = `${est.origem}/auth/callback`;
+  const target = est.origem.replace(/^https?:\/\//, '');
+  linhas.push('');
+  linhas.push('📋 **Para a atividade funcionar, cole no portal do Discord:**');
+  linhas.push('');
+  linhas.push('**1. Activities → URL Mappings → Target:**');
+  linhas.push('```');
+  linhas.push(target);
+  linhas.push('```');
+  linhas.push('**2. OAuth2 → Redirects → Redirect:**');
+  linhas.push('```');
+  linhas.push(redirect);
+  linhas.push('```');
 
   return {
     cor: THEME.corSucesso,
@@ -97,7 +158,7 @@ function embedComoUsar(est) {
       '3️⃣ Abra a atividade **Sala de Tela**',
       '4️⃣ Clicar em **Compartilhar tela** e escolher o que mostrar',
       '',
-      '> 👉 Para **transmitir**, use **Chrome, Edge ou Brave** num **DESKTOP**.',
+      '> 👉 Para **transmitir**, use **Chrome, Edge, Brave, Opera ou Vivaldi** num **DESKTOP**.',
       '> 👉 Navegador de celular não permite capturar a tela.',
       '',
       '**Fora do Discord (link):**',
@@ -120,7 +181,7 @@ function embedPortal(est) {
     titulo: '⚙️ Portal do Discord (uma vez só)',
     descricao: [
       'Abra [discord.com/developers/applications](https://discord.com/developers/applications)',
-      'na aplicação de vocês (a mesma da Falta Lua) e confira:',
+      'na aplicação de vocês (a mesma da Mila) e confira:',
       '',
       `**1. OAuth2 → Redirects** — add:`,
       `\`${origem}/auth/callback\``,
@@ -135,7 +196,7 @@ function embedPortal(est) {
       '> ```npm run start:fast``` (na pasta `discord-screen/`).',
     ].join('\n'),
     cor: 0x5865F2,
-    rodape: '✧ Configuração de uma vez só — não é preciso repetir',
+    rodape: '♡ Configuração de uma vez só — não é preciso repetir',
   });
 }
 
@@ -147,52 +208,11 @@ function botoes() {
   );
 }
 
-// ── $tela ajuda — guia para os membros ─────────────────────────────────
-function enviarAjudaMembros(alvo) {
-  const est = estadoTela();
-  const payload = {
-    embeds: [criarEmbed({
-      titulo: '🖥️ Compartilhar tela — como usar',
-      descricao: [
-        `${THEME.div.duplo}`,
-        '',
-        '**O que é:** a **Sala de Tela** é um jeito de **mostrar sua tela**',
-        'para quem está na mesma chamada de voz — sem depender do Go Live',
-        'bloqueado pra contas do Brasil.',
-        '',
-        '**Como usar dentro do Discord:**',
-        '`1.` Entre num **canal de voz**',
-        '`2.` Clique no **foguete 🚀** na barra de baixo',
-        '`3.` Abra a atividade **Sala de Tela**',
-        '`4.` Clique em **Compartilhar tela** e escolha **o que mostrar**',
-        '`5.` Todo mundo que está na call assiste na hora',
-        '',
-        `**Fora do Discord (link):**`,
-        est.origem
-          ? `🔗 \`${est.origem}\` — abra no navegador e crie uma sala.`
-          : '*Ainda sem endereço público configurado. Peça ao staff para rodar `npm run start:fast` na pasta `discord-screen/`.*',
-        '',
-        '**✅ Dicas:**',
-        '• Para **transmitir**, use **Chrome, Edge ou Brave** num **desktop**.',
-        '• Celular não deixa capturar a tela — só assistir (e às vezes nem isso).',
-        '• Para ter **som**, compartilhe uma **aba** (YouTube, Twitch, etc.) e',
-        '  marque o áudio. Tela inteira transmite **sem som** (evita eco da call).',
-        '• Se a atividade abrir em **branco**, o endereço do túnel mudou —',
-        '  peça ao staff para atualizar o **Target** no portal do Discord.',
-        '',
-        `${THEME.nome} — Sala de Tela de verdade, não um relé`,
-      ].join('\n'),
-      cor: THEME.corPrincipal,
-      rodape: '✧ ⎯ ੭ Falta Lua Tela — compartilhamento de tela',
-    })],
-  };
-  // Aceita Message ($tela ajuda) — o alvo vem de um prefixo.
-  if (typeof alvo.reply === 'function') return alvo.reply(payload);
-  return null;
-}
-
 async function execute(interaction, client = null) {
-  const inicial = renderizarEstado({});
+  // Diagnóstico completo (local + público) para o embed inicial já ser assertivo.
+  const diag = await verificarDiagnostico();
+  const inicial = renderizarEstado({ diag });
+
   const reply = await interaction.reply({
     embeds: [criarEmbed(inicial)],
     components: [botoes()],
@@ -229,30 +249,9 @@ async function execute(interaction, client = null) {
 
       if (i.customId === 'tela_atualizar') {
         await i.deferUpdate();
-        const check = await verificarServidor();
-        const est = estadoTela();
-        if (check.ok) {
-          const embed = criarEmbed({
-            titulo: '✔ Sala de Tela no ar',
-            descricao: [
-              `🔗 **Endereço:** \`${est.origem}\``,
-              `⏱ **Latência:** \`${check.ms}ms\` • **Health:** \`${check.status}\``,
-            ].join('\n'),
-            cor: THEME.corSucesso,
-          });
-          return i.editReply({ embeds: [embed], components: [botoes()] });
-        }
-        const motivo = check.motivo || 'sem_endereco';
-        const msg =
-          motivo === 'fora_do_ar'
-            ? `**Servidor não responde.** Está rodando? Rode \`npm run start:fast\` na pasta \`discord-screen/\`.`
-            : motivo === 'timeout'
-              ? `**Servidor demorou demais.** Confira se \`${est.origem}\` está no ar.`
-              : '**Sem endereço público configurado.** Rode `npm run start:fast` na pasta `discord-screen/`.';
-        return i.editReply({
-          embeds: [criarEmbed({ titulo: '📡 Sala de Tela offline', descricao: msg, cor: THEME.corErro })],
-          components: [botoes()],
-        });
+        const novoDiag = await verificarDiagnostico();
+        const embed = criarEmbed(renderizarEstado({ verbo: '🔄 ', diag: novoDiag }));
+        return i.editReply({ embeds: [embed], components: [botoes()] });
       }
     } catch (erro) {
       console.error('Erro no coletor $tela:', erro);
@@ -265,7 +264,6 @@ async function execute(interaction, client = null) {
 }
 
 module.exports = {
-  data: { name: 'tela', description: '📺 Compartilhamento de tela da Falta Lua (Sala de Tela) — link e passo a passo' },
+  data: { name: 'tela', description: '📺 Compartilhamento de tela da Mila (Sala de Tela) — link e passo a passo' },
   execute,
-  enviarAjudaMembros,
 };

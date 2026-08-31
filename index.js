@@ -147,6 +147,34 @@ client.once('ready', () => {
   // Aviso online no canal configurado
   avisarOnline(client);
 
+  try {
+    const { iniciarMonitor, criarEmbedMudanca } = require('./utils/telaMonitor');
+    const { obterConfig } = require('./utils/servidorStore');
+
+    iniciarMonitor({
+      aoMudar: async ({ antigo, novo }) => {
+        console.log(
+          `📺 Endereço da Sala de Tela mudou: ${antigo || '(desconhecido)'} → ${novo}`
+        );
+
+        for (const guild of client.guilds.cache.values()) {
+          try {
+            const cfg = obterConfig(guild.id);
+            const canalId = cfg?.canalOnOff;
+            if (!canalId) continue;
+
+            const canal = await guild.channels.fetch(canalId).catch(() => null);
+            if (!canal) continue;
+
+            await canal.send({ embeds: [criarEmbedMudanca({ antigo, novo })] });
+          } catch {}
+        }
+      },
+    });
+  } catch (erroTela) {
+    console.error('✧ ⎯ ੭ Erro ao iniciar monitor de tela:', erroTela?.message || erroTela);
+  }
+
   // ── Slash commands (se o registro falhar, o $prevalece e nada quebra) ──
   try {
     const slash = require('./utils/slash');

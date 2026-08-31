@@ -18,11 +18,13 @@ const https = require('https');
 // funcionar de qualquer lugar que importe (comandos por prefixo e slash).
 const PASTA_TELA = path.join(__dirname, '..', 'discord-screen');
 const ARQ_ENV = path.join(PASTA_TELA, '.env');
+const ARQ_ENV_MILA = process.env.MILA_SCREEN_ENV ||
+  path.join(__dirname, '..', '..', '..', 'Mila Cake', 'discord-screen', '.env');
 
-/** Lê uma variável do .env do app de tela (sem expor segredos). */
-function lerVarEnvsTela(chave) {
+/** Lê uma variável de um arquivo .env sem expor segredos. */
+function lerVarEnvArquivo(arquivo, chave) {
   try {
-    const texto = fs.readFileSync(ARQ_ENV, 'utf8');
+    const texto = fs.readFileSync(arquivo, 'utf8');
     for (const linha of texto.split(/\r?\n/)) {
       const semComentario = linha.replace(/^\s*#.*$/, '').trim();
       if (!semComentario) continue;
@@ -35,6 +37,14 @@ function lerVarEnvsTela(chave) {
     // .env do app ainda não existe — configuração incompleta.
   }
   return '';
+}
+
+/**
+ * A Mila é a dona do servidor compartilhado. Ler o arquivo dela primeiro faz
+ * o Falta Lua acompanhar automaticamente o mesmo origin, Client ID e porta.
+ */
+function lerVarEnvsTela(chave) {
+  return lerVarEnvArquivo(ARQ_ENV_MILA, chave) || lerVarEnvArquivo(ARQ_ENV, chave);
 }
 
 /**
@@ -92,4 +102,69 @@ function verificarServidor() {
   });
 }
 
-module.exports = { estadoTela, verificarServidor, PASTA_TELA, ARQ_ENV };
+/** Faz um health check em qualquer URL, com o mesmo padrão do verificarServidor. */
+function checarRota(url) {
+  if (!url) return Promise.resolve({ ok: false, motivo: 'sem_url' });
+
+  let u;
+  try {
+    u = new URL(url);
+  } catch {
+    return Promise.resolve({ ok: false, motivo: 'url_invalida' });
+  }
+
+  const lib = u.protocol === 'https:' ? https : http;
+  const ini = Date.now();
+
+  return new Promise((resolve) => {
+    const req = lib.get(`${url}/api/health`, (res) => {
+      res.resume();
+      const ms = Date.now() - ini;
+      resolve({ ok: res.statusCode === 200, ms, status: res.statusCode });
+    });
+    req.setTimeout(4000, () => {
+      req.destroy();
+      resolve({ ok: false, ms: Date.now() - ini, motivo: 'timeout' });
+    });
+    req.on('error', () => {
+      resolve({ ok: false, ms: Date.now() - ini, motivo: 'fora_do_ar' });
+    });
+  });
+}
+
+/**
+ * Diagnóstico completo da Sala de Tela, separando o servidor local do endereço
+ * público. É o que permite ao $tela dizer "o app está no ar, mas o túnel/endereço
+ * está velho" em vez de só "não responde".
+ *
+ * Dois checks em paralelo:
+ *   - `local`  → http://localhost:{PORT}/api/health  (o servidor que roda no PC)
+ *   - `publico` → {PUBLIC_ORIGIN}/api/health        (o endereço que o Discord alcança)
+ *
+ * @returns {Promise<{ origem:string, local:'ok'|'fora'|null, publico:'ok'|'fora'|null, tudo:boolean }>}
+ */
+async function verificarDiagnostico() {
+  const { origem } = estadoTela();
+  const porta = lerVarEnvsTela('PORT') || '3001';
+
+  const [local, publico] = await Promise.all([
+    checarRota(`http://localhost:${porta}`),
+    checarRota(origem),
+  ]);
+
+  return {
+    origem,
+    local: local.ok ? 'ok' : 'fora',
+    publico: publico.ok ? 'ok' : 'fora',
+    tudo: Boolean(origem) && local.ok && publico.ok,
+  };
+}
+
+module.exports = {
+  estadoTela,
+  verificarServidor,
+  verificarDiagnostico,
+  PASTA_TELA,
+  ARQ_ENV,
+  ARQ_ENV_MILA,
+};

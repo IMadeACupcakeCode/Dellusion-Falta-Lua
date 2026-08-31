@@ -1,3 +1,6 @@
+# Environment — never commit secrets
+.env
+
 # Outras pastas locais (não relacionadas ao bot)
 /.venv/
 /Bedrock/
